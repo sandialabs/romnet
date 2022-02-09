@@ -233,24 +233,23 @@ class Model_TF(Model):
         #-----------------------------------------------------------------------
         print('\n[ROMNet - model_tf.py    ]:   Creating the Models Graph')
 
+        self.graph = self.net.get_graph()
+
+        self.graph.summary()
+
+        with open(self.path_to_run_fld+'/Model/Model_Summary.txt', 'w') as f:
+            self.graph.summary(print_fn=lambda x: f.write(x + '\n'))
+
         try:
-            generate_graph_flg = InputData.generate_graph_flg
+            plot_graph_flg = InputData.plot_graph_flg
         else:
-            generate_graph_flg = True
-        if (generate_graph_flg):
-            
-            self.graph = self.net.get_graph()
-
-            self.graph.summary()
-
-            with open(self.path_to_run_fld+'/Model/Model_Summary.txt', 'w') as f:
-                self.graph.summary(print_fn=lambda x: f.write(x + '\n'))
-            
+            plot_graph_flg = True
+        if (plot_graph_flg):            
             tf.keras.utils.plot_model(self.graph, self.path_to_run_fld + 
                                                                  "/Model/Model.png")
 
-            ModelFile = self.path_to_run_fld + '/Model/' + self.net.structure_name + '/'
-            self.graph.save(ModelFile)
+        ModelFile = self.path_to_run_fld + '/Model/' + self.net.structure_name + '/'
+        self.graph.save(ModelFile)
 
         #-----------------------------------------------------------------------
 
