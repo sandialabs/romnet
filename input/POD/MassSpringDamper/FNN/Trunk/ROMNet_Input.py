@@ -48,6 +48,7 @@ class inputdata(object):
         #=======================================================================================================================================
         ## NN Model Structure
         self.surrogate_type      = 'FNN'                                                                     # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
+        self.generate_graph_flg  = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.input_vars_all      = ['t']                                                                     # List Containing all the Input Data Variable Names
         self.input_vars          = {'FNN': {'FNN': self.input_vars_all}}                                     # Dictionary Containing the Input  Data Variable Names for each Component
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
