@@ -50,7 +50,7 @@ class inputdata(object):
         #=======================================================================================================================================
         ## NN Model Structure
         self.surrogate_type       = 'FNN'                                                                    # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
-        self.ProbApproach         = 'Deterministic'                                                          # Probabilistic Technique for Training the BNN (if Any)
+        self.generate_graph_flg   = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun            = None #{'log': ['t']}                                                     # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_output_flg      = False                                                                    # Flag for Normalizing Output Data
         self.output_vars          = ['POD_'+str(i_mode+1) for i_mode in range(self.n_modes)]+['C']+['D']     # List Containing the Output Data Variable Names for each System
