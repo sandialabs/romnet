@@ -6,40 +6,50 @@ import pandas as pd
 import time
 
 import pyDOE
-
-import matplotlib.pyplot as plt
-WORKSPACE_PATH  = os.environ['WORKSPACE_PATH']
-plt.style.use(WORKSPACE_PATH+'/ROMNet/romnet/extra/postprocessing/presentation.mplstyle')
-
 import cantera as ct
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
+
+# WORKSPACE_PATH = os.environ['WORKSPACE_PATH']
+WORKSPACE_PATH = os.getcwd()+'/../../../../../'
+
+# import matplotlib.pyplot as plt
+# plt.style.use(WORKSPACE_PATH+'/ROMNet/romnet/extra/postprocessing/presentation.mplstyle')
+
+
 
 
 ##########################################################################################
 ### Input Data
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_2000Cases_NEq/'
-FigDir             = OutputDir + '/fig/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+# FigDir             = OutputDir + '/fig/'
 
 MixtureFile        = 'gri30.yaml'
 
 P0                 = ct.one_atm
-DirName            = 'train'
-n_ics               = 50
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-X0Exts             = np.array([0.05, 0.95], dtype=np.float64)
-SpeciesVec         = ['H2','H','O','O2','OH','N','NH','NO','N2']
-EqRatio0Exts       = None #np.array([.5, 4.], dtype=np.float64)
 
+## FIRST TIME
+DirName            = 'train'
+n_ics              = 500
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
+SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
+# ## SECOND TIME
 # DirName            = 'test'
-# n_ics               = 5
+# n_ics              = 10
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# X0Exts             = None
+# SpeciesVec         = None
+
 
 NPerT0             = 500
 
 Integration        = ' '#'Canteras'
-rtol               = 1.e-14
-atol               = 1.e-18
+rtol               = 1.e-12
+#atol               = 1.e-16
 SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
 ##########################################################################################
@@ -141,7 +151,7 @@ def IdealGasReactor(t, T, Y):
 
 if (DirName == 'train'):
 
-    if (EqRatio0Exts):
+    if (EqRatio0Exts is not None):
         MinVals = np.array([EqRatio0Exts[0], T0Exts[0]], dtype=np.float64)
         MaxVals = np.array([EqRatio0Exts[1], T0Exts[1]], dtype=np.float64)
         NDims   = 2
@@ -186,14 +196,22 @@ if (DirName == 'train'):
 
 
 elif (DirName == 'test'):
-    NDims    = 2
-    ICs      = np.zeros((n_ics,NDims))
-    # ICs[:,0] = [2.5, 1.9, 3.5, 1., 3.6]
-    # ICs[:,1] = [1200., 1900., 1300., 1600., 1700.]
-    ICs[:,0] = [0.8, 0.9, 1.0, 1.1, 1.2]
-    ICs[:,1] = [1300., 1200., 1400., 1500., 1250.]
-    ICs = np.concatenate([P0*np.ones((n_ics,1)), ICs], axis=1)
+    # NDims    = 2
+    # ICs      = np.zeros((n_ics,NDims))
+    # # ICs[:,0] = [2.5, 1.9, 3.5, 1., 3.6]
+    # # ICs[:,1] = [1200., 1900., 1300., 1600., 1700.]
+    # ICs[:,0] = [0.0.8, 0.9, 1.0, 1.1, 1.2]
+    # ICs[:,1] = [1300., 1200., 1400., 1500., 1250.]
+    # ICs = np.concatenate([P0*np.ones((n_ics,1)), ICs], axis=1)
+    MinVals = np.array([EqRatio0Exts[0], T0Exts[0]], dtype=np.float64)
+    MaxVals = np.array([EqRatio0Exts[1], T0Exts[1]], dtype=np.float64)
+    NDims   = 2
 
+    ICs     = pyDOE.lhs(2, samples=n_ics, criterion='center')
+
+    for i in range(NDims):
+        ICs[:,i] = ICs[:,i] * (MaxVals[i] - MinVals[i]) + MinVals[i]
+    ICs = np.concatenate([P0*np.ones((n_ics,1)),ICs], axis=1)
 
     ### Writing Initial Temperatures
     FileName = OutputDir+'/Orig/'+DirName+'/ext/ICs.csv'
@@ -209,7 +227,7 @@ iEnd            = np.zeros(n_ics)
 AutoIgnitionVec = np.zeros((n_ics,1))
 for iIC in range(n_ics):
     
-    if (EqRatio0Exts):
+    if (EqRatio0Exts is not None):
         P0       = ICs[iIC,0]
         EqRatio0 = ICs[iIC,1]
         T0       = ICs[iIC,2]
@@ -227,7 +245,7 @@ for iIC in range(n_ics):
     ### Create Reactor
     gas.TP  = T0, P0
 
-    if (EqRatio0Exts):
+    if (EqRatio0Exts is not None):
         # gas.set_equivalence_ratio(EqRatio0, 'CH4:1.0', 'O2:0.21, N2:0.79')
         # gas.set_equivalence_ratio(EqRatio0, 'CH4:1.0', 'O2:1.0')
         gas.set_equivalence_ratio(EqRatio0, 'H2:1.0', 'O2:1.0, N2:4.0')
@@ -245,7 +263,7 @@ for iIC in range(n_ics):
 
     gas_    = gas
     mass_   = r.mass
-    print('   Mass = ', mass_)
+    # print('   Mass = ', mass_)
     density_= r.density
     P_      = P0
     y0      = np.array(np.hstack((gas_.T, gas_.Y)), dtype=np.float64)
@@ -269,19 +287,19 @@ for iIC in range(n_ics):
     ############################################################################
 
     ############################################################################
-    TVec  = np.array([700, 800, 900, 1000, 1200, 1500, 1700, 1850, 2000])
-    tVec1 = np.array([5.e1, 5.e0, 1.e-1, 1.e-4, 1.e-5, 5.e-6, 1.e-6, 5.e-7, 5.e-7])
-    tVec2 = np.array([5.e0, 1.e0, 1.e-2, 1.e-5, 1.e-6, 5.e-7, 1.e-7, 5.e-8, 5.e-8])
-    tVec3 = np.array([1.e4, 1.e2, 1.e0, 1.e-1, 5.e-2, 1.e-2, 1.e-1, 5.e-2, 1.e-2])
+    # TVec  = np.array([700, 800, 900, 1000, 1200, 1500, 1700, 1850, 2000])
+    # tVec1 = np.array([5.e1, 5.e0, 1.e-1, 1.e-4, 1.e-5, 5.e-6, 1.e-6, 5.e-7, 5.e-7])
+    # tVec2 = np.array([5.e0, 1.e0, 1.e-2, 1.e-5, 1.e-6, 5.e-7, 1.e-7, 5.e-8, 5.e-8])
+    # tVec3 = np.array([1.e4, 1.e2, 1.e0, 1.e-1, 5.e-2, 1.e-2, 1.e-1, 5.e-2, 1.e-2])
 
-    f1 = interp1d(1000/TVec, np.log10(tVec1), kind='cubic')
-    f2 = interp1d(1000/TVec, np.log10(tVec2), kind='cubic')
-    f3 = interp1d(1000/TVec, np.log10(tVec3), kind='cubic')
+    # f1 = interp1d(1000/TVec, np.log10(tVec1), kind='cubic')
+    # f2 = interp1d(1000/TVec, np.log10(tVec2), kind='cubic')
+    # f3 = interp1d(1000/TVec, np.log10(tVec3), kind='cubic')
 
-    tMin     = f1(1000/T0) #1.e-5
-    dt0      = f2(1000/T0) #1.e-5
-    tMax     = f3(1000/T0) #1.e-3
-    tMaxAll  = f1(1.) #1.e-5
+    # tMin     = f1(1000/T0) #1.e-5
+    # dt0      = f2(1000/T0) #1.e-5
+    # tMax     = f3(1000/T0) #1.e-3
+    # tMaxAll  = f1(1.) #1.e-5
 
     # tStratch = 1.3
     # tVec     = [0.0]
@@ -296,7 +314,7 @@ for iIC in range(n_ics):
     # tVec     = np.concatenate([[0.], np.logspace(tMin, tMax, 3000)])
     #tVec     = np.concatenate([[0.], np.logspace(-12, tMin, 20), np.logspace(tMin, tMax, 480)[1:]])
     #tVec     = np.concatenate([[0.], np.logspace(-12, -6, 100), np.logspace(-5.99999999, -1., 4899)])
-    tVec     = np.concatenate([np.logspace(-12., 0., NPerT0)])
+    tVec     = np.concatenate([np.logspace(-8., 0., NPerT0)])
     #tVec     = np.concatenate([[0.], np.linspace(1.e-12, 1.e-2, 4999)])
     #############################################################################
 
@@ -318,7 +336,7 @@ for iIC in range(n_ics):
         tVecFinal        = np.array(tVec, dtype=np.float64)
         HRVec            = [HR]
     else:
-        output           = solve_ivp( IdealGasConstPressureReactor_SciPY, (tVec[0],tVec[-1]), y0, method=SOLVER, t_eval=tVec, atol=atol )
+        output           = solve_ivp( IdealGasConstPressureReactor_SciPY, (tVec[0],tVec[-1]), y0, method=SOLVER, t_eval=tVec, rtol=rtol)#, atol=atol )
         it0              = 0
         tVecFinal        = output.t
         HRVec            = []
@@ -421,33 +439,6 @@ FileName = OutputDir+'/Orig/'+DirName+'/ext/tAutoIgnition.csv'
 Header   = 't'
 np.savetxt(FileName, AutoIgnitionVec, delimiter=',', header=Header, comments='')
 
-
-# # Plot the Results
-# iSimVec   = range(10)#[0,49,99]
-# SpecOIVec = ['O2','HCO','CO','H2O','OH','CH4']
-
-# for iIC in iSimVec:
-
-#     for SpecOI in SpecOIVec:
-
-#         jStart  = int(iStart[iIC])
-#         jEnd    = int(iEnd[iIC])
-#         for iSpec in range(gas.n_species):
-#             if (gas.species_name(iSpec) == SpecOI):
-#                 jSpec = iSpec
-#                 break
-
-#         fig = plt.figure(figsize=(16,12))
-#         L1  = plt.plot(DataMat[jStart:jEnd,0], DataMat[jStart:jEnd,1], color='r', label='T', lw=2)
-#         plt.xlabel('time (s)')
-#         plt.ylabel('Temperature (K)')
-#         plt.twinx()
-#         L2  = plt.plot(DataMat[jStart:jEnd,0], DataMat[jStart:jEnd,iSpec+2], label=SpecOI, lw=2)
-#         plt.ylabel('Mass Fraction')
-#         plt.legend(L1+L2, [line.get_label() for line in L1+L2], loc='lower right')
-#         plt.xscale('log')
-#         FigPath = FigDir+SpecOI+'_Sim'+str(iIC+1)+'.png'
-#         fig.savefig(FigPath, dpi=600)
 
 # ##########################################################################################
 

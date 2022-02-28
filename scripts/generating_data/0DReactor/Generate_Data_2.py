@@ -4,27 +4,33 @@ import os
 import numpy   as np
 import pandas  as pd
 
-import matplotlib.pyplot as plt
-WORKSPACE_PATH  = os.environ['WORKSPACE_PATH']
-plt.style.use(WORKSPACE_PATH+'/ROMNet/romnet/extra/postprocessing/presentation.mplstyle')
-
 from PCAfold import PCA as PCAA
+
+# WORKSPACE_PATH = os.environ['WORKSPACE_PATH']
+WORKSPACE_PATH = os.getcwd()+'/../../../../../'
+
+# import matplotlib.pyplot as plt
+# plt.style.use(WORKSPACE_PATH+'/ROMNet/romnet/extra/postprocessing/presentation.mplstyle')
 
 
 
 ##########################################################################################
 ### Input Data
 ###
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_2000Cases_NEq/'
-FigDir             = OutputDir + '/fig/'
 
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+# FigDir             = OutputDir + '/fig/'
+
+## FIRST TIME
 DirName            = 'train'
-n_ics               = 2000
+n_ics               = 500
+# ## SECOND TIME
 # DirName            = 'test'
-# n_ics               = 5
+# n_ics               = 10
+
 iSimVec            = range(n_ics)
 
-NVarsRed           = 15
+NVarsRed           = 10
 
 scale              = 'lin'
 MinVal             = 1.e-20
@@ -140,10 +146,12 @@ else:
     Data     = pd.read_csv(OutputDir+'/'+str(NVarsRed)+'PC/ROM/ToOrig_Mask.csv', header=None)
     ToOrig   = Data.to_numpy(int)[:,0]
     for iSpec in ToOrig[1:]:
-        yMat    = np.concatenate((yMat,    yMatTemp[:,iSpec][...,np.newaxis]), axis=1)
-        ySource = np.concatenate((ySource, ySourceTemp[:,iSpec][...,np.newaxis]), axis=1)
+        yMatOrig = np.concatenate((yMatOrig, yMatTemp[:,iSpec][...,np.newaxis]), axis=1)
+        yMat     = np.concatenate((yMat,     yMatTemp[:,iSpec][...,np.newaxis]), axis=1)
+        ySource  = np.concatenate((ySource,  ySourceTemp[:,iSpec][...,np.newaxis]), axis=1)
         #print(gas.species_name(i-1))
         VarsName.append(SpeciesNames[iSpec])  
+
 
 KeptSpeciesNames = VarsName
 #print('yMat = ', yMat)
@@ -299,6 +307,11 @@ else:
     FileName = OutputDir+'/'+str(NVarsRed)+'PC/ROM/D.csv'
     D        = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()
     D        = np.squeeze(D)
+    print('[PCA] A                 = ', A)
+    print('[PCA] C                 = ', C)
+    print('[PCA] D                 = ', D)
+    print('[PCA] Shape of A        = ', A.shape)
+    print('[PCA] ')
 
 
 Header   = 'PC_1'

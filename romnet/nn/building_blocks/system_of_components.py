@@ -65,14 +65,19 @@ class System_of_Components(object):
             except:
                 self.n_rigids              = 0
 
+            try:
+                self.rigid_type            = InputData.rigid_type
+            except:
+                self.rigid_type            = None
+
             self.n_trunks                  = len([name for name in self.structure[self.name].keys() if 'Trunk' in name])
             self.trunk_vars                = InputData.input_vars[self.name]['Trunk']
 
             try:
                 self.branch_to_trunk       = InputData.branch_to_trunk[self.name]
-                if (self.branch_to_trunk   == 'stacked'):
+                if (self.branch_to_trunk   == 'one_to_one'):
                     self.branch_to_trunk   = [0]*self.n_branches
-                elif (self.branch_to_trunk == 'unstacked'):
+                elif (self.branch_to_trunk == 'multi_to_one'):
                     self.branch_to_trunk   = np.arange(self.n_branches)
             except:    
               self.branch_to_trunk         = [0]*self.n_branches
@@ -88,6 +93,13 @@ class System_of_Components(object):
             except:
                 self.transfered_model      = None
                 
+            try:
+                self.n_branch_out          = InputData.n_branch_out
+                self.n_trunk_out           = InputData.n_trunk_out
+            except:
+                self.n_branch_out          = None
+                self.n_trunk_out           = None
+
         print("[ROMNet - system_of_components.py   ]:     Constructing System of Components: " + self.name) 
 
 
@@ -128,22 +140,23 @@ class System_of_Components(object):
 
         inputs_branch, inputs_trunk = inputs
 
-
         if (self.n_rigids > 0):
             for i_rigid in range(self.n_rigids):
                 rigid_name = self.rigid_names[i_rigid]
                 rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, training=training)
-            splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
-            #splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
-            #shift   = splits[0:self.n_trunks]
-            #stretch = [None]*self.n_trunks
-            #stretch = splits[self.n_trunks:self.n_trunks*2]
-            stretch = splits[0:self.n_trunks]
-            shift   = [None]*self.n_trunks
+            if (self.rigid_type is None) or (self.rigid_type == 'shift'):
+                shift   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                stretch = [None]*self.n_trunks
+            elif (self.rigid_type == 'stretch'):
+                shift   = [None]*self.n_trunks
+                stretch = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+            elif (self.rigid_type == 'shift_and_stretch'):
+                splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
+                shift   = splits[0:self.n_trunks]
+                stretch = splits[self.n_trunks:self.n_trunks*2]
         else:
             shift   = [None]*self.n_trunks
             stretch = [None]*self.n_trunks
-
 
 
         y_trunk_vec = []
@@ -160,14 +173,31 @@ class System_of_Components(object):
             y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, training=training)
 
 
-            output_dot  = Dot_Add(axes=1)([y, y_trunk_vec[i_trunk]])            
-            #output_dot  = tf.keras.layers.Dot(axes=1)([y, y_trunk_vec[i_trunk]])            
+            #output_dot  = Dot_Add(axes=1)([y, y_trunk_vec[i_trunk]])     
+            if (self.n_branch_out == None) or (self.n_branch_out == self.n_trunk_out):
+                # Branch Output Layer does not contain either Centering nor Scaling
+                output_          = tf.keras.layers.Dot(axes=1)([y, y_trunk_vec[i_trunk]]) 
+            elif (self.n_branch_out == self.n_trunk_out+2):
+                # Branch Output Layer contains Centering and Scaling
+                alpha_vec, c, d  = tf.split(y, num_or_size_splits=[self.n_trunks, 1, 1], axis=1)
+                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
+                output_mult      = tf.keras.layers.multiply([output_dot,  d])            
+                output_          = tf.keras.layers.add([output_mult, c])   
+            elif (self.n_branch_out == self.n_trunk_out+1):
+                # Branch Output Layer contains Centering
+                alpha_vec, c     = tf.split(y, num_or_size_splits=[self.n_trunks, 1], axis=1)
+                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
+                output_          = tf.keras.layers.add([output_dot, c])   
+            else:
+                # Branch Output Layer incompatible with Trunk Output Layer
+                raise NameError("[ROMNet - call_deeponet.py ]: Branch Output Layer incompatible with Trunk Output Layer! Please, Change No of Neurons!")
+
 
 
             if (self.system_post_layer_flg) and (self.system_post_layer_flg != 'correlation') and (not self.internal_pca):
-                output_vec.append( layers_dict[self.name]['Branch_'+str(i_branch+1)]['Post'](output_dot, training=training) )
+                output_vec.append( layers_dict[self.name]['Branch_'+str(i_branch+1)]['Post'](output_, training=training) )
             else:
-                output_vec.append( output_dot )
+                output_vec.append( output_ )
             
 
         if (self.n_branches > 1):

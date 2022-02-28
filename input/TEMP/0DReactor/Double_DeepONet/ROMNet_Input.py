@@ -71,7 +71,7 @@ class inputdata(object):
                                     'DeepONet_2': {'Branch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
                                                     'Rigid': ['PC0_'+str(i+1) for i in range(self.NRODs)],
                                                     'Trunk': ['t']}}                                         # Dictionary Containing the Input  Data Variable Names for each Component
-        self.branch_to_trunk     = {'DeepONet': 'unstacked', 'DeepONet_2': 'unstacked'}
+        self.branch_to_trunk     = {'DeepONet': 'one_to_one', 'DeepONet_2': 'one_to_one'}                    # Type of Branch-to-Trunk Connection (one_to_one / multi_to_one)
         self.norm_input_flg      = {  'DeepONet': {'Branch': False, 
                                                     'Rigid': False,
                                                     'Trunk': False},
@@ -150,7 +150,7 @@ class inputdata(object):
         self.n_epoch              = 100000                                                                   # Number of Epoches
         self.batch_size           = 64                                                                     # Mini-Batch Size
         self.valid_batch_size      = 64                                                                 # Validation Mini-Batch Size
-        self.RunEagerlyFlg       = False
+        self.eagerly_flg       = False
         # self.losses              = {'scs': {'name': 'mse', 'axis': 0}, 'res': {'name': 'mse', 'axis': 0}, 'pts': {'name': 'mse', 'axis': 0}} # Loss Functions
         # self.loss_weights         = {'scs': 1.e-1, 'res': 1.e-8, 'pts': 1.e0}     
         # self.losses              = {'res': {'name': 'mse', 'axis': 0}}                                    # Loss Functions

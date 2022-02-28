@@ -66,7 +66,7 @@ class inputdata(object):
         self.n_epoch              = 10000                                                                   # Number of Epoches
         self.batch_size           = 32                                                                     # Mini-Batch Size
         self.valid_batch_size      = 32                                                                     # Validation Mini-Batch Size
-        self.RunEagerlyFlg       = False   
+        self.eagerly_flg       = False   
         self.losses              = {'ext': {'name': 'mse', 'axis': 0}}                                    # Loss Functions
         self.loss_weights         = None  
         self.metrics             = None                   
