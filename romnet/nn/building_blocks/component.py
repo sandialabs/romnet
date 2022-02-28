@@ -94,9 +94,9 @@ class Component(object):
 
             layer_name        = self.long_name + '_Normalization'
         
-            # if ( (BlockName == 'Trunk') and (self.PathToPODFile) ):
-            #     with h5py.File(self.PathToPODFile, "r") as f:
-            #         Key_       = 'NN_POD_1_Normalization'
+            # if ( (BlockName == 'Trunk') and (self.PathToPCAFile) ):
+            #     with h5py.File(self.PathToPCAFile, "r") as f:
+            #         Key_       = 'NN_PCA_1_Normalization'
             #         Mean       = np.array(f[Key_+'/mean:0'][:])
             #         Variance   = np.array(f[Key_+'/variance:0'][:])[...,np.newaxis]
             #         MinVals    = np.array(f[Key_+'/min_vals:0'][:])[...,np.newaxis]

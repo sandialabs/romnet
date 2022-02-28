@@ -9,8 +9,8 @@ class inputdata(object):
     def __init__(self, WORKSPACE_PATH, ROMNet_fld):
 
         self.i_red                = 1
-        # POD_NAME                 = str(self.i_red)
-        POD_NAME                 = 'All'
+        # PCA_NAME                 = str(self.i_red)
+        PCA_NAME                 = 'All'
 
         self.n_modes               = 2
 
@@ -34,10 +34,10 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                         # os.getenv('WORKSPACE_PATH')      
         self.ROMNet_fld          = ROMNet_fld                                                             # $WORKSPACE_PATH/ProPDE/
-        self.path_to_run_fld        = self.ROMNet_fld   + '/../MSD_100Cases_POD_'+POD_NAME+'_Trunk/'           # Path To Training Folder
+        self.path_to_run_fld        = self.ROMNet_fld   + '/../MSD_100Cases_PCA_'+PCA_NAME+'_Trunk/'           # Path To Training Folder
         self.path_to_load_fld       = None                                                                   # Path To Pre-Trained Model Folder
-        # self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/MSD_100Cases/Orig/OneByOne/POD_'+POD_NAME+'/Trunk/'           # Path To Training Data Folder 
-        self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/MSD_100Cases/Orig/All/POD_'+POD_NAME+'/Trunk/'           # Path To Training Data Folder 
+        # self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/MSD_100Cases/Orig/OneByOne/PCA_'+PCA_NAME+'/Trunk/'           # Path To Training Data Folder 
+        self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/MSD_100Cases/Orig/All/PCA_'+PCA_NAME+'/Trunk/'           # Path To Training Data Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -60,7 +60,7 @@ class inputdata(object):
         self.ProbApproach        = 'Deterministic'                                                         # Probabilistic Technique for Training the BNN (if Any)
         self.trans_fun           = None #{'log': ['t']}                                                    # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_output_flg     = False                                                                   # Flag for Normalizing Output Data
-        self.output_vars         = ['POD_'+str(i_mode+1) for i_mode in range(self.n_modes)]                      # List Containing the Output Data Variable Names for each System
+        self.output_vars         = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]                      # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['t']                                                                   # List Containing all the Input Data Variable Names
         self.input_vars          = {'FNN': {'FNN': self.input_vars_all}}                                   # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg      = {'FNN': {'FNN': True}}                                                  # Dictionary Containing Flags for Normalizing Input Data for each Component

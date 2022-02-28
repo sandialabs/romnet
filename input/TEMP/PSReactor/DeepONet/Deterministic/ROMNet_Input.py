@@ -81,7 +81,7 @@ class inputdata(object):
         self.n_epoch              = 100000                                                                   # Number of Epoches
         self.batch_size           = 64                                                                     # Mini-Batch Size
         self.valid_batch_size      = 64                                                                   # Validation Mini-Batch Size
-        self.RunEagerlyFlg       = True
+        self.eagerly_flg       = True
         self.losses              = {'ics': {'name': 'mse', 'axis': 0}, 'res': {'name': 'mse', 'axis': 0}, 'pts': {'name': 'mse', 'axis': 0}} # Loss Functions
         self.loss_weights         = {'ics': 1.e0, 'res': 1.e-7, 'pts': 1.e0}     
         # self.losses              = {'res': {'name': 'mse', 'axis': 0}}                                    # Loss Functions

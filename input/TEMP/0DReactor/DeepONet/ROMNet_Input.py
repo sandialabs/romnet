@@ -92,7 +92,7 @@ class inputdata(object):
         self.n_trunks            = self.n_branches
         # -----------------------------------------------------------------------------------
 
-        self.branch_to_trunk     = {'DeepONet': 'unstacked'}
+        self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                               # Type of Branch-to-Trunk Connection (one_to_one / multi_to_one)
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
                                                   'Rigid': True,
                                                   'Trunk': False}}                                          # Dictionary Containing Flags for Normalizing Input Data for each Component
@@ -153,7 +153,7 @@ class inputdata(object):
         self.n_epoch              = 100000                                                                   # Number of Epoches
         self.batch_size           = 2048                                                                     # Mini-Batch Size
         self.valid_batch_size      = 2048                                                               # Validation Mini-Batch Size
-        self.RunEagerlyFlg       = False
+        self.eagerly_flg       = False
         # self.losses              = {'scs': {'name': 'mse', 'axis': 0}, 'res': {'name': 'mse', 'axis': 0}, 'pts': {'name': 'mse', 'axis': 0}} # Loss Functions
         # self.loss_weights         = {'scs': 1.e-1, 'res': 1.e-8, 'pts': 1.e0}     
         # self.losses              = {'res': {'name': 'mse', 'axis': 0}}                                    # Loss Functions
