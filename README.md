@@ -29,7 +29,17 @@
 --------------------------------------------------------------------------------------
 ## Test Cases:
 
-Please refer to the presentations in $WORKSPACE_PATH/ROMNet/romnet/docs/test_cases for info and running instructions
+Please, refer to the presentations in $WORKSPACE_PATH/ROMNet/romnet/docs/test_cases for info and running instructions
+
+It is highly recommended to run the set test cases in the following order:
+	
+	- 1. Mass-Spring-Damper System
+	
+	- 2. Translating Hyperbolic Function
+	
+	- 3. 0D Isobaric Reactor 
+
+
 
 
 --------------------------------------------------------------------------------------
