@@ -95,10 +95,10 @@ class inputdata(object):
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('stacked'/'unstacked')
         self.n_branch_out        = self.n_modes
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([64,64,64,self.n_branch_out])},  
-                                                  'Trunk': {'Main': np.array([64,64,64,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                  'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([128,128,128,128,self.n_branch_out])},  
+                                                  'Trunk': {'Main': np.array([128,128,128,128,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','tanh','linear']},  
+                                                  'Trunk': {'Main': ['tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-10},  
                                                   'Trunk': {'Main': 1.e-10}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
