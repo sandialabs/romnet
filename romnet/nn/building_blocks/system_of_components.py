@@ -75,9 +75,9 @@ class System_of_Components(object):
 
             try:
                 self.branch_to_trunk       = InputData.branch_to_trunk[self.name]
-                if (self.branch_to_trunk   == 'one_to_one'):
+                if (self.branch_to_trunk   == 'multi_to_one'):
                     self.branch_to_trunk   = [0]*self.n_branches
-                elif (self.branch_to_trunk == 'multi_to_one'):
+                elif (self.branch_to_trunk == 'one_to_one'):
                     self.branch_to_trunk   = np.arange(self.n_branches)
             except:    
               self.branch_to_trunk         = [0]*self.n_branches
