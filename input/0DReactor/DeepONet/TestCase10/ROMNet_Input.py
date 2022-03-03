@@ -107,9 +107,9 @@ class inputdata(object):
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                   'Rigid': {'Main': ['tanh','tanh','tanh','linear']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
-                                                  'Rigid': {'Main': None},  
-                                                  'Trunk': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-6},  
+                                                  'Rigid': {'Main': 1.e-6},  
+                                                  'Trunk': {'Main': 1.e-6}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Rigid': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
