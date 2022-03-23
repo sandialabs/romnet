@@ -57,7 +57,7 @@ class inputdata(object):
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = True
 
-        self.internal_pca        = False
+        self.internal_pca_flg        = False
 
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
@@ -97,7 +97,7 @@ class inputdata(object):
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.system_post_layer_flg = None #{'DeepONet': 'softplus'}
+        self.dotlayer_bias_flg   = {'DeepONet': True}
 
 
         #=======================================================================================================================================

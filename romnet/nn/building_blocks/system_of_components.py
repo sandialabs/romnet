@@ -43,15 +43,12 @@ class System_of_Components(object):
 
 
         try:
-            self.internal_pca              = InputData.internal_pca
+            self.internal_pca_flg              = InputData.internal_pca_flg
         except:
-            self.internal_pca              = False
+            self.internal_pca_flg              = False
 
         if (self.type == 'FNN'):    
             self.call                      = self.call_fnn
-            
-            self.system_post_layer_flg     = None
-
 
         elif (self.type == 'DeepONet'):    
             self.call                      = self.call_deeponet
@@ -84,11 +81,6 @@ class System_of_Components(object):
             print("[ROMNet - system_of_components.py   ]:     Mapping Branch-to-Trunk (i.e., self.branch_to_trunk Object): ", self.branch_to_trunk) 
 
             try:
-                self.system_post_layer_flg = InputData.system_post_layer_flg[self.name]
-            except:
-                self.system_post_layer_flg = None
-
-            try:
                 self.transfered_model      = InputData.transfered_model
             except:
                 self.transfered_model      = None
@@ -99,6 +91,11 @@ class System_of_Components(object):
             except:
                 self.n_branch_out          = None
                 self.n_trunk_out           = None
+
+            try:
+                self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg[self.name]
+            except:
+                self.dotlayer_bias_flg     = None
 
         try:
             self.softmax_flg               = InputData.softmax_flg[self.name] if isinstance(InputData.softmax_flg[self.name], (int)) else False
@@ -157,6 +154,7 @@ class System_of_Components(object):
         inputs_branch, inputs_trunk = inputs
 
         if (self.n_rigids > 0):
+            # Create Pre-Transformation Block (Here Called Rigid Block)
             for i_rigid in range(self.n_rigids):
                 rigid_name = self.rigid_names[i_rigid]
                 rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, training=training)
@@ -175,12 +173,14 @@ class System_of_Components(object):
             stretch = [None]*self.n_trunks
 
 
+        # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
             trunk_name  = self.trunk_names[i_trunk]
             y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], training=training))
 
 
+        # Create Array of Branches
         y_branch_vec = []
         output_vec   = []
         for i_branch in range(self.n_branches): 
@@ -189,6 +189,7 @@ class System_of_Components(object):
             y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, training=training)
 
 
+            # Perform Dot Pructs Between Trunks and Branches
             #output_dot  = Dot_Add(axes=1)([y, y_trunk_vec[i_trunk]])     
             if (self.n_branch_out == None) or (self.n_branch_out == self.n_trunk_out):
                 # Branch Output Layer does not contain either Centering nor Scaling
@@ -209,20 +210,23 @@ class System_of_Components(object):
                 raise NameError("[ROMNet - call_deeponet.py ]: Branch Output Layer incompatible with Trunk Output Layer! Please, Change No of Neurons!")
 
 
-
-            # if (self.system_post_layer_flg) and (self.system_post_layer_flg != 'correlation') and (not self.internal_pca):
-            #     output_vec.append( layers_dict[self.name]['Branch_'+str(i_branch+1)]['Post'](output_, training=training) )
-            # else:
             output_vec.append( output_ )
             
 
+        # Concatenate the Outputs of Multiple Dot-Layers
         if (self.n_branches > 1):
             output_concat = tf.keras.layers.Concatenate(axis=1)(output_vec)
         else:
             output_concat = output_vec[0]
 
+        
+        if (self.dotlayer_bias_flg):
+            # Add Biases to Concatenated Dot-Layers
+            output_concat = layers_dict[self.name]['BiasLayer'](output_concat)
 
-        if (self.internal_pca):
+
+        if (self.internal_pca_flg):
+            # Anti-Transform from PCA Space to Original State Space
 
             output_all               = layers_dict[self.name]['PCAInvLayer'](output_concat)
             output_T, output_species = tf.split(output_all, [1,self.n_outputs-1], axis=1)
@@ -234,20 +238,16 @@ class System_of_Components(object):
                 output_concat = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
             else:
                 output_concat = output_vec[0]
-
-
-        if (self.system_post_layer_flg == 'correlation'):
-            output_concat = layers_dict[self.name]['Post'](output_concat, training=training)
-        elif (self.system_post_layer_flg == 'bias'):
-            output_concat = layers_dict[self.name]['Post'](output_concat, training=training)
         
 
         if (self.softmax_flg):
+            # Apply SoftMax for Forcing Sum(y_i)=1
             output_T, output_species = tf.split(output_concat, [1,self.n_outputs-1], axis=1)
             output_species           = self.softmax_layer(output_species)
             output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
 
         if (self.rectify_flg):
+            # Apply ReLu for Forcing y_i>0
             output_concat            = self.rectify_layer(output_concat)
 
         return output_concat

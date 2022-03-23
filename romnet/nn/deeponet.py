@@ -43,23 +43,25 @@ class DeepONet(NN):
         except:
             self.n_rigids              = 0
 
+        try:
+            self.internal_pca_flg      = InputData.internal_pca_flg
+        except:
+            self.internal_pca_flg      = False
+
         if (norm_input is None):
             norm_input                 = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
         self.norm_input                = norm_input
 
         self.trans_fun                 = InputData.trans_fun
-  
+
+
+        try:
+            self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg['DeepONet']
+        except:
+            self.dotlayer_bias_flg     = None
+
+
         self.norm_output_flg           = InputData.norm_output_flg
-
-        try:
-            self.system_post_layer_flg = InputData.system_post_layer_flg['DeepONet']
-        except:
-            self.system_post_layer_flg = None
-
-        try:
-            self.internal_pca          = InputData.internal_pca
-        except:
-            self.internal_pca          = False
 
         print("\n[ROMNet - deeponet.py               ]:   Constructing Deep Operator Network: ") 
 
@@ -76,7 +78,7 @@ class DeepONet(NN):
 
 
         # PCA Layers
-        if (self.internal_pca):
+        if (self.internal_pca_flg):
             self.layers_dict['DeepONet']['PCALayer']    = PCALayer(system.A, system.C, system.D)
             self.layers_dict['DeepONet']['PCAInvLayer'] = PCAInvLayer(system.A, system.C, system.D)
 
@@ -117,24 +119,13 @@ class DeepONet(NN):
 
 
         # Main System of Components
-        self.system_of_components             = {}
-        self.system_of_components['DeepONet'] = System_of_Components(InputData, 'DeepONet', self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+        self.system_of_components                          = {}
+        self.system_of_components['DeepONet']              = System_of_Components(InputData, 'DeepONet', self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
-        # Adding Post Correlating / Scaling / Shifting Layer (If Needed)
-        if (self.system_post_layer_flg):
-            
-            if (self.system_post_layer_flg == 'correlation'):
-                i_branch = 0
-                self.layers_dict['DeepONet']['Post']                                = system_post_layer(self.system_post_layer_flg, 'DeepONet', self.n_branches, None)
-
-            else: 
-                for i_branch in range(self.n_branches):
-                    self.layers_dict['DeepONet']['Branch_'+str(i_branch+1)]['Post'] = system_post_layer(self.system_post_layer_flg, 'DeepONet', i_branch, None)
-
-
-        # if (self.dotlayer_bias_flg):
-        #     self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
+        # Adding Biases to the DeepONet's Dot-Layers
+        if (self.dotlayer_bias_flg):
+            self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
 
 
         # Output Normalizing Layer
@@ -160,7 +151,7 @@ class DeepONet(NN):
 
         inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
 
-        if (self.internal_pca):
+        if (self.internal_pca_flg):
             inputs_branch           = self.layers_dict['DeepONet']['PCALayer'](inputs_branch)
     
         y                           = self.system_of_components['DeepONet'].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
@@ -175,7 +166,7 @@ class DeepONet(NN):
 
         inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
 
-        if (self.internal_pca):
+        if (self.internal_pca_flg):
             inputs_branch           = self.layers_dict['DeepONet']['PCALayer'](inputs_branch)
 
         y                           = self.system_of_components['DeepONet'].call([inputs_branch, inputs_trunk], self.layers_dict, training=False)
@@ -319,60 +310,5 @@ class BiasLayer(tf.keras.layers.Layer):
                                     trainable=True)
     def call(self, x):
         return x + self.bias
-
-#=======================================================================================================================================
-
-
-
-#=======================================================================================================================================
-def system_post_layer(system_post_layer_flg, system_name, i_out, transfered_model):
-
-    if (system_post_layer_flg == 'correlation'):
-        layer_name = system_name + '-Post_Correlation'
-        
-        if (transfered_model is not None):
-            W0     = transfered_model.get_layer(layer_name).kernel.numpy()
-            b0     = transfered_model.get_layer(layer_name).bias.numpy()
-            W_ini  = tf.keras.initializers.RandomNormal(mean=W0, stddev=1.e-10)
-            b_ini  = tf.keras.initializers.RandomNormal(mean=b0, stddev=1.e-10)
-        else:
-            W_ini  = 'he_normal'
-            b_ini  = 'zeros'
-        out_layer  = tf.keras.layers.Dense(units              = i_out,
-                                           activation         = 'linear',
-                                           use_bias           = True,
-                                           kernel_initializer = W_ini,
-                                           bias_initializer   = b_ini,
-                                           name               = layer_name)
-    
-
-    elif (system_post_layer_flg == 'shift'):
-        layer_name = system_name + '-Post_Shift_' + str(i_out+1)
-
-        b0 = 0
-        if (transfered_model is not None): 
-            b0 = transfered_model.get_layer(layer_name).bias.numpy()[0]
-        out_layer = bias_layer(b0=b0, layer_name=layer_name)
-
-
-    else:
-        layer_name = system_name + '-Post_' + system_post_layer_flg + '_' + str(i_out+1)
-        
-        if (transfered_model is not None):
-            W0     = transfered_model.get_layer(layer_name).kernel.numpy()
-            b0     = transfered_model.get_layer(layer_name).bias.numpy()
-            W_ini  = tf.keras.initializers.RandomNormal(mean=W0, stddev=1.e-10)
-            b_ini  = tf.keras.initializers.RandomNormal(mean=b0, stddev=1.e-10)
-        else:
-            W_ini  = 'he_normal'
-            b_ini  = 'zeros'
-        out_layer  = tf.keras.layers.Dense(units              = 1,
-                                           activation         = system_post_layer_flg,
-                                           use_bias           = True,
-                                           kernel_initializer = W_ini,
-                                           bias_initializer   = b_ini,
-                                           name               = layer_name)
-
-    return out_layer
 
 #=======================================================================================================================================

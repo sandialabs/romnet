@@ -41,9 +41,9 @@ class FNN(NN):
 
 
         try:
-            self.internal_pca = InputData.internal_pca
+            self.internal_pca_flg = InputData.internal_pca_flg
         except:
-            self.internal_pca = False
+            self.internal_pca_flg = False
 
         print("\n[ROMNet - fnn.py                    ]:   Constructing Feed-Forward Network: ") 
 
@@ -53,7 +53,7 @@ class FNN(NN):
 
 
         # PCA Layers
-        if (self.internal_pca):
+        if (self.internal_pca_flg):
             self.layers_dict['FNN']['PCALayer']    = PCALayer(system.A, system.C, system.D)
             self.layers_dict['FNN']['PCAInvLayer'] = PCAInvLayer(system.A, system.C, system.D)
 
@@ -83,7 +83,7 @@ class FNN(NN):
 
 
         # # Softmax Layer
-        # if (self.internal_pca):
+        # if (self.internal_pca_flg):
         #     self.layers_dict['FNN']['SoftMax'] = tf.keras.layers.Softmax()
 
 

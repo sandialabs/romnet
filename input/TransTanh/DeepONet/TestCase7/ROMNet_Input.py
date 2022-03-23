@@ -85,6 +85,7 @@ class inputdata(object):
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
                                                   'Rigid': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.dotlayer_bias_flg   = {'DeepONet': True}
         ###########################################################################################################
 
         #=======================================================================================================================================

@@ -61,7 +61,7 @@ class inputdata(object):
         self.trans_fun           = {'log': ['t']}                                                          # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_output_flg     = True                                                                    # Flag for Normalizing Output Data
         
-        self.internal_pca        = False
+        self.internal_pca_flg        = False
 
         # # -----------------------------------------------------------------------------------
         # self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_2000Cases_NEq/Orig/'            # Path To Training Data Folder 

@@ -59,7 +59,7 @@ class inputdata(object):
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
 
-        self.internal_pca        = False
+        self.internal_pca_flg        = False
 
         # # -----------------------------------------------------------------------------------
         # self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases/Orig/'                # Path To Training Data Folder 
@@ -107,7 +107,7 @@ class inputdata(object):
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.system_post_layer_flg = None #{'DeepONet': 'softplus'}
+        self.dotlayer_bias_flg   = {'DeepONet': True}
 
 
         #=======================================================================================================================================

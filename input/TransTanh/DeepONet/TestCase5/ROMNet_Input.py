@@ -76,6 +76,7 @@ class inputdata(object):
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.dotlayer_bias_flg   = {'DeepONet': True}
         ##########################################################################################################
 
         #=======================================================================================================================================

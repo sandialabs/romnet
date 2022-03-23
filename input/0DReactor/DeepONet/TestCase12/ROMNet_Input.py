@@ -57,7 +57,7 @@ class inputdata(object):
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = True
 
-        self.internal_pca        = False
+        self.internal_pca_flg        = False
 
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
