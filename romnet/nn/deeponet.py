@@ -103,7 +103,6 @@ class DeepONet(NN):
                         self.layers_dict['DeepONet']['Trunk'+temp_str]['TransFun']      = layer
                         self.layer_names_dict['DeepONet']['Trunk'+temp_str]['TransFun'] = layer_name
 
-
         # Trunk-Rigid Blocks Coupling Layers
         if (self.n_rigids > 0):
             for i_trunk in range(self.n_trunks):
@@ -133,10 +132,9 @@ class DeepONet(NN):
                 for i_branch in range(self.n_branches):
                     self.layers_dict['DeepONet']['Branch_'+str(i_branch+1)]['Post'] = system_post_layer(self.system_post_layer_flg, 'DeepONet', i_branch, None)
 
-        
-        # # Softmax Layer
-        # if (self.internal_pca):
-        #     self.layers_dict['DeepONet']['SoftMax'] = tf.keras.layers.Softmax()
+
+        if (self.dotlayer_bias_flg):
+            self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
 
 
         # Output Normalizing Layer
@@ -306,6 +304,24 @@ class PCAInvLayer(tf.keras.layers.Layer):
         return tf.matmul( inputs, self.A) * self.D +  self.C
         
 #=======================================================================================================================================
+
+
+
+#=======================================================================================================================================
+class BiasLayer(tf.keras.layers.Layer):
+    def __init__(self, *args, **kwargs):
+        super(BiasLayer, self).__init__(*args, **kwargs)
+
+    def build(self, input_shape):
+        self.bias = self.add_weight('bias',
+                                    shape=input_shape[1:],
+                                    initializer='zeros',
+                                    trainable=True)
+    def call(self, x):
+        return x + self.bias
+
+#=======================================================================================================================================
+
 
 
 #=======================================================================================================================================

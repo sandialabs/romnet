@@ -81,6 +81,7 @@ def mse(axis):
         err      = tf.math.squared_difference(y_pred, y_true) 
         if attention_mask is not None:
             attention_mask = tf.convert_to_tensor(attention_mask)
+            attention_mask = tf.cast(attention_mask, y_pred.dtype)
             err           *= attention_mask**2
         # return K.mean(err, axis=-1)                          # TF
         # return tf.reduce_sum(tf.reduce_mean(err, axis=axis)) # PRODE

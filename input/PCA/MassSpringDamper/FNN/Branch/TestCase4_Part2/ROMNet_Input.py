@@ -93,13 +93,13 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 64                                                                        # Batch Size for Training
-        self.valid_batch_size    = 64                                                                        # Batch Size for Validation
-        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 500, 0.95]                                                # Instructions for Learning Rate Decay
+        self.batch_size          = 32                                                                        # Batch Size for Training
+        self.valid_batch_size    = 32                                                                        # Batch Size for Validation
+        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 500, 0.92]                                                # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-8, 1.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

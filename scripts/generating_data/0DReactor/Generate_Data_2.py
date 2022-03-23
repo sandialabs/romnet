@@ -24,7 +24,7 @@ OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
 ## FIRST TIME
 DirName            = 'train'
 n_ics               = 500
-# ## SECOND TIME
+# # SECOND TIME
 # DirName            = 'test'
 # n_ics               = 10
 

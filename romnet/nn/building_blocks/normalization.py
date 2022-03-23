@@ -71,14 +71,13 @@ class CustomNormalization(base_preprocessing_layer.PreprocessingLayer):
 
   #=============================================================================
   def __init__(self, 
-               axis      = -1, 
-               mean      = None, 
-               variance  = None, 
-               min_vals  = None, 
-               max_vals  = None, 
-               centering = 'mean', 
-               scaling   = 'auto', 
-               name      = 'custom_normalization',
+               axis              = -1, 
+               mean              = None, 
+               variance          = None, 
+               min_vals          = None, 
+               max_vals          = None, 
+               data_preproc_type = None,
+               name              = 'custom_normalization',
                **kwargs):
 
     super().__init__(name=name, dtype='float64', **kwargs)
@@ -93,8 +92,19 @@ class CustomNormalization(base_preprocessing_layer.PreprocessingLayer):
       axis = tuple(axis)
     self.axis = axis
 
-    self.centering = centering.lower()
-    self.scaling   = scaling.lower()
+    if (data_preproc_type):
+      self.data_preproc_type = data_preproc_type.lower()
+      
+      if (self.data_preproc_type in ['auto', 'std', 'pareto', 'poisson', 'level', 'vast']):
+        self.centering = 'mean'
+      elif (self.data_preproc_type in ['range']):
+        self.centering = 'none'
+      else:
+        self.centering = self.data_preproc_type
+      self.scaling     = self.data_preproc_type
+    else:
+      self.centering   = 'mean'
+      self.scaling     = 'std'
 
     # Set `mean` and `variance` if passed.
     if isinstance(mean, tf.Variable):

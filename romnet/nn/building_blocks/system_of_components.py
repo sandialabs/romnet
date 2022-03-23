@@ -100,6 +100,20 @@ class System_of_Components(object):
                 self.n_branch_out          = None
                 self.n_trunk_out           = None
 
+        try:
+            self.softmax_flg               = InputData.softmax_flg[self.name] if isinstance(InputData.softmax_flg[self.name], (int)) else False
+        except:
+            self.softmax_flg               = False
+        if (self.softmax_flg):
+            self.softmax_layer             = tf.keras.layers.Softmax()
+
+        try:
+            self.rectify_flg               = InputData.rectify_flg
+        except:
+            self.rectify_flg               = False
+        if (self.rectify_flg):
+            self.rectify_layer             = tf.keras.activations.relu
+
         print("[ROMNet - system_of_components.py   ]:     Constructing System of Components: " + self.name) 
 
 
@@ -121,6 +135,8 @@ class System_of_Components(object):
                 layers_dict[self.name][component_name]      = {}
                 layer_names_dict[self.name][component_name] = {}
             self.components[component_name]                 = Component(InputData, self.name, component_name, self.norm_input, layers_dict=layers_dict, layer_names_dict=layer_names_dict)
+
+
 
     # ---------------------------------------------------------------------------------------------------------------------------
 
@@ -179,13 +195,13 @@ class System_of_Components(object):
                 output_          = tf.keras.layers.Dot(axes=1)([y, y_trunk_vec[i_trunk]]) 
             elif (self.n_branch_out == self.n_trunk_out+2):
                 # Branch Output Layer contains Centering and Scaling
-                alpha_vec, c, d  = tf.split(y, num_or_size_splits=[self.n_trunks, 1, 1], axis=1)
+                alpha_vec, c, d  = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1, 1], axis=1)
                 output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
                 output_mult      = tf.keras.layers.multiply([output_dot,  d])            
                 output_          = tf.keras.layers.add([output_mult, c])   
             elif (self.n_branch_out == self.n_trunk_out+1):
                 # Branch Output Layer contains Centering
-                alpha_vec, c     = tf.split(y, num_or_size_splits=[self.n_trunks, 1], axis=1)
+                alpha_vec, c     = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1], axis=1)
                 output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
                 output_          = tf.keras.layers.add([output_dot, c])   
             else:
@@ -194,10 +210,10 @@ class System_of_Components(object):
 
 
 
-            if (self.system_post_layer_flg) and (self.system_post_layer_flg != 'correlation') and (not self.internal_pca):
-                output_vec.append( layers_dict[self.name]['Branch_'+str(i_branch+1)]['Post'](output_, training=training) )
-            else:
-                output_vec.append( output_ )
+            # if (self.system_post_layer_flg) and (self.system_post_layer_flg != 'correlation') and (not self.internal_pca):
+            #     output_vec.append( layers_dict[self.name]['Branch_'+str(i_branch+1)]['Post'](output_, training=training) )
+            # else:
+            output_vec.append( output_ )
             
 
         if (self.n_branches > 1):
@@ -221,12 +237,20 @@ class System_of_Components(object):
 
 
         if (self.system_post_layer_flg == 'correlation'):
-            output_final = layers_dict[self.name]['Post'](output_concat, training=training)
-        else:
-            output_final = output_concat
+            output_concat = layers_dict[self.name]['Post'](output_concat, training=training)
+        elif (self.system_post_layer_flg == 'bias'):
+            output_concat = layers_dict[self.name]['Post'](output_concat, training=training)
+        
 
+        if (self.softmax_flg):
+            output_T, output_species = tf.split(output_concat, [1,self.n_outputs-1], axis=1)
+            output_species           = self.softmax_layer(output_species)
+            output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
 
-        return output_final
+        if (self.rectify_flg):
+            output_concat            = self.rectify_layer(output_concat)
+
+        return output_concat
 
     # ---------------------------------------------------------------------------------------------------------------------------
 

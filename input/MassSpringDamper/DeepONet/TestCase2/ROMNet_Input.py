@@ -69,8 +69,8 @@ class inputdata(object):
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-10},  
-                                                  'Trunk': {'Main': 1.e-10}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 5.e-9},  
+                                                  'Trunk': {'Main': 5.e-9}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
@@ -98,7 +98,7 @@ class inputdata(object):
         # self.loss_weights        = {'pts': 1.}                                                               # Dictionary Containing Weights for Each Data Type
         ## Physics Informed
         self.losses              = {'ics': {'name': 'MSE', 'axis': 0}, 'res': {'name': 'MSE', 'axis': 0}}    # Dictionary Containing Loss Functions for Each Data Type
-        self.loss_weights        = {'ics': 1., 'res': 1.}                                                    # Dictionary Containing Weights for Each Data Type
+        self.loss_weights        = {'ics': 1., 'res': 1.}                                                # Dictionary Containing Weights for Each Data Type
         self.metrics             = None                                                                      # List of Metrics                                                          
 
         #=======================================================================================================================================
@@ -110,10 +110,10 @@ class inputdata(object):
         self.batch_size          = 32                                                                        # Mini-Batch Size
         self.valid_batch_size    = 32                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 30000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 5.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

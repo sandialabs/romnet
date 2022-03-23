@@ -47,9 +47,9 @@ SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
 
 NPerT0             = 500
 
-Integration        = ' '#'Canteras'
-rtol               = 1.e-12
-#atol               = 1.e-16
+Integration        = 'Canteras'#'Canteras'
+rtol               = 1.e-14
+atol               = 1.e-8
 SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
 ##########################################################################################
@@ -314,7 +314,7 @@ for iIC in range(n_ics):
     # tVec     = np.concatenate([[0.], np.logspace(tMin, tMax, 3000)])
     #tVec     = np.concatenate([[0.], np.logspace(-12, tMin, 20), np.logspace(tMin, tMax, 480)[1:]])
     #tVec     = np.concatenate([[0.], np.logspace(-12, -6, 100), np.logspace(-5.99999999, -1., 4899)])
-    tVec     = np.concatenate([np.logspace(-8., 0., NPerT0)])
+    tVec     = np.concatenate([np.logspace(-7., 0., NPerT0)])
     #tVec     = np.concatenate([[0.], np.linspace(1.e-12, 1.e-2, 4999)])
     #############################################################################
 
@@ -336,7 +336,7 @@ for iIC in range(n_ics):
         tVecFinal        = np.array(tVec, dtype=np.float64)
         HRVec            = [HR]
     else:
-        output           = solve_ivp( IdealGasConstPressureReactor_SciPY, (tVec[0],tVec[-1]), y0, method=SOLVER, t_eval=tVec, rtol=rtol)#, atol=atol )
+        output           = solve_ivp( IdealGasConstPressureReactor_SciPY, (tVec[0],tVec[-1]), y0, method=SOLVER, t_eval=tVec, rtol=rtol, atol=atol )
         it0              = 0
         tVecFinal        = output.t
         HRVec            = []
@@ -406,10 +406,12 @@ for iIC in range(n_ics):
         
 
     ### Writing Results
-    NSpec    = gas.n_species
-    Header   = 't,T'
+    NSpec        = gas.n_species
+    Header       = 't,T'
+    SpeciesNames = []
     for iSpec in range(NSpec):
         Header += ','+gas.species_name(iSpec)
+        SpeciesNames.append(gas.species_name(iSpec))
 
     # FileName = OutputDir+'/orig_data/States.csv.'+str(iIC+1)
     # np.savetxt(FileName, DataTemp,       delimiter=',', header=Header, comments='')
@@ -438,6 +440,28 @@ np.savetxt(FileName, np.concatenate((iStart[...,np.newaxis], iEnd[...,np.newaxis
 FileName = OutputDir+'/Orig/'+DirName+'/ext/tAutoIgnition.csv'
 Header   = 't'
 np.savetxt(FileName, AutoIgnitionVec, delimiter=',', header=Header, comments='')
+
+
+
+print('Original (', len(SpeciesNames), ') Species: ', SpeciesNames)
+VarsName    = ['T']
+if (DirName == 'train'):
+    
+    for iSpec in range(1, yMat.shape[1]):
+        if (np.amax(np.abs(yMat[1:,iSpec] - yMat[:-1,iSpec])) > 1.e-10):
+            VarsName.append(SpeciesNames[iSpec]) 
+
+    print('Non-zeros (', len(VarsName), ') Variables: ', VarsName)
+ 
+
+    ToOrig       = []
+    OrigVarNames = ['T']+SpeciesNames
+    for Var in VarsName:
+        ToOrig.append(OrigVarNames.index(Var))
+    ToOrig = np.array(ToOrig, dtype=int)
+
+    FileName = OutputDir+'/Orig/ToOrig_Mask.csv'
+    np.savetxt(FileName, ToOrig, delimiter=',')
 
 
 # ##########################################################################################

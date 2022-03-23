@@ -52,16 +52,20 @@ class Model_TF(Model):
         """
         print('\n[ROMNet - model_tf.py    ]:   Initializing the ML Model')
 
-        self.surrogate_type     = InputData.surrogate_type
+        self.surrogate_type        = InputData.surrogate_type
   
-        self.train_int_flg       = InputData.train_int_flg
-        self.path_to_load_fld    = InputData.path_to_load_fld
+        self.train_int_flg         = InputData.train_int_flg
+        self.path_to_load_fld      = InputData.path_to_load_fld
   
-        self.got_stats           = False
+        self.got_stats             = False
         try:
-            self.norm_output_flg = InputData.norm_output_flg
+            self.norm_output_flg   = InputData.norm_output_flg
         except:
-            self.norm_output_flg = False
+            self.norm_output_flg   = False
+        try:
+            self.data_preproc_type = InputData.data_preproc_type
+        except:
+            self.data_preproc_type = None
 
         if (self.train_int_flg > 0):
 
@@ -453,56 +457,21 @@ class Model_TF(Model):
             if (not self.got_stats):
                 self.read_data_statistics()
 
-            y_pred = y_pred * self.output_range + self.output_min
+            if (self.data_preproc_type == None) or (self.data_preproc_type == 'std') or (self.data_preproc_type == 'auto'):
+                y_pred = y_pred * self.output_std + self.output_mean
 
-        return y_pred
+            elif (self.data_preproc_type == '0to1'):
+                y_pred = y_pred * self.output_range + self.output_min
 
-    #===========================================================================
+            elif (self.data_preproc_type == 'range'):
+                y_pred = y_pred * self.output_range
 
+            elif (self.data_preproc_type == '-1to1'):
+                y_pred = (y_pred + 1.)/2. * self.output_range + self.output_min
 
+            elif (self.data_preproc_type == 'pareto'):
+                y_pred = y_pred * np.sqrt(self.output_std) + self.output_mean
 
-    #===========================================================================
-    def predict_test(self, input_data):
-        """
-
-        Args:
-            
-            
-        """
-
-        y_pred = self.net.call_predict_deeponet_1(input_data)
-
-        # if (self.norm_output_flg):
-
-        #     if (not self.got_stats):
-        #         self.read_data_statistics()
-
-        #     y_pred = y_pred * self.output_range + self.output_min
-
-        return y_pred
-
-    #===========================================================================
-
-
-
-
-    #===========================================================================
-    def predict_test_2(self, input_data):
-        """
-
-        Args:
-            
-            
-        """
-
-        y_pred = self.net.call_predict_deeponet_2(input_data)
-
-        # if (self.norm_output_flg):
-
-        #     if (not self.got_stats):
-        #         self.read_data_statistics()
-
-        #     y_pred = y_pred * self.output_range + self.output_min
 
         return y_pred
 

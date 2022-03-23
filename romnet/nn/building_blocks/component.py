@@ -82,6 +82,11 @@ class Component(object):
         except:
             self.transfered_model = None
 
+        try:
+            self.data_preproc_type = InputData.data_preproc_type
+        except:
+            self.data_preproc_type = 'std'
+
 
         self.call                 = self.call_classic
                 
@@ -107,7 +112,7 @@ class Component(object):
                 variance = self.transfered_model.get_layer(layer_name).variance.numpy()
                 min_vals = self.transfered_model.get_layer(layer_name).min_vals.numpy()
                 max_vals = self.transfered_model.get_layer(layer_name).max_vals.numpy()
-                layer    = CustomNormalization(mean=mean, variance=variance, min_vals=min_vals, max_vals=max_vals, name=layer_name)
+                layer    = CustomNormalization(mean=mean, variance=variance, min_vals=min_vals, max_vals=max_vals, name=layer_name, data_preproc_type=self.data_preproc_type)
             else:
                 layer    = CustomNormalization(name=layer_name)
                 layer.adapt(np.array(self.norm_input))
@@ -146,24 +151,30 @@ class Component(object):
     def call_classic(self, inputs, layers_dict, shift, stretch, training=False):
 
         trans_flg = False
-        if ('TransFun' in layers_dict[self.system_name][self.name]):
-            trans_flg = True
+        try:
+            if ('TransFun' in layers_dict[self.system_name][self.type]):
+                trans_flg = True
+                comp_flg  = self.type
+        except:
+            if ('TransFun' in layers_dict[self.system_name][self.name]):
+                trans_flg = True
+                comp_flg  = self.name
 
         if (stretch is not None):
             if (trans_flg):
-                inputs = layers_dict[self.system_name][self.name]['Stretch']([inputs, tf.math.softplus(stretch)])
+                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, tf.math.softplus(stretch)])
             else:
-                inputs = layers_dict[self.system_name][self.name]['Stretch']([inputs, stretch])
+                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, stretch])
 
         if (shift   is not None):
-            if (trans_flg):
-                inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
-                inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
-            else:
-                inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, shift])
+            # if (trans_flg):
+            #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
+            #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
+            # else:
+            inputs = layers_dict[self.system_name][comp_flg]['Shift']([inputs, shift])
             
         if (trans_flg):
-            inputs = layers_dict[self.system_name][self.name]['TransFun'](inputs)
+            inputs = layers_dict[self.system_name][comp_flg]['TransFun'](inputs)
 
         return self.sub_components['Main'].call(inputs, training)
 

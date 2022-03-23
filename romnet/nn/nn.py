@@ -1,6 +1,7 @@
 import numpy as np
 import os 
 import h5py
+import sys
 
 import tensorflow_probability                   as tfp
 
@@ -12,11 +13,17 @@ from tensorflow.python.keras                import backend
 from tensorflow.python.keras.saving         import saving_utils
 from tensorflow.python.training.tracking    import util as trackable_utils
 from tensorflow.python.keras.utils.io_utils import path_to_string
-  
+from tensorflow.python.keras.engine         import data_adapter
+from tensorflow.python.keras.utils          import losses_utils
+
+from keras.utils                            import traceback_utils
+from keras.engine                           import base_layer
+from keras.engine                           import base_layer_utils
+
 from ..utils                                import hdf5_format
   
-from ..training                             import steps as stepss
 from ..training                             import losscontainer
+
 
 
 # pylint: disable=g-import-not-at-top
@@ -76,7 +83,6 @@ class NN(tf.keras.Model):
         self.residual       = None
 
 
-
     # Configuration update
     ###########################################################################
     def get_config(self):
@@ -98,62 +104,152 @@ class NN(tf.keras.Model):
         return cls(**config)
 
 
+    @traceback_utils.filter_traceback
     #=======================================================================================================================================
-    def compile(
-        self,
-        data,
-        optimizer           = 'rmsprop',
-        loss                = None,
-        metrics             = None,
-        loss_weights        = None,
-        weighted_metrics    = None,
-        run_eagerly         = None,
-        steps_per_execution = None,
-        **kwargs
-    ):
+    def compile(self,
+                data,
+                optimizer           = 'rmsprop',
+                loss                = None,
+                metrics             = None,
+                loss_weights        = None,
+                weighted_metrics    = None,
+                run_eagerly         = None,
+                steps_per_execution = None,
+                jit_compile         = False,
+                **kwargs):
+        """Configures the model for training.
+        Example:
+        ```python
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                                    loss=tf.keras.losses.BinaryCrossentropy(),
+                                    metrics=[tf.keras.metrics.BinaryAccuracy(),
+                                                     tf.keras.metrics.FalseNegatives()])
+        ```
+        Args:
+                optimizer: String (name of optimizer) or optimizer instance. See
+                    `tf.keras.optimizers`.
+                loss: Loss function. Maybe be a string (name of loss function), or
+                    a `tf.keras.losses.Loss` instance. See `tf.keras.losses`. A loss
+                    function is any callable with the signature `loss = fn(y_true,
+                    y_pred)`, where `y_true` are the ground truth values, and
+                    `y_pred` are the model's predictions.
+                    `y_true` should have shape
+                    `(batch_size, d0, .. dN)` (except in the case of
+                    sparse loss functions such as
+                    sparse categorical crossentropy which expects integer arrays of shape
+                    `(batch_size, d0, .. dN-1)`).
+                    `y_pred` should have shape `(batch_size, d0, .. dN)`.
+                    The loss function should return a float tensor.
+                    If a custom `Loss` instance is
+                    used and reduction is set to `None`, return value has shape
+                    `(batch_size, d0, .. dN-1)` i.e. per-sample or per-timestep loss
+                    values; otherwise, it is a scalar. If the model has multiple outputs,
+                    you can use a different loss on each output by passing a dictionary
+                    or a list of losses. The loss value that will be minimized by the
+                    model will then be the sum of all individual losses, unless
+                    `loss_weights` is specified.
+                metrics: List of metrics to be evaluated by the model during training
+                    and testing. Each of this can be a string (name of a built-in
+                    function), function or a `tf.keras.metrics.Metric` instance. See
+                    `tf.keras.metrics`. Typically you will use `metrics=['accuracy']`. A
+                    function is any callable with the signature `result = fn(y_true,
+                    y_pred)`. To specify different metrics for different outputs of a
+                    multi-output model, you could also pass a dictionary, such as
+                    `metrics={'output_a': 'accuracy', 'output_b': ['accuracy', 'mse']}`.
+                    You can also pass a list to specify a metric or a list of metrics
+                    for each output, such as `metrics=[['accuracy'], ['accuracy', 'mse']]`
+                    or `metrics=['accuracy', ['accuracy', 'mse']]`. When you pass the
+                    strings 'accuracy' or 'acc', we convert this to one of
+                    `tf.keras.metrics.BinaryAccuracy`,
+                    `tf.keras.metrics.CategoricalAccuracy`,
+                    `tf.keras.metrics.SparseCategoricalAccuracy` based on the loss
+                    function used and the model output shape. We do a similar
+                    conversion for the strings 'crossentropy' and 'ce' as well.
+                loss_weights: Optional list or dictionary specifying scalar coefficients
+                    (Python floats) to weight the loss contributions of different model
+                    outputs. The loss value that will be minimized by the model will then
+                    be the *weighted sum* of all individual losses, weighted by the
+                    `loss_weights` coefficients.
+                        If a list, it is expected to have a 1:1 mapping to the model's
+                            outputs. If a dict, it is expected to map output names (strings)
+                            to scalar coefficients.
+                weighted_metrics: List of metrics to be evaluated and weighted by
+                    `sample_weight` or `class_weight` during training and testing.
+                run_eagerly: Bool. Defaults to `False`. If `True`, this `Model`'s
+                    logic will not be wrapped in a `tf.function`. Recommended to leave
+                    this as `None` unless your `Model` cannot be run inside a
+                    `tf.function`. `run_eagerly=True` is not supported when using
+                    `tf.distribute.experimental.ParameterServerStrategy`.
+                steps_per_execution: Int. Defaults to 1. The number of batches to run
+                    during each `tf.function` call. Running multiple batches inside a
+                    single `tf.function` call can greatly improve performance on TPUs or
+                    small models with a large Python overhead. At most, one full epoch
+                    will be run each execution. If a number larger than the size of the
+                    epoch is passed, the execution will be truncated to the size of the
+                    epoch. Note that if `steps_per_execution` is set to `N`,
+                    `Callback.on_batch_begin` and `Callback.on_batch_end` methods will
+                    only be called every `N` batches (i.e. before/after each `tf.function`
+                    execution).
+                jit_compile: If `True`, compile the model training step with XLA.
+                    [XLA](https://www.tensorflow.org/xla) is an optimizing compiler for
+                    machine learning.
+                    `jit_compile` is not enabled for by default.
+                    This option cannot be enabled with `run_eagerly=True`.
+                    Note that `jit_compile=True` is
+                    may not necessarily work for all models.
+                    For more information on supported operations please refer to the
+                    [XLA documentation](https://www.tensorflow.org/xla).
+                    Also refer to
+                    [known XLA issues](https://www.tensorflow.org/xla/known_issues) for
+                    more details.
+                **kwargs: Arguments supported for backwards compatibility only.
+        """
+        base_layer.keras_api_gauge.get_cell('compile').set(True)
+        with self.distribute_strategy.scope():
+            if 'experimental_steps_per_execution' in kwargs:
+                logging.warning('The argument `steps_per_execution` is no longer '
+                                                'experimental. Pass `steps_per_execution` instead of '
+                                                '`experimental_steps_per_execution`.')
+                if not steps_per_execution:
+                    steps_per_execution = kwargs.pop('experimental_steps_per_execution')
 
-        self.data_type = data.Type
-        if self.data_type == 'PDE':
-
+            # When compiling from an already-serialized model, we do not want to
+            # reapply some processing steps (e.g. metric renaming for multi-output
+            # models, which have prefixes added for each corresponding output name).
             from_serialized = kwargs.pop('from_serialized', False)
+
 
             self._validate_compile(optimizer, metrics, **kwargs)
             self._run_eagerly = run_eagerly
 
-            # Defining optimizer
             self.optimizer = self._get_optimizer(optimizer)
 
+            # -------------------------------------------------------------------------------------------------------------------------> Changed TF
             # Defining loss containers
             self.compiled_loss = {}
             for data_id in self.data_ids:
                 _loss                                    = loss[data_id] if loss else None
                 _loss_weights                            = loss_weights[data_id] if loss_weights else None
                 self.compiled_loss[data_id]              = losscontainer.LossesContainer(_loss, loss_weights=_loss_weights, output_names=self.output_vars)
-                self.compiled_loss[data_id]._loss_metric = metrics_mod.Mean(name=data_id + '_loss')
+                self.compiled_loss[data_id]._loss_metric = metrics_mod.Mean(name=data_id + '_loss', dtype=self.dtype)
             
             # Defining metrics container
             if metrics is not None:
-                print( "[ROMNet - nn.py                     ]   WARNING! Metrics evaluation is not available." )
+                print( "[ROMNet - nn.py                     ]   WARNING! No Metrics Implemented." )
+                # self.compiled_metrics = compile_utils.MetricsContainer(metrics, weighted_metrics, output_names=self.output_names, from_serialized=from_serialized)
             self.compiled_metrics = None
+            # -------------------------------------------------------------------------------------------------------------------------> Changed TF
 
             self._configure_steps_per_execution(steps_per_execution or 1)
 
             # Initializes attrs that are reset each time `compile` is called.
             self._reset_compile_cache()
             self._is_compiled = True
-            self.loss         = loss or {}
-
-        else:
-
-            return super(NN, self).compile(
-                optimizer           = optimizer,
-                loss                = loss,
-                metrics             = metrics,
-                loss_weights        = loss_weights,
-                weighted_metrics    = weighted_metrics,
-                run_eagerly         = run_eagerly,
-                steps_per_execution = steps_per_execution,
-                **kwargs)
+            self.loss = loss or {}
+            if (self._run_eagerly or self.dynamic):
+                self._jit_compile = False
+            else:
+                self._jit_compile = jit_compile
 
     #=======================================================================================================================================
 
@@ -162,30 +258,69 @@ class NN(tf.keras.Model):
     #=======================================================================================================================================
     @property
     def metrics(self):
-        
+
         metrics = []
         if self._is_compiled:
             if self.compiled_loss is not None:
-                if isinstance(self.compiled_loss, dict):
-                    for container in self.compiled_loss.values():
-                        metrics += container.metrics
-                else:
-                    metrics += self.compiled_loss.metrics
-            if self.compiled_metrics is not None:
-                metrics += self.compiled_metrics.metrics
+                for val in self.compiled_loss.values():
+                    metrics += [val._loss_metric]
+
+        for l in self._flatten_layers():
+            metrics.extend(l._metrics)  # pylint: disable=protected-access
+        
         return metrics
 
     #=======================================================================================================================================
 
 
 
-    # Steps
     #=======================================================================================================================================
     def train_step(self, data):
-        if (self.data_type == 'PDE'):
-            return stepss.train_step(self, data)
+        """Custom train step."""
+
+        x, y, indx = data_adapter.expand_1d(data)
+
+        # Gradient descent step
+        losses = {}
+        with tf.GradientTape() as tape:
+            
+            for i, data_id in enumerate(self.data_ids_valid):
+                losses[data_id] = self._get_loss(i, x[i], y[i], tf.squeeze(indx[i]), data_id, training=True)
+
+            # Calculate total loss
+            total_loss = tf.add_n(losses_utils.cast_losses_to_common_dtype(losses.values()))
+
+
+            # Add regularization losses
+            if self.losses:
+                reg_loss    = tf.add_n(losses_utils.cast_losses_to_common_dtype(self.losses))
+                total_loss += reg_loss
+
+
+        # Update parameters
+        self.optimizer.minimize( total_loss, self.trainable_variables, tape=tape )
+
+
+        # Collect metrics
+        metrics = {m.name: m.result() for m in self.metrics}
+        if reg_loss is not None:
+            metrics.update({'reg_loss': reg_loss})
+
+        if self.pde_loss_weights is None:
+            metric = {'tot_loss': tf.add_n(metrics.values())}
         else:
-            return super(NN, self).train_step(data)
+            metric = {'tot_loss': tf.add_n(metrics.values())}        
+
+        # if self.pde_loss_weights is None:
+        #     metric = {}
+        # else:
+        #     # Add weighted total loss
+        #     metric = {'tot_loss_weighted': tot_loss_weighted}
+        # metrics = _get_metrics(tot_loss, losses, reg_loss=reg_loss)
+
+        return {**metric, **metrics}
+
+
 
     #=======================================================================================================================================
 
@@ -193,13 +328,101 @@ class NN(tf.keras.Model):
 
     #=======================================================================================================================================
     def test_step(self, data):
-        if (self.data_type == 'PDE'):
-            return stepss.test_step(self, data)
+        """Custom test step."""
+
+        x, y, indx = data_adapter.expand_1d(data)
+
+        losses = {}
+        for i, data_id in enumerate(self.data_ids_valid):
+            losses[data_id] = self._get_loss(i, x[i], y[i], indx[i], data_id, training=False)
+
+
+        # Collect metrics
+        metrics = {m.name: m.result() for m in self.metrics}
+        if self.pde_loss_weights is None:
+            metric = {'tot_loss': tf.add_n(metrics.values())}
         else:
-            return super(NN, self).test_step(data)
+            metric = {'tot_loss': tf.add_n(metrics.values())}         
+
+
+        # # Calculate total loss
+        # total_loss = tf.add_n(losses_utils.cast_losses_to_common_dtype(losses.values()))
+
+        # metrics = _get_metrics_test(total_loss, losses)
+
+        return {**metric, **metrics}
 
     #=======================================================================================================================================
 
+
+
+    #=======================================================================================================================================
+    def _get_loss(self, i, x, y, indx, data_id, training=True):
+                
+        if data_id == 'res':
+            y_pred = self.residual(x, training=training)
+            if isinstance(y_pred, (list,tuple)):
+                y = [ tf.zeros_like(y_pred_i) for y_pred_i in y_pred ]
+            else:
+                y = tf.zeros_like(y_pred)
+        else:
+            y_pred = self(x, training=training)
+            if (self.fROM_anti):
+                y_pred = self.fROM_anti(y_pred)
+
+        if ((self.attention_mask is None) or (data_id == 'pts') or (not training)):
+            attention_mask = None
+        else:
+            attention_mask = tf.gather(self.attention_mask[i], indx, axis=0)         
+        
+        if (self.pde_loss_weights):
+            loss_ = self.compiled_loss[data_id](y, y_pred, attention_mask=attention_mask) * self.pde_loss_weights[data_id]
+        else:
+            loss_ = self.compiled_loss[data_id](y, y_pred, attention_mask=attention_mask)
+
+        return loss_
+
+    #=======================================================================================================================================
+
+
+
+    #=======================================================================================================================================
+    def _get_tot_loss(self, losses, reg_loss):
+        
+        total_loss          = reg_loss 
+        total_loss_weighted = reg_loss 
+
+        for data_id, loss in losses.items():
+
+            if (self.pde_loss_weights):
+                total_loss_weighted += loss * self.pde_loss_weights[data_id] 
+            else:
+                total_loss_weighted += loss 
+            
+            total_loss += loss 
+
+        return total_loss, total_loss_weighted
+
+    #=======================================================================================================================================
+
+
+
+    #=======================================================================================================================================
+    def _get_tot_loss_test(self, losses):
+        
+        total_loss = 0.
+        for data_id, loss in losses.items():
+
+            # if self.pde_loss_weights is not None:
+            #     total_loss += self.pde_loss_weights[data_id] * loss 
+            # else:
+            #     total_loss += loss 
+
+            total_loss += loss 
+
+        return total_loss
+
+    #=======================================================================================================================================
 
 
     # Input/Output transformations
@@ -420,6 +643,30 @@ class NN(tf.keras.Model):
             layer.finalize_state()
     
     #=======================================================================================================================================
-
-
+ 
     
+
+    #=======================================================================================================================================
+    def _get_metrics(total_loss, losses, reg_loss):
+
+        metrics             = {}
+        metrics['tot_loss'] = total_loss 
+        for data_id, loss in losses.items():
+            metrics[data_id + '_loss'] = loss 
+        if reg_loss is not None:
+            metrics['reg_loss'] = reg_loss  
+        return metrics
+
+    #=======================================================================================================================================
+
+
+
+    #=======================================================================================================================================
+    def _get_metrics_test(total_loss, losses):
+        metrics             = {}
+        metrics['tot_loss'] = total_loss 
+        for data_id, loss in losses.items():
+            metrics[data_id + '_loss'] = loss 
+        return metrics
+
+    #=======================================================================================================================================   
