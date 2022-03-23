@@ -133,8 +133,8 @@ class DeepONet(NN):
                     self.layers_dict['DeepONet']['Branch_'+str(i_branch+1)]['Post'] = system_post_layer(self.system_post_layer_flg, 'DeepONet', i_branch, None)
 
 
-        if (self.dotlayer_bias_flg):
-            self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
+        # if (self.dotlayer_bias_flg):
+        #     self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
 
 
         # Output Normalizing Layer
