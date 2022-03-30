@@ -2,21 +2,18 @@
 from .nn              import load_model_, load_weights_
 
 from .fnn             import FNN
-# from .fnn_bbb         import FNN_BbB
+from .vi_fnn          import VI_FNN
 
 from .deeponet        import DeepONet
+from .vi_deeponet     import VI_DeepONet
 from .double_deeponet import Double_DeepONet
-# from .deeponet_bbb    import DeepONet_BbB 
-
-#from .autoencoder     import AutoEncoder
 
 __all__ = [
     "load_model_",
     "load_weights_",
     "FNN",
-    # "FNN_BbB"
+    "VI_FNN",
     "DeepONet",
-    # "DeepONet_BbB",
+    "VI_DeepONet",
     "Double_DeepONet",
-    # "AutoEncoder",
 ]

@@ -6,6 +6,7 @@ from tensorflow.keras       import activations
 from tensorflow.keras       import initializers
 
 from ...training            import L1L2Regularizer
+from .layer                 import Layer
 
 
 #=======================================================================================================================================
@@ -47,44 +48,54 @@ class Sub_Component(object):
 
 
         try:
-            self.trainable_flg    = InputData.trainable_flg[self.system_name]
+            self.layer_type       = InputData.layer_type[self.system_name][self.component_type][self.name]
             notfnd_flg            = False
         except:
-            self.trainable_flg    = 'all'
-            notfnd_flg            = True
-        if notfnd_flg:
             try:
-                self.trainable_flg    = InputData.trainable_flg[self.system_name][self.component_type]
-                notfnd_flg            = False
+                self.layer_type   = InputData.layer_type[self.system_name][self.component_name][self.name]
             except:
-                self.trainable_flg    = 'all'
-                notfnd_flg            = True
-        if notfnd_flg:
-            try:
-                self.trainable_flg    = InputData.trainable_flg[self.system_name][self.component_type][self.name]
-            except:
-                self.trainable_flg    = 'all'
+                self.layer_type   = ['TF']*self.n_layers
 
 
         try:
-            self.dropout_rate     = InputData.dropout_rate[self.system_name][self.component_type][self.name]
-            notfnd_flg            = False
+            self.trainable_flg     = InputData.trainable_flg[self.system_name]
+            notfnd_flg             = False
         except:
-            self.dropout_rate     = None 
-            notfnd_flg            = True
+            self.trainable_flg     = 'all'
+            notfnd_flg             = True
         if notfnd_flg:
             try:
-                self.dropout_rate     = InputData.dropout_rate[self.system_name][self.component_name][self.name]
+                self.trainable_flg = InputData.trainable_flg[self.system_name][self.component_type]
+                notfnd_flg         = False
             except:
-                self.dropout_rate     = None 
+                self.trainable_flg = 'all'
+                notfnd_flg         = True
+        if notfnd_flg:
+            try:
+                self.trainable_flg = InputData.trainable_flg[self.system_name][self.component_type][self.name]
+            except:
+                self.trainable_flg = 'all'
 
 
         try:
-            self.dropout_pred_flg = InputData.dropout_pred_flg[self.system_name][self.component_type][self.name]
-            notfnd_flg            = False
+            self.dropout_rate      = InputData.dropout_rate[self.system_name][self.component_type][self.name]
+            notfnd_flg             = False
         except:
-            self.dropout_pred_flg = False
-            notfnd_flg            = True
+            self.dropout_rate      = None 
+            notfnd_flg             = True
+        if notfnd_flg:
+            try:
+                self.dropout_rate  = InputData.dropout_rate[self.system_name][self.component_name][self.name]
+            except:
+                self.dropout_rate  = None 
+
+
+        try:
+            self.dropout_pred_flg  = InputData.dropout_pred_flg[self.system_name][self.component_type][self.name]
+            notfnd_flg             = False
+        except:
+            self.dropout_pred_flg  = False
+            notfnd_flg             = True
         if notfnd_flg:
             try:
                 self.dropout_pred_flg = InputData.dropout_pred_flg[self.system_name][self.component_name][self.name]
@@ -93,85 +104,43 @@ class Sub_Component(object):
 
 
         try:
-            self.softmax_flg      = InputData.softmax_flg[self.system_name][self.component_type][self.name]
-            notfnd_flg            = False
+            self.softmax_flg       = InputData.softmax_flg[self.system_name][self.component_type][self.name]
+            notfnd_flg             = False
         except:
-            self.softmax_flg      = None
-            notfnd_flg            = True
+            self.softmax_flg       = None
+            notfnd_flg             = True
         if notfnd_flg:
             try:
-                self.softmax_flg      = InputData.softmax_flg[self.system_name][self.component_name][self.name]
+                self.softmax_flg   = InputData.softmax_flg[self.system_name][self.component_name][self.name]
             except:
-                self.softmax_flg      = None
+                self.softmax_flg   = None
 
 
-        self.weight_decay_coeffs  = InputData.weight_decay_coeffs
+        self.weight_decay_coeffs   = InputData.weight_decay_coeffs
         
         try:
-            self.transfered_model = InputData.transfered_model
+            self.transfered_model  = InputData.transfered_model
         except:
-            self.transfered_model = None
+            self.transfered_model  = None
 
 
-
-        ### Weights L1 and L2 Regularization Coefficients 
-        kW1     = self.weight_decay_coeffs[0]
-        kW2     = self.weight_decay_coeffs[1]
 
         for i_layer in range(self.n_layers):
             layer_name = self.long_name + '-HL_' + str(i_layer+1)
-            n_neurons  = self.n_neurons[i_layer]
-            act_fun    = self.act_funcs[i_layer]
             self.layer_names.append(layer_name)
 
-
-            # Parameters Initialization
-            ### Biases L1 and L2 Regularization Coefficients 
-            if (i_layer < self.n_layers-1):
-                if (len(self.weight_decay_coeffs) == 2):
-                    kb1 = kW1
-                    kb2 = kW2
-                else:
-                    kb1 = self.weight_decay_coeffs[2]
-                    kb2 = self.weight_decay_coeffs[3]
-            else:
-                kb1 = 0.
-                kb2 = 0.
-
-            if (self.transfered_model is not None):
-                W0    = self.transfered_model.get_layer(layer_name).kernel.numpy()
-                b0    = self.transfered_model.get_layer(layer_name).bias.numpy()
-                W_ini = tf.keras.initializers.RandomNormal(mean=W0, stddev=1.e-10)
-                b_ini = tf.keras.initializers.RandomNormal(mean=b0, stddev=1.e-10)
-                W_reg = L1L2Regularizer(kW1, kW2, W0)
-                b_reg = L1L2Regularizer(kb1, kb2, b0)
-            else:
-                W_ini = 'he_normal' if (act_fun == 'relu') else 'glorot_normal'
-                b_ini = 'zeros'
-                W_reg = regularizers.l1_l2(l1=kW1, l2=kW2)
-                b_reg = regularizers.l1_l2(l1=kb1, l2=kb2)
-
-            # Constructing Kera Layer
-            layer = tf.keras.layers.Dense(units              = n_neurons,
-                                          activation         = act_fun,
-                                          use_bias           = True,
-                                          kernel_initializer = W_ini,
-                                          bias_initializer   = b_ini,
-                                          kernel_regularizer = W_reg,
-                                          bias_regularizer   = b_reg,
-                                          name               = layer_name)
-
-
-            # Trainable Layer?
-            if (self.trainable_flg.lower() == 'none'):
-                layer.trainable = False
-            elif (self.trainable_flg.lower() == 'only_last'):
-                if (i_layer < self.n_layers-1):
-                    layer.trainable = False
-
-
-            # Add Layer to the List
-            self.layers_vec.append(layer)
+            # Adding Layer
+            layer      =  Layer(InputData, 
+                                layer_type       = self.layer_type[i_layer],
+                                i_layer          = i_layer, 
+                                n_layers         = self.n_layers, 
+                                layer_name       = layer_name, 
+                                n_neurons        = self.n_neurons[i_layer], 
+                                act_func         = self.act_funcs[i_layer], 
+                                use_bias         = True, 
+                                trainable_flg    = self.trainable_flg, 
+                                transfered_model = self.transfered_model)
+            self.layers_vec.append(layer.build())
 
 
             # Adding Dropout if Needed
@@ -179,7 +148,7 @@ class Sub_Component(object):
 
                 layer_name              = self.long_name + '-Dropout_' + str(i_layer+1)
                 self.layer_names.append(layer_name)
-                dropout_layer           = tf.keras.layers.Dropout(self.dropout_rate, input_shape=(n_neurons,))
+                dropout_layer           = tf.keras.layers.Dropout(self.dropout_rate, input_shape=(self.n_neurons[i_layer],))
                 dropout_layer.trainable = self.dropout_pred_flg
                 self.layers_vec.append( dropout_layer )
         

@@ -55,15 +55,15 @@ class inputdata(object):
         self.surrogate_type       = 'FNN'                                                                    # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg       = True                                                                     # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun            = None #{'log': ['t']}                                                     # Dictionary Containing Functions to Be Applied to Input Data 
-        self.norm_output_flg      = False                                                                    # Flag for Normalizing Output Data
-        self.output_vars          = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]#+['C']+['D']    # List Containing the Output Data Variable Names for each System
+        self.norm_output_flg      = True                                                                     # Flag for Normalizing Output Data
+        self.output_vars          = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]+['C']+['D']     # List Containing the Output Data Variable Names for each System
         self.input_vars_all       = ['x','v']                                                                # List Containing all the Input Data Variable Names
         self.input_vars           = {'FNN': {'FNN': self.input_vars_all}}                                    # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg       = {'FNN': {'FNN': True}}                                                   # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure            = {'FNN': {'FNN': ['Main']}}                                               # Dictionary Containing the Structure of the Network
-        self.n_neurons            = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.n_modes])}}}            # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons            = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.n_modes+2])}}}          # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs            = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','linear']}}}              # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate         = {'FNN': {'FNN': {'Main': 1.e-10}}}                                       # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_rate         = {'FNN': {'FNN': {'Main': 1.e-3}}}                                         # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg     = {'FNN': {'FNN': {'Main': False}}}                                        # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg          = {'FNN': {'FNN': {'Main': False}}}                                        # Dictionary Containing the Softmax Flag for each Sub-Component 
         # self.structure           = {'FNN': {'FNN': ['Main', 'U', 'V']}}                                    # Dictionary Containing the Structure of the Network
@@ -93,13 +93,13 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 32                                                                        # Batch Size for Training
-        self.valid_batch_size    = 32                                                                        # Batch Size for Validation
-        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 500, 0.92]                                                # Instructions for Learning Rate Decay
+        self.batch_size          = 40                                                                        # Batch Size for Training
+        self.valid_batch_size    = 20                                                                        # Batch Size for Validation
+        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 500, 0.90]                                               # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-9, 1.e-9], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

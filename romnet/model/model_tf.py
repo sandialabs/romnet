@@ -252,8 +252,8 @@ class Model_TF(Model):
             tf.keras.utils.plot_model(self.graph, self.path_to_run_fld + 
                                                                  "/Model/Model.png")
 
-        ModelFile = self.path_to_run_fld + '/Model/' + self.net.structure_name + '/'
-        self.graph.save(ModelFile)
+            ModelFile = self.path_to_run_fld + '/Model/' + self.net.structure_name + '/'
+            self.graph.save(ModelFile)
 
         #-----------------------------------------------------------------------
 

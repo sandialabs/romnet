@@ -22,7 +22,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ##########################################################################################
 ### Input Data
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
 # FigDir             = OutputDir + '/fig/'
 
 MixtureFile        = 'gri30.yaml'
@@ -369,7 +369,7 @@ for iIC in range(n_ics):
         HRVec.append(HR)
         it+=1 
         
-    AutoIgnitionVec[iIC,0]   = tVecFinal[HRVec.index(max(HRVec))+it0]   
+    #AutoIgnitionVec[iIC,0]   = tVecFinal[HRVec.index(max(HRVec))+it0]   
     ### print('Auto Ignition Delay = ', auto_ignition)
 
 
@@ -447,7 +447,7 @@ print('Original (', len(SpeciesNames), ') Species: ', SpeciesNames)
 VarsName    = ['T']
 if (DirName == 'train'):
     
-    for iSpec in range(1, yMat.shape[1]):
+    for iSpec in range(1, yMat.shape[1]-1):
         if (np.amax(np.abs(yMat[1:,iSpec] - yMat[:-1,iSpec])) > 1.e-10):
             VarsName.append(SpeciesNames[iSpec]) 
 
