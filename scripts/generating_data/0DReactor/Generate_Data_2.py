@@ -18,7 +18,8 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 ###
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
 # FigDir             = OutputDir + '/fig/'
 
 ## FIRST TIME

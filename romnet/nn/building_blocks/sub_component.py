@@ -180,9 +180,12 @@ class Sub_Component(object):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
-        y = inputs        
+        y = inputs     
         for i_layer in range(self.n_layers):
-            y = self.layers_vec[i_layer](y, training=training)
+            training_ = training
+            if ('Dropout' in self.layer_names[i_layer]) and (training == False):
+                training_ = self.layers_vec[i_layer].trainable
+            y = self.layers_vec[i_layer](y, training=training_)
 
         return y
 
