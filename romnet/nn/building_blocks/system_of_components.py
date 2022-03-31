@@ -47,10 +47,10 @@ class System_of_Components(object):
         except:
             self.internal_pca_flg              = False
 
-        if (self.type == 'FNN'):    
+        if ('FNN' in self.type):    
             self.call                      = self.call_fnn
 
-        elif (self.type == 'DeepONet'):    
+        elif ('DeepONet' in self.type):    
             self.call                      = self.call_deeponet
 
             self.n_branches                = len([name for name in self.structure[self.name].keys() if 'Branch' in name])

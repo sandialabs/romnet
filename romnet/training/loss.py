@@ -132,7 +132,8 @@ def zero(*args):
 def nll(axis): 
     def negative_log_likelihood(y, distr, attention_mask=None):
         #y_true   = tf.cast(y_true, y_pred.dtype)
-        return K.sum( -distr.log_prob(y), axis=-1)
+        #return K.sum( -distr.log_prob(y), axis=-1)
+        return -distr.log_prob(y)
     return negative_log_likelihood
 
 

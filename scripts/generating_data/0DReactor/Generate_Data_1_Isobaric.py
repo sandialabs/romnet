@@ -22,14 +22,15 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ##########################################################################################
 ### Input Data
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
 # FigDir             = OutputDir + '/fig/'
 
 MixtureFile        = 'gri30.yaml'
 
 P0                 = ct.one_atm
 
-## FIRST TIME
+# FIRST TIME
 DirName            = 'train'
 n_ics              = 500
 T0Exts             = np.array([1000., 2000.], dtype=np.float64)
@@ -325,6 +326,8 @@ for iIC in range(n_ics):
     states           = ct.SolutionArray(gas, 1, extra={'t': [0.0]})
     
     if (Integration == 'Canteras'):
+        delta_T_max      = 5.
+        r.set_advance_limit('temperature', delta_T_max)
         TT               = r.T
         YY               = r.thermo.Y
         Vec              = np.concatenate(([TT],YY), axis=0)
@@ -369,7 +372,7 @@ for iIC in range(n_ics):
         HRVec.append(HR)
         it+=1 
         
-    AutoIgnitionVec[iIC,0]   = tVecFinal[HRVec.index(max(HRVec))+it0]   
+    #AutoIgnitionVec[iIC,0]   = tVecFinal[HRVec.index(max(HRVec))+it0]   
     ### print('Auto Ignition Delay = ', auto_ignition)
 
 
@@ -449,7 +452,7 @@ if (DirName == 'train'):
     
     for iSpec in range(1, yMat.shape[1]):
         if (np.amax(np.abs(yMat[1:,iSpec] - yMat[:-1,iSpec])) > 1.e-10):
-            VarsName.append(SpeciesNames[iSpec]) 
+            VarsName.append(SpeciesNames[iSpec-1]) 
 
     print('Non-zeros (', len(VarsName), ') Variables: ', VarsName)
  
@@ -463,6 +466,11 @@ if (DirName == 'train'):
     FileName = OutputDir+'/Orig/ToOrig_Mask.csv'
     np.savetxt(FileName, ToOrig, delimiter=',')
 
+
+    FileName = OutputDir+'/Orig/'+DirName+'/ext/CleanVars.csv'
+    StrSep = ','
+    with open(FileName, 'w') as the_file:
+        the_file.write(StrSep.join(VarsName)+'\n')
 
 # ##########################################################################################
 
