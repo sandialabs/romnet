@@ -22,13 +22,30 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ##########################################################################################
 ### Input Data
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
-# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
-# FigDir             = OutputDir + '/fig/'
+### HYDROGEN
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+Fuel0              = 'H2:1.0'         
+Oxydizer0          = 'O2:1.0, N2:4.0'
+t0                 = 1.e-7
+tEnd               = 1.0
+
+# ### METHANE
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+# Fuel0              = 'CH4:1.0'
+# Oxydizer0          = 'O2:0.21, N2:0.79'
+# t0                 = 1.e-7
+# tEnd               = 0.
 
 MixtureFile        = 'gri30.yaml'
-
 P0                 = ct.one_atm
+
+NtInt              = 5000
+# Integration        = 'Canteras'
+# delta_T_max        = 1.
+Integration        = ''
+rtol               = 1.e-12
+atol               = 1.e-8
+SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
 # FIRST TIME
 DirName            = 'train'
@@ -37,6 +54,8 @@ T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
 SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
+NPerT0             = 500
+
 # ## SECOND TIME
 # DirName            = 'test'
 # n_ics              = 10
@@ -44,14 +63,10 @@ SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 # X0Exts             = None
 # SpeciesVec         = None
+# NPerT0             = 500
 
 
-NPerT0             = 500
 
-Integration        = 'Canteras'#'Canteras'
-rtol               = 1.e-14
-atol               = 1.e-8
-SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
 ##########################################################################################
 
@@ -247,9 +262,7 @@ for iIC in range(n_ics):
     gas.TP  = T0, P0
 
     if (EqRatio0Exts is not None):
-        # gas.set_equivalence_ratio(EqRatio0, 'CH4:1.0', 'O2:0.21, N2:0.79')
-        # gas.set_equivalence_ratio(EqRatio0, 'CH4:1.0', 'O2:1.0')
-        gas.set_equivalence_ratio(EqRatio0, 'H2:1.0', 'O2:1.0, N2:4.0')
+        gas.set_equivalence_ratio(EqRatio0, Fuel0, Oxydizer0)
 
     elif (X0Exts is not None) and (SpeciesVec is not None):
         SpecDict = {}
@@ -315,18 +328,15 @@ for iIC in range(n_ics):
     # tVec     = np.concatenate([[0.], np.logspace(tMin, tMax, 3000)])
     #tVec     = np.concatenate([[0.], np.logspace(-12, tMin, 20), np.logspace(tMin, tMax, 480)[1:]])
     #tVec     = np.concatenate([[0.], np.logspace(-12, -6, 100), np.logspace(-5.99999999, -1., 4899)])
-    tVec     = np.concatenate([np.logspace(-7., 0., NPerT0)])
+    tVec     = np.concatenate([[1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt)])
     #tVec     = np.concatenate([[0.], np.linspace(1.e-12, 1.e-2, 4999)])
     #############################################################################
-
-    
 
 
     gas_             = gas
     states           = ct.SolutionArray(gas, 1, extra={'t': [0.0]})
     
     if (Integration == 'Canteras'):
-        delta_T_max      = 5.
         r.set_advance_limit('temperature', delta_T_max)
         TT               = r.T
         YY               = r.thermo.Y
@@ -473,4 +483,3 @@ if (DirName == 'train'):
         the_file.write(StrSep.join(VarsName)+'\n')
 
 # ##########################################################################################
-

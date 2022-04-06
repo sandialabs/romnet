@@ -118,30 +118,26 @@ class VI_FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
-        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
+                inputs = self.layers_dict[system_name]['PCALayer'](inputs)
+            hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=training)
             hypers_vec.append(hyper)
 
-
         if (self.n_hypers == 1):
-            hypers = hypers_vec[0]
-            
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=self.sigma_like)
-                return dist
-       
-        elif (self.n_hypers == 2):
-            hypers = tf.keras.layers.Concatenate(axis=1)(hypers_vec)
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=1e-8 + tf.math.softplus(0.05 * params[:,self.n_outputs:])) 
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0]
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
+                return dist
+        
+        elif (self.n_hypers == 2):
+
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0] 
+                sd   = hypers_vec[1] 
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.nn.relu(sd)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers) 
@@ -154,31 +150,26 @@ class VI_FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_predict(self, inputs):
 
-        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-
-
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=False)
+                inputs = self.layers_dict[system_name]['PCALayer'](inputs)
+            hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=False)
             hypers_vec.append(hyper)
 
-
         if (self.n_hypers == 1):
-            hypers = hypers_vec[0]
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=self.sigma_like)
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0]
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
                 return dist
         
         elif (self.n_hypers == 2):
-            hypers = tf.keras.layers.Concatenate(axis=1)(hypers_vec)
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=1e-8 + tf.math.softplus(0.05 * params[:,self.n_outputs:])) 
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0] 
+                sd   = hypers_vec[1] 
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.nn.relu(sd)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers) 

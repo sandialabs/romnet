@@ -18,23 +18,23 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 ###
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 # OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
-# FigDir             = OutputDir + '/fig/'
 
-## FIRST TIME
-DirName            = 'train'
-n_ics               = 500
-# # SECOND TIME
-# DirName            = 'test'
-# n_ics               = 10
-
-iSimVec            = range(n_ics)
-
-NVarsRed           = 25
+NVarsRed           = 10
 
 scale              = 'lin'
 MinVal             = 1.e-20
+
+# ## FIRST TIME
+# DirName            = 'train'
+# n_ics              = 500
+
+# SECOND TIME
+DirName            = 'test'
+n_ics              = 10
+
+iSimVec            = range(n_ics)
 ##########################################################################################
 
 
