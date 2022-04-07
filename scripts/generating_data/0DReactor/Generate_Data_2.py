@@ -18,7 +18,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 ###
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_50Cases_H2_Sources/'
 # OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
 
 NVarsRed           = 10
@@ -28,13 +28,16 @@ MinVal             = 1.e-20
 
 # ## FIRST TIME
 # DirName            = 'train'
-# n_ics              = 500
+# n_ics              = 50
 
 # SECOND TIME
 DirName            = 'test'
 n_ics              = 10
 
 iSimVec            = range(n_ics)
+
+ReadFlg            = True
+ReadDir            = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 ##########################################################################################
 
 
@@ -101,6 +104,7 @@ for iSim in iSimVec:
 
 
 
+
 ### Removing Constant Features
 tOrig        = yMatCSV[:,0]
 FileName = OutputDir+'/Orig/'+DirName+'/ext/t.csv'
@@ -119,11 +123,13 @@ elif (scale == 'log10'):
 ySource      = ySourceTemp[:,0][...,np.newaxis]
 
 print('[PCA] Original (', len(SpeciesNames), ') Species: ', SpeciesNames)
-VarsName    = ['T']
+VarsName_    = pd.read_csv(OutputDir+'/Orig/train/ext/CleanVars.csv', header=None).to_numpy('str')[0,:]
+VarsName     = ['T']
 if (DirName == 'train'):
     
     for iSpec in range(1, yMatTemp.shape[1]):
-        if (np.amax(np.abs(yMatTemp[1:,iSpec] - yMatTemp[:-1,iSpec])) > 1.e-10):
+        #if (np.amax(np.abs(yMatTemp[1:,iSpec] - yMatTemp[:-1,iSpec])) > 1.e-8):
+        if (SpeciesNames[iSpec] in VarsName_):
             yMatOrig = np.concatenate((yMatOrig, yMatTemp[:,iSpec][...,np.newaxis]), axis=1)
             if   (scale == 'lin'):
                 yMat     = np.concatenate((yMat,        yMatTemp[:,iSpec][...,np.newaxis]), axis=1)
@@ -276,7 +282,7 @@ with open(FileName, 'w') as the_file:
 #['['level', 'pareto', 'range', 'std', 'vast']', 'pareto', 'range', 'std', 'vast']
 
 ### 
-if (DirName == 'train'):
+if (DirName == 'train') and (ReadFlg == False):
 
     pca        = PCAA(yMat, scaling='pareto', n_components=NVarsRed, nocenter=False)
     C          = pca.X_center
@@ -297,15 +303,17 @@ if (DirName == 'train'):
     np.savetxt(FileName, D, delimiter=',')
 
 else:
-    FileName = OutputDir+'/'+str(NVarsRed)+'PC/ROM/A.csv'
+    if (ReadFlg == False):
+        ReadDir = OutputDir
+    FileName = ReadDir+'/'+str(NVarsRed)+'PC/ROM/A.csv'
     A        = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()
     AT       = A.T
 
-    FileName = OutputDir+'/'+str(NVarsRed)+'PC/ROM/C.csv'
+    FileName = ReadDir+'/'+str(NVarsRed)+'PC/ROM/C.csv'
     C        = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()
     C        = np.squeeze(C)
 
-    FileName = OutputDir+'/'+str(NVarsRed)+'PC/ROM/D.csv'
+    FileName = ReadDir+'/'+str(NVarsRed)+'PC/ROM/D.csv'
     D        = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()
     D        = np.squeeze(D)
     print('[PCA] A                 = ', A)

@@ -54,11 +54,19 @@ class DeepONet(NN):
 
         self.trans_fun                 = InputData.trans_fun
 
-
+        try:
+            self.dotlayer_mult_flg     = InputData.dotlayer_mult_flg['DeepONet']
+        except:
+            self.dotlayer_mult_flg     = None
         try:
             self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg['DeepONet']
         except:
             self.dotlayer_bias_flg     = None
+
+        try:
+            self.data_preproc_type     = InputData.data_preproc_type
+        except:
+            self.data_preproc_type     = None
 
 
         self.norm_output_flg           = InputData.norm_output_flg
@@ -124,6 +132,11 @@ class DeepONet(NN):
 
 
         # Adding Biases to the DeepONet's Dot-Layers
+        if (self.dotlayer_mult_flg):
+            self.layers_dict['DeepONet']['MultLayer']      = MultLayer()
+
+
+            # Adding Biases to the DeepONet's Dot-Layers
         if (self.dotlayer_bias_flg):
             self.layers_dict['DeepONet']['BiasLayer']      = BiasLayer()
 
@@ -134,12 +147,13 @@ class DeepONet(NN):
         if (self.norm_output_flg) and (self.stat_output):                    
             self.output_min                                = tf.constant(stat_output['min'],  dtype=tf.keras.backend.floatx())
             self.output_max                                = tf.constant(stat_output['max'],  dtype=tf.keras.backend.floatx())
-            self.output_range                              = tf.constant(self.output_max - self.output_min,   dtype=tf.keras.backend.floatx())
+            self.output_mean                               = tf.constant(stat_output['mean'], dtype=tf.keras.backend.floatx())
+            self.output_std                                = tf.constant(stat_output['std'],  dtype=tf.keras.backend.floatx())
             
-            self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.output_range, self.output_min)
+            self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.data_preproc_type, self.output_min, self.output_max, self.output_mean, self.output_std)
             self.layer_names_dict['All']['OutputTrans']    = 'OutputTrans'
 
-            self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.output_range, self.output_min)
+            self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.data_preproc_type, self.output_min, self.output_max, self.output_mean, self.output_std)
             self.layer_names_dict['All']['OutputInvTrans'] = 'OutputInvTrans'
 
 
@@ -151,10 +165,22 @@ class DeepONet(NN):
 
         inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
 
-        if (self.internal_pca_flg):
-            inputs_branch           = self.layers_dict['DeepONet']['PCALayer'](inputs_branch)
-    
-        y                           = self.system_of_components['DeepONet'].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
+        y                           = self.system_of_components['DeepONet'].call_deeponet([inputs_branch, inputs_trunk], self.layers_dict, training=training)
+        if (self.internal_pca_flg) and (self.norm_output_flg) and (self.stat_output):
+            y                       = self.layers_dict['All']['OutputTrans'](y)
+
+        return y
+
+    # ---------------------------------------------------------------------------------------------------------------------------
+
+
+
+    # ---------------------------------------------------------------------------------------------------------------------------
+    def call_hybrid(self, inputs, training=False):
+
+        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+
+        y                           = self.system_of_components['DeepONet'].call_deeponet_hybrid([inputs_branch, inputs_trunk], self.layers_dict, training=training)
 
         return y
 
@@ -165,13 +191,12 @@ class DeepONet(NN):
     def call_predict(self, inputs):
 
         inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-
         if (self.internal_pca_flg):
             inputs_branch           = self.layers_dict['DeepONet']['PCALayer'](inputs_branch)
 
         y                           = self.system_of_components['DeepONet'].call([inputs_branch, inputs_trunk], self.layers_dict, training=False)
 
-        if (self.norm_output_flg) and (self.stat_output):                    
+        if (not self.internal_pca_flg) and (self.norm_output_flg) and (self.stat_output):                    
             y                       = self.layers_dict['All']['OutputInvTrans'](y)
 
         return y
@@ -238,13 +263,40 @@ class InputTransLayer(tf.keras.layers.Layer):
 #=======================================================================================================================================
 class OutputTransLayer(tf.keras.layers.Layer):
 
-    def __init__(self, output_range, output_min, name='OutputTrans'):
+    def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputTrans'):
         super(OutputTransLayer, self).__init__(name=name, trainable=False)
-        self.output_range = output_range
-        self.output_min   = output_min
+        self.data_preproc_type = type
+        self.output_min        = output_min
+        self.output_max        = output_max
+        self.output_mean       = output_mean
+        self.output_std        = output_std
+        self.output_range      = self.output_max - self.output_min
 
-    def call(self, inputs):
+        if (self.data_preproc_type == None) or (self.data_preproc_type == 'std') or (self.data_preproc_type == 'auto'):
+            self.call = self.call_std
+        elif (self.data_preproc_type == '0to1'):
+            self.call = self.call_0to1
+        elif (self.data_preproc_type == 'range'):
+            self.call = self.call_range
+        elif (self.data_preproc_type == '-1to1'):
+            self.call = self.call_m1to1
+        elif (self.data_preproc_type == 'pareto'):
+            self.call = self.call_pareto
+
+    def call_std(self, inputs):
+        return (inputs -  self.output_mean) / self.output_std
+
+    def call_0to1(self, inputs):
         return (inputs -  self.output_min) / self.output_range
+
+    def call_range(self, inputs):
+        return (inputs) / self.output_range
+
+    def call_m1to1(self, inputs):
+        return 2. * (inputs - self.output_min) / (self.output_range) - 1.
+
+    def call_pareto(self, inputs):
+        return (inputs -  self.output_mean) / np.sqrt(self.output_std)
         
 #=======================================================================================================================================
 
@@ -252,14 +304,41 @@ class OutputTransLayer(tf.keras.layers.Layer):
 #=======================================================================================================================================
 class OutputInvTransLayer(tf.keras.layers.Layer):
 
-    def __init__(self, output_range, output_min, name='OutputInvTrans'):
+    def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputInvTrans'):
         super(OutputInvTransLayer, self).__init__(name=name, trainable=False)
-        self.output_range = output_range
-        self.output_min   = output_min
-
-    def call(self, inputs):
-        return inputs * self.output_range + self.output_min
+        self.data_preproc_type = type
+        self.output_min        = output_min
+        self.output_max        = output_max
+        self.output_mean       = output_mean
+        self.output_std        = output_std
+        self.output_range      = self.output_max - self.output_min
         
+        if (self.data_preproc_type == None) or (self.data_preproc_type == 'std') or (self.data_preproc_type == 'auto'):
+            self.call = self.call_std
+        elif (self.data_preproc_type == '0to1'):
+            self.call = self.call_0to1
+        elif (self.data_preproc_type == 'range'):
+            self.call = self.call_range
+        elif (self.data_preproc_type == '-1to1'):
+            self.call = self.call_m1to1
+        elif (self.data_preproc_type == 'pareto'):
+            self.call = self.call_pareto
+
+    def call_std(self, inputs):
+        return inputs * self.output_std + self.output_mean
+
+    def call_0to1(self, inputs):
+        return inputs * self.output_range + self.output_min
+
+    def call_range(self, inputs):
+        return inputs * self.output_range
+
+    def call_m1to1(self, inputs):
+        return (inputs + 1.)/2. * self.output_range + self.output_min
+
+    def call_pareto(self, inputs):
+        return inputs * np.sqrt(self.output_std) + self.output_mean
+
 #=======================================================================================================================================
 
 
@@ -272,9 +351,6 @@ class PCALayer(tf.keras.layers.Layer):
         self.AT = A.T
         self.C  = C
         self.D  = D
-
-        print('self.C = ', self.C)
-        print('self.D = ', self.D)
 
     def call(self, inputs):
         return tf.matmul( (inputs -  self.C) / self.D, self.AT ) 
@@ -310,5 +386,22 @@ class BiasLayer(tf.keras.layers.Layer):
                                     trainable=True)
     def call(self, x):
         return x + self.bias
+
+#=======================================================================================================================================
+
+
+
+#=======================================================================================================================================
+class MultLayer(tf.keras.layers.Layer):
+    def __init__(self, *args, **kwargs):
+        super(MultLayer, self).__init__(*args, **kwargs)
+
+    def build(self, input_shape):
+        self.stretch = self.add_weight('stretch',
+                                       shape=input_shape[1:],
+                                       initializer='ones',
+                                       trainable=True)
+    def call(self, x):
+        return x * self.stretch
 
 #=======================================================================================================================================

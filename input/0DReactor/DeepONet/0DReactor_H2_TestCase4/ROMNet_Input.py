@@ -24,7 +24,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_atol/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -61,7 +61,7 @@ class inputdata(object):
 
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_atol/Orig/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_H2/Orig/'                # Path To Training Data Folder 
         FileName   = self.path_to_data_fld+'/train/ext/CleanVars.csv'
         Vars       = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
         self.Vars  = list(Vars)
@@ -103,7 +103,7 @@ class inputdata(object):
                                                   'Rigid': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': False}                                                        # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.system_post_layer_flg = None
+        self.dotlayer_bias_flg   = {'DeepONet': False}
 
         #=======================================================================================================================================
         ### Losses

@@ -49,9 +49,9 @@ class VI_FNN(NN):
             self.internal_pca_flg = False
 
         try:
-            self.sigma_like            = InputData.sigma_like
+            self.sigma_like       = InputData.sigma_like
         except:
-            self.sigma_like            = None
+            self.sigma_like       = None
 
         print("\n[ROMNet - fnn.py                    ]:   Constructing Variational-Inference Feed-Forward Network: ") 
 
@@ -93,11 +93,6 @@ class VI_FNN(NN):
             self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
-            # # Softmax Layer
-            # if (self.internal_pca_flg):
-            #     self.layers_dict['FNN']['SoftMax'] = tf.keras.layers.Softmax()
-
-
             # # Output Normalizing Layer
             # self.norm_output_flg             = InputData.norm_output_flg
             # self.stat_output                 = stat_output
@@ -121,7 +116,10 @@ class VI_FNN(NN):
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs = self.layers_dict[system_name]['PCALayer'](inputs)
+                inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+                inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+                inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+
             hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=training)
             hypers_vec.append(hyper)
 
@@ -153,7 +151,10 @@ class VI_FNN(NN):
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs = self.layers_dict[system_name]['PCALayer'](inputs)
+                inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+                inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+                inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+
             hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=False)
             hypers_vec.append(hyper)
 

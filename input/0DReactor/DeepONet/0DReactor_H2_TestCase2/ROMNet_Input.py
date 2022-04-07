@@ -12,7 +12,7 @@ class inputdata(object):
         self.i_redSel            = range(self.NRODs)
         self.NRODsSel            = len(self.i_redSel)
 
-        self.n_modes             = 8                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 16                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
         self.ROM_pred_flg        = True
 
         #=======================================================================================================================================
@@ -57,7 +57,7 @@ class inputdata(object):
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
                                                   'Rigid': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
-        self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
+        self.norm_output_flg     = False                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
 
         self.internal_pca_flg    = False
@@ -103,9 +103,9 @@ class inputdata(object):
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([16,16,16,self.n_branch_out])},  
-                                                  'Rigid': {'Main': np.array([16,16,16,self.n_trunks])},
-                                                  'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
+                                                  'Rigid': {'Main': np.array([32,32,32,self.n_trunks])},
+                                                  'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                   'Rigid': {'Main': ['tanh','tanh','tanh','linear']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer

@@ -82,11 +82,6 @@ class FNN(NN):
         self.system_of_components['FNN']      = System_of_Components(InputData, 'FNN',      self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
-        # # Softmax Layer
-        # if (self.internal_pca_flg):
-        #     self.layers_dict['FNN']['SoftMax'] = tf.keras.layers.Softmax()
-
-
         # Output Normalizing Layer
         self.norm_output_flg             = InputData.norm_output_flg
         self.stat_output                 = stat_output
@@ -107,6 +102,11 @@ class FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
+        if (self.internal_pca_flg):
+            inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+            inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+            inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+
         y = self.system_of_components['FNN'].call(inputs, self.layers_dict, training=training)
 
         return y
@@ -118,6 +118,11 @@ class FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_predict(self, inputs):
 
+        if (self.internal_pca_flg):
+            inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+            inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+            inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+            
         y = self.system_of_components['FNN'].call(inputs, self.layers_dict, training=False)
 
         if (self.norm_output_flg) and (self.stat_output):                    

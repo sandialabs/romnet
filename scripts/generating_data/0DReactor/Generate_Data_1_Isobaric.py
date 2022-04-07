@@ -23,7 +23,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_50Cases_H2_Sources/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 t0                 = 1.e-7
@@ -40,30 +40,30 @@ MixtureFile        = 'gri30.yaml'
 P0                 = ct.one_atm
 
 NtInt              = 5000
-# Integration        = 'Canteras'
-# delta_T_max        = 1.
-Integration        = ''
-rtol               = 1.e-12
-atol               = 1.e-8
-SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
+Integration        = 'Canteras'
+delta_T_max        = 1.
+# Integration        = ''
+# rtol               = 1.e-12
+# atol               = 1.e-8
+# SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
-# FIRST TIME
-DirName            = 'train'
-n_ics              = 500
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
-SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
-NPerT0             = 500
-
-# ## SECOND TIME
-# DirName            = 'test'
-# n_ics              = 10
+# # FIRST TIME
+# DirName            = 'train'
+# n_ics              = 50
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# X0Exts             = None
-# SpeciesVec         = None
-# NPerT0             = 500
+# X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
+# SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
+# NPerT0             = 50
+
+## SECOND TIME
+DirName            = 'test'
+n_ics              = 10
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+X0Exts             = None
+SpeciesVec         = None
+NPerT0             = 50
 
 
 
@@ -337,7 +337,7 @@ for iIC in range(n_ics):
     states           = ct.SolutionArray(gas, 1, extra={'t': [0.0]})
     
     if (Integration == 'Canteras'):
-        r.set_advance_limit('temperature', delta_T_max)
+        #r.set_advance_limit('temperature', delta_T_max)
         TT               = r.T
         YY               = r.thermo.Y
         Vec              = np.concatenate(([TT],YY), axis=0)

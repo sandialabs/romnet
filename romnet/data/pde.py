@@ -53,6 +53,11 @@ class PDE(Data):
         except:
             self.valid_perc      = 0.
 
+        try:
+            self.internal_pca_flg= InputData.internal_pca_flg
+        except:
+            self.internal_pca_flg= False
+
         self.NData               = 0
         self.xtrain, self.ytrain = None, None
         self.xtest,  self.ytest  = None, None
@@ -132,7 +137,12 @@ class PDE(Data):
             for data_type in data:
                 for data_id in data_obj.data_ids:
 
-                    x_df   = pd.read_csv(data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/Input.csv')[data_obj.input_vars]
+                    if (self.internal_pca_flg):
+                        input_file_name = 'Input_PCA.csv'
+                    else:
+                        input_file_name = 'Input.csv'
+                    #input_file_name = 'Input.csv'
+                    x_df   = pd.read_csv(data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/'+input_file_name)[data_obj.input_vars]
                     y_df   = pd.read_csv(data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/Output.csv')[data_obj.output_vars]
                     i_df   = pd.DataFrame( np.arange(x_df.shape[0]), columns=['indx'])
 

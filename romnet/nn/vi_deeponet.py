@@ -173,6 +173,7 @@ class VI_DeepONet(NN):
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
                 inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+
             hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
             hypers_vec.append(hyper)
 
@@ -329,9 +330,6 @@ class PCALayer(tf.keras.layers.Layer):
         self.AT = A.T
         self.C  = C
         self.D  = D
-
-        print('self.C = ', self.C)
-        print('self.D = ', self.D)
 
     def call(self, inputs):
         return tf.matmul( (inputs -  self.C) / self.D, self.AT ) 

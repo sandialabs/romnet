@@ -41,11 +41,10 @@ class System_of_Components(object):
         self.output_vars                   = InputData.output_vars
         self.n_outputs                     = len(self.output_vars)
 
-
         try:
-            self.internal_pca_flg              = InputData.internal_pca_flg
+            self.internal_pca_flg          = InputData.internal_pca_flg
         except:
-            self.internal_pca_flg              = False
+            self.internal_pca_flg          = False
 
         if ('FNN' in self.type):    
             self.call                      = self.call_fnn
@@ -96,6 +95,10 @@ class System_of_Components(object):
                 self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg[self.name]
             except:
                 self.dotlayer_bias_flg     = None
+            try:
+                self.dotlayer_mult_flg     = InputData.dotlayer_mult_flg[self.name]
+            except:
+                self.dotlayer_mult_flg     = None
 
         try:
             self.softmax_flg               = InputData.softmax_flg[self.name] if isinstance(InputData.softmax_flg[self.name], (int)) else False
@@ -153,6 +156,9 @@ class System_of_Components(object):
 
         inputs_branch, inputs_trunk = inputs
 
+        # tf.keras.backend.print_tensor('inputs_branch = ', inputs_branch)
+        # tf.keras.backend.print_tensor('inputs_trunk  = ', inputs_trunk)
+
         if (self.n_rigids > 0):
             # Create Pre-Transformation Block (Here Called Rigid Block)
             for i_rigid in range(self.n_rigids):
@@ -179,7 +185,7 @@ class System_of_Components(object):
             trunk_name  = self.trunk_names[i_trunk]
             y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], training=training))
 
-
+    
         # Create Array of Branches
         y_branch_vec = []
         output_vec   = []
@@ -215,30 +221,24 @@ class System_of_Components(object):
 
         # Concatenate the Outputs of Multiple Dot-Layers
         if (self.n_branches > 1):
-            output_concat = tf.keras.layers.Concatenate(axis=1)(output_vec)
+            output_concat            = tf.keras.layers.Concatenate(axis=1)(output_vec)
         else:
-            output_concat = output_vec[0]
+            output_concat            = output_vec[0]
 
+
+        if (self.dotlayer_mult_flg):
+            # Add Biases to Concatenated Dot-Layers
+            output_concat            = layers_dict[self.name]['MultLayer'](output_concat)
         
         if (self.dotlayer_bias_flg):
             # Add Biases to Concatenated Dot-Layers
-            output_concat = layers_dict[self.name]['BiasLayer'](output_concat)
+            output_concat            = layers_dict[self.name]['BiasLayer'](output_concat)
 
 
         if (self.internal_pca_flg):
             # Anti-Transform from PCA Space to Original State Space
+            output_concat            = layers_dict[self.name]['PCAInvLayer'](output_concat)
 
-            output_all               = layers_dict[self.name]['PCAInvLayer'](output_concat)
-            output_T, output_species = tf.split(output_all, [1,self.n_outputs-1], axis=1)
-
-            output_T                 = layers_dict[self.name]['Branch_1']['Post'](output_T, training=training)
-            output_species           = layers_dict[self.name]['SoftMax'](output_species)
-
-            if (self.n_branches > 1):
-                output_concat = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
-            else:
-                output_concat = output_vec[0]
-        
 
         if (self.softmax_flg):
             # Apply SoftMax for Forcing Sum(y_i)=1
@@ -246,9 +246,102 @@ class System_of_Components(object):
             output_species           = self.softmax_layer(output_species)
             output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
 
+
         if (self.rectify_flg):
             # Apply ReLu for Forcing y_i>0
             output_concat            = self.rectify_layer(output_concat)
+
+
+        return output_concat
+
+    # ---------------------------------------------------------------------------------------------------------------------------
+
+
+
+    # ---------------------------------------------------------------------------------------------------------------------------
+    def call_deeponet_hybrid(self, inputs, layers_dict, training):
+
+        inputs_branch, inputs_trunk = inputs
+
+        # tf.keras.backend.print_tensor('inputs_branch = ', inputs_branch)
+        # tf.keras.backend.print_tensor('inputs_trunk  = ', inputs_trunk)
+
+        if (self.n_rigids > 0):
+            # Create Pre-Transformation Block (Here Called Rigid Block)
+            for i_rigid in range(self.n_rigids):
+                rigid_name = self.rigid_names[i_rigid]
+                rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, training=training)
+            if (self.rigid_type is None) or (self.rigid_type == 'shift'):
+                shift   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                stretch = [None]*self.n_trunks
+            elif (self.rigid_type == 'stretch'):
+                shift   = [None]*self.n_trunks
+                stretch = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+            elif (self.rigid_type == 'shift_and_stretch'):
+                splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
+                shift   = splits[0:self.n_trunks]
+                stretch = splits[self.n_trunks:self.n_trunks*2]
+        else:
+            shift   = [None]*self.n_trunks
+            stretch = [None]*self.n_trunks
+
+
+        # Create Array of Trunks
+        y_trunk_vec = []
+        for i_trunk in range(self.n_trunks): 
+            trunk_name  = self.trunk_names[i_trunk]
+            y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], training=training))
+
+    
+        # Create Array of Branches
+        y_branch_vec = []
+        output_vec   = []
+        for i_branch in range(self.n_branches): 
+            i_trunk     = self.branch_to_trunk[i_branch]
+            branch_name = self.branch_names[i_branch] 
+            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, training=training)
+
+
+            # Perform Dot Pructs Between Trunks and Branches
+            #output_dot  = Dot_Add(axes=1)([y, y_trunk_vec[i_trunk]])     
+            if (self.n_branch_out == None) or (self.n_branch_out == self.n_trunk_out):
+                # Branch Output Layer does not contain either Centering nor Scaling
+                output_          = tf.keras.layers.Dot(axes=1)([y, y_trunk_vec[i_trunk]]) 
+            elif (self.n_branch_out == self.n_trunk_out+2):
+                # Branch Output Layer contains Centering and Scaling
+                alpha_vec, c, d  = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1, 1], axis=1)
+                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
+                output_mult      = tf.keras.layers.multiply([output_dot,  d])            
+                output_          = tf.keras.layers.add([output_mult, c])   
+            elif (self.n_branch_out == self.n_trunk_out+1):
+                # Branch Output Layer contains Centering
+                alpha_vec, c     = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1], axis=1)
+                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
+                output_          = tf.keras.layers.add([output_dot, c])   
+            else:
+                # Branch Output Layer incompatible with Trunk Output Layer
+                raise NameError("[ROMNet - call_deeponet.py ]: Branch Output Layer incompatible with Trunk Output Layer! Please, Change No of Neurons!")
+
+
+            output_vec.append( output_ )
+            
+
+        # Concatenate the Outputs of Multiple Dot-Layers
+        if (self.n_branches > 1):
+            output_concat            = tf.keras.layers.Concatenate(axis=1)(output_vec)
+        else:
+            output_concat            = output_vec[0]
+
+
+        if (self.dotlayer_mult_flg):
+            # Add Biases to Concatenated Dot-Layers
+            output_concat            = layers_dict[self.name]['MultLayer'](output_concat)
+
+        
+        if (self.dotlayer_bias_flg):
+            # Add Biases to Concatenated Dot-Layers
+            output_concat            = layers_dict[self.name]['BiasLayer'](output_concat)
+
 
         return output_concat
 
