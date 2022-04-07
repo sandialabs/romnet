@@ -151,14 +151,15 @@ class Component(object):
     def call_classic(self, inputs, layers_dict, shift, stretch, training=False):
 
         trans_flg = False
+        comp_flg  = self.name
         try:
             if ('TransFun' in layers_dict[self.system_name][self.type]):
-                trans_flg = True
-                comp_flg  = self.type
+                trans_flg      = True
+                comp_flg_trans = self.type
         except:
             if ('TransFun' in layers_dict[self.system_name][self.name]):
-                trans_flg = True
-                comp_flg  = self.name
+                trans_flg      = True
+                comp_flg_trans = self.name
 
         if (stretch is not None):
             if (trans_flg):
@@ -174,7 +175,7 @@ class Component(object):
             inputs = layers_dict[self.system_name][comp_flg]['Shift']([inputs, shift])
             
         if (trans_flg):
-            inputs = layers_dict[self.system_name][comp_flg]['TransFun'](inputs)
+            inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
 
         return self.sub_components['Main'].call(inputs, training)
 

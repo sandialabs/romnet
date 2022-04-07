@@ -116,7 +116,7 @@ class VI_DeepONet(NN):
                                 indxs.append(ivar)
 
                         if (len(indxs) > 0):
-                            layer_name = 'PreTransformation' + fun + '-' + str(i_trunk+1)
+                            layer_name = system_name+'-PreTransformation' + fun + '-' + str(i_trunk+1)
                             layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
 
                             self.layers_dict[system_name]['Trunk'+temp_str]['TransFun']      = layer
@@ -187,9 +187,9 @@ class VI_DeepONet(NN):
         elif (self.n_hypers == 2):
 
             def normal_sp(hypers_vec): 
-                mu   = hypers_vec[0] 
-                sd   = hypers_vec[1]
-                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-8 + tf.math.softplus(0.05 * sd)) 
+                mu         = hypers_vec[0] 
+                sigma_like = hypers_vec[1]
+                dist       = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers_vec) 
@@ -222,9 +222,9 @@ class VI_DeepONet(NN):
         elif (self.n_hypers == 2):
 
             def normal_sp(hypers_vec): 
-                mu   = hypers_vec[0] 
-                sd   = hypers_vec[1] 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.nn.relu(sd)) 
+                mu         = hypers_vec[0] 
+                sigma_like = hypers_vec[1] 
+                dist       = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers_vec) 
