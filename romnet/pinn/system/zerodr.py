@@ -43,8 +43,10 @@ class ZeroDR(System):
  
         self.ind_names         = ['t']
         self.other_names       = InputData.input_vars_all.copy()
-        self.other_names.remove('t')
- 
+        try:
+            self.other_names.remove('t')
+        except:
+            pass
         self.ind_labels        = ['t [s]']
         self.other_labels      = ['PC_{0_{'+str(i)+'}}' for i in range(self.NRODs)]
 

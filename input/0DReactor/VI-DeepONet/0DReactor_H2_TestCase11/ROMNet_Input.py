@@ -106,7 +106,7 @@ class inputdata(object):
                                                       'Rigid': {'Main': False},
                                                       'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONetMean': False}
-        self.sigma_like          = [1.e-1]*self.NRODs
+        self.sigma_like          = [1.e-2]*self.NRODs
 
 
         #=======================================================================================================================================

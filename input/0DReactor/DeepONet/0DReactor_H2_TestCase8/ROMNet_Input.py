@@ -57,7 +57,7 @@ class inputdata(object):
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
                                                   'Rigid': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
-        self.norm_output_flg     = False                                                                      # Flag for Normalizing Output Data
+        self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
 
         self.internal_pca_flg    = False
@@ -138,8 +138,8 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 1024                                                                      # Mini-Batch Size
-        self.valid_batch_size    = 1024                                                                      # Validation Mini-Batch Size
+        self.batch_size          = 2000                                                                      # Mini-Batch Size
+        self.valid_batch_size    = 500                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-4                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer

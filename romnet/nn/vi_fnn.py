@@ -82,7 +82,7 @@ class VI_FNN(NN):
                                 indxs.append(ivar)
 
                         if (len(indxs) > 0):
-                            layer_name = 'PreTransformation' + fun + '-' + str(i_trunk+1)
+                            layer_name = system_name+'-PreTransformation' + fun + '-' + str(i_trunk+1)
                             layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
 
                             self.layers_dict[system_name]['FNN']['TransFun']      = layer
@@ -93,19 +93,19 @@ class VI_FNN(NN):
             self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
-            # # Output Normalizing Layer
-            # self.norm_output_flg             = InputData.norm_output_flg
-            # self.stat_output                 = stat_output
-            # if (self.norm_output_flg) and (self.stat_output):                    
-            #     self.output_min                                = tf.constant(stat_output['min'],  dtype=tf.keras.backend.floatx())
-            #     self.output_max                                = tf.constant(stat_output['max'],  dtype=tf.keras.backend.floatx())
-            #     self.output_range                              = tf.constant(self.output_max - self.output_min,   dtype=tf.keras.backend.floatx())
-                
-            #     self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.output_range, self.output_min)
-            #     self.layer_names_dict['All']['OutputTrans']    = 'OutputTrans'
+        # Output Normalizing Layer
+        self.norm_output_flg             = InputData.norm_output_flg
+        self.stat_output                 = stat_output
+        if (self.norm_output_flg) and (self.stat_output):                    
+            self.output_min                                = tf.constant(stat_output['min'],  dtype=tf.keras.backend.floatx())
+            self.output_max                                = tf.constant(stat_output['max'],  dtype=tf.keras.backend.floatx())
+            self.output_range                              = tf.constant(self.output_max - self.output_min,   dtype=tf.keras.backend.floatx())
+            
+            self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.output_range, self.output_min)
+            self.layer_names_dict['All']['OutputTrans']    = 'OutputTrans'
 
-            #     self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.output_range, self.output_min)
-            #     self.layer_names_dict['All']['OutputInvTrans'] = 'OutputInvTrans'
+            self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.output_range, self.output_min)
+            self.layer_names_dict['All']['OutputInvTrans'] = 'OutputInvTrans'
 
     # ---------------------------------------------------------------------------------------------------------------------------
 

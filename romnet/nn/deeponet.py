@@ -107,7 +107,7 @@ class DeepONet(NN):
                             indxs.append(ivar)
 
                     if (len(indxs) > 0):
-                        layer_name = system_name+'-PreTransformation' + fun + '-' + str(i_trunk+1)
+                        layer_name = 'DeepONet-PreTransformation' + fun + '-' + str(i_trunk+1)
                         layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
 
                         self.layers_dict['DeepONet']['Trunk'+temp_str]['TransFun']      = layer
