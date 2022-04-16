@@ -80,11 +80,11 @@ class inputdata(object):
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-6,1.e-6]},
-                                                  'Shift': {'Main': [1.e-4,1.e-4]},  
-                                                'Stretch': {'Main': [1.e-4,1.e-4]},  
-                                               'Rotation': {'Main': [1.e-4,1.e-4]},  
-                                                  'Trunk': {'Main': [1.e-6,1.e-6]}}}  
+        self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
+                                                  'Shift': {'Main': [1.e-6,1.e-6]},  
+                                                'Stretch': {'Main': [1.e-6,1.e-6]},  
+                                               'Rotation': {'Main': [1.e-6,1.e-6]},  
+                                                  'Trunk': {'Main': [1.e-8,1.e-8]}}}  
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
                                                   'Shift': {'Main': None},  
                                                 'Stretch': {'Main': None},  
@@ -118,8 +118,8 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 10000                                                                     # Number of Epoches
-        self.batch_size          = 1024                                                                        # Mini-Batch Size
-        self.valid_batch_size    = 1024                                                                        # Validation Mini-Batch Size
+        self.batch_size          = 2048                                                                        # Mini-Batch Size
+        self.valid_batch_size    = 2048                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 20000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
