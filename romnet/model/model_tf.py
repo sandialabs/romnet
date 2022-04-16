@@ -472,6 +472,12 @@ class Model_TF(Model):
             elif (self.data_preproc_type == 'pareto'):
                 y_pred = y_pred * np.sqrt(self.output_std) + self.output_mean
 
+            elif (self.data_preproc_type == 'log'):
+                y_pred = np.exp(y_pred) + self.output_min - 1.e-10
+
+            elif (self.data_preproc_type == 'log10'):
+                y_pred = 10.**y_pred + self.output_min - 1.e-10
+
 
         return y_pred
 

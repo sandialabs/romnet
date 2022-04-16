@@ -49,7 +49,8 @@ class inputdata(object):
         self.surrogate_type      = 'DeepONet'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
-        self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
+        self.norm_output_flg     = True                                                                     # Flag for Normalizing Output Data
+        self.data_preproc_type   = 'pareto'
         self.output_vars         = ['x','v']                                                                 # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['x','v','t']                                                             # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': ['x','v'],  
@@ -75,7 +76,7 @@ class inputdata(object):
                                                   'Trunk': {'Main': True}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
+        self.dotlayer_bias_flg   = {'DeepONet': False}
         # self.structure           = {'DeepONet': {'Branch_1': ['Main', 'U', 'V'],
         #                                          'Branch_2': ['Main', 'U', 'V'],
         #                                             'Trunk': ['Main']}}                                      # Dictionary Containing the Structure of the Network

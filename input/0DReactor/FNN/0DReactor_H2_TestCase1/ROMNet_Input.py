@@ -8,8 +8,8 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.NRODs               = 10
-        self.i_redSel            = range(self.NRODs)
+        self.NRODs               = 12
+        self.i_redSel            = range(12)
         self.NRODsSel            = len(self.i_redSel)
 
         self.ROM_pred_flg        = True
@@ -26,7 +26,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2_Sources/'                 # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_10Cases_H2_Sources/'                 # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -52,7 +52,7 @@ class inputdata(object):
         self.surrogate_type      = 'FNN'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None                                                            # Dictionary Containing Functions to Be Applied to Input Data 
-        self.data_preproc_type   = 'std'
+        self.data_preproc_type   = '0to1'
         self.norm_input_flg      = {'FNN': {'FNN': True}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
@@ -76,19 +76,20 @@ class inputdata(object):
         # # -----------------------------------------------------------------------------------
 
         # -----------------------------------------------------------------------------------
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases_H2_Sources/'+str(self.NRODs)+'PC/' # Path To Training-Data Folder  
-        self.input_vars_all      = ['PC_'+str(i+1) for i in range(self.NRODs)]                                      # List Containing all the Input Data Variable Names
-        self.input_vars          = {'FNN': {'FNN': ['PC_'+str(i+1) for i in range(self.NRODs)]}}                                                         # Dictionary Containing the Input  Data Variable Names for each Component
+        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_10Cases_H2_Sources/'+str(self.NRODs)+'PC/' # Path To Training-Data Folder  
+        self.input_vars_all      = ['PC_'+str(i+1) for i in range(self.NRODsSel)]                                      # List Containing all the Input Data Variable Names
+        self.input_vars          = {'FNN': {'FNN': ['PC_'+str(i+1) for i in range(self.NRODsSel)]}}                                                         # Dictionary Containing the Input  Data Variable Names for each Component
         self.output_vars         = ['SPC_'+str(i+1) for i in self.i_redSel]                                                 # List Containing the Output Data Variable Names for each System
         # -----------------------------------------------------------------------------------
 
         self.structure               = {'FNN': {}}
         self.structure['FNN']['FNN'] = ['Main']
-        self.n_neurons               = {'FNN': {'FNN': {'Main': np.array([64,64,64,64,64,self.NRODs])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs               = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.n_neurons               = {'FNN': {'FNN': {'Main': np.array([100,100,100,100,self.NRODsSel])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs               = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate            = {'FNN': {'FNN': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg        = {'FNN': {'FNN': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        
+        self.gaussnoise_rate         = {'FNN': {'FNN': 1.e-4}}
+
         #=======================================================================================================================================
         ### Losses
         ## Fully Data Driven
@@ -107,10 +108,10 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 8192                                                                       # Mini-Batch Size
-        self.valid_batch_size    = 8192                                                                      # Validation Mini-Batch Size
-        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.batch_size          = 5000                                                                       # Mini-Batch Size
+        self.valid_batch_size    = 2500                                                                      # Validation Mini-Batch Size
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 3000, 0.90]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

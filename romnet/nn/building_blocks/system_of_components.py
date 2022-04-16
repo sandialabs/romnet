@@ -144,7 +144,7 @@ class System_of_Components(object):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_fnn(self, inputs, layers_dict, training=False):
 
-        y = self.components['FNN'].call(inputs, layers_dict, None, None, training=training)
+        y = self.components['FNN'].call(inputs, layers_dict, None, None, None, training=training)
 
         return y
 
@@ -163,27 +163,38 @@ class System_of_Components(object):
             # Create Pre-Transformation Block (Here Called Rigid Block)
             for i_rigid in range(self.n_rigids):
                 rigid_name = self.rigid_names[i_rigid]
-                rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, training=training)
+                rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, None, training=training)
             if (self.rigid_type is None) or (self.rigid_type == 'shift'):
-                shift   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
-                stretch = [None]*self.n_trunks
+                shift    = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                stretch  = [None]*self.n_trunks
+                rotation = [None]*self.n_trunks
             elif (self.rigid_type == 'stretch'):
-                shift   = [None]*self.n_trunks
-                stretch = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                shift    = [None]*self.n_trunks
+                stretch  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                rotation = [None]*self.n_trunks
+            elif (self.rigid_type == 'rotation'):
+                shift    = [None]*self.n_trunks
+                stretch  = [None]*self.n_trunks
+                if (self.n_trunks > 1):
+                    rotation = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                else:
+                    rotation = [rigid]
             elif (self.rigid_type == 'shift_and_stretch'):
-                splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
-                shift   = splits[0:self.n_trunks]
-                stretch = splits[self.n_trunks:self.n_trunks*2]
+                splits   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
+                shift    = splits[0:self.n_trunks]
+                stretch  = splits[self.n_trunks:self.n_trunks*2]
+                rotation = [None]*self.n_trunks
         else:
-            shift   = [None]*self.n_trunks
-            stretch = [None]*self.n_trunks
+            shift    = [None]*self.n_trunks
+            stretch  = [None]*self.n_trunks
+            rotation = [None]*self.n_trunks
 
 
         # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
             trunk_name  = self.trunk_names[i_trunk]
-            y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], training=training))
+            y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], rotation[i_trunk], training=training))
 
     
         # Create Array of Branches
@@ -192,7 +203,7 @@ class System_of_Components(object):
         for i_branch in range(self.n_branches): 
             i_trunk     = self.branch_to_trunk[i_branch]
             branch_name = self.branch_names[i_branch] 
-            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, training=training)
+            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, None, training=training)
 
 
             # Perform Dot Pructs Between Trunks and Branches
@@ -270,27 +281,35 @@ class System_of_Components(object):
             # Create Pre-Transformation Block (Here Called Rigid Block)
             for i_rigid in range(self.n_rigids):
                 rigid_name = self.rigid_names[i_rigid]
-                rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, training=training)
+                rigid      = self.components[rigid_name].call(inputs_branch, layers_dict, None, None, None, training=training)
             if (self.rigid_type is None) or (self.rigid_type == 'shift'):
-                shift   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
-                stretch = [None]*self.n_trunks
+                shift    = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                stretch  = [None]*self.n_trunks
+                rotation = [None]*self.n_trunks
             elif (self.rigid_type == 'stretch'):
-                shift   = [None]*self.n_trunks
-                stretch = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                shift    = [None]*self.n_trunks
+                stretch  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                rotation = [None]*self.n_trunks
+            elif (self.rigid_type == 'rotate'):
+                shift    = [None]*self.n_trunks
+                stretch  = [None]*self.n_trunks
+                rotation = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks, axis=1)
             elif (self.rigid_type == 'shift_and_stretch'):
-                splits  = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
-                shift   = splits[0:self.n_trunks]
-                stretch = splits[self.n_trunks:self.n_trunks*2]
+                splits   = tf.split(rigid, num_or_size_splits=[1]*self.n_trunks*2, axis=1)
+                shift    = splits[0:self.n_trunks]
+                stretch  = splits[self.n_trunks:self.n_trunks*2]
+                rotation = [None]*self.n_trunks
         else:
-            shift   = [None]*self.n_trunks
-            stretch = [None]*self.n_trunks
+            shift    = [None]*self.n_trunks
+            stretch  = [None]*self.n_trunks
+            rotation = [None]*self.n_trunks
 
 
         # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
             trunk_name  = self.trunk_names[i_trunk]
-            y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], training=training))
+            y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, shift[i_trunk], stretch[i_trunk], rotation[i_trunk], training=training))
 
     
         # Create Array of Branches
@@ -299,7 +318,7 @@ class System_of_Components(object):
         for i_branch in range(self.n_branches): 
             i_trunk     = self.branch_to_trunk[i_branch]
             branch_name = self.branch_names[i_branch] 
-            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, training=training)
+            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, None, None, training=training)
 
 
             # Perform Dot Pructs Between Trunks and Branches

@@ -14,11 +14,11 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 
 
 
-##########################################################################################
+########################################################################################## 
 ### Input Data
 ###
 
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_50Cases_H2_Sources/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2_Sources/'
 # OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
 
 NVarsRed           = 10
@@ -26,18 +26,18 @@ NVarsRed           = 10
 scale              = 'lin'
 MinVal             = 1.e-20
 
-# ## FIRST TIME
-# DirName            = 'train'
-# n_ics              = 50
-
-# SECOND TIME
-DirName            = 'test'
+## FIRST TIME
+DirName            = 'train'
 n_ics              = 10
+
+# # SECOND TIME
+# DirName            = 'test'
+# n_ics              = 10
 
 iSimVec            = range(n_ics)
 
-ReadFlg            = True
-ReadDir            = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+ReadFlg            = False
+ReadDir            = None #WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 ##########################################################################################
 
 
@@ -367,8 +367,8 @@ Header0 = Header
 Header  = 't,'+Header
 HeaderS = 't,'+HeaderS
 
-fDeepOnetInput  = open(OutputDir +'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/Input.csv', 'w')
-fDeepOnetOutput = open(OutputDir +'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/Output.csv', 'w')
+# fDeepOnetInput  = open(OutputDir +'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/Input.csv', 'w')
+# fDeepOnetOutput = open(OutputDir +'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/Output.csv', 'w')
 
 for iT in range(1,n_ics+1):
     print(KeptSpeciesNames)
@@ -378,27 +378,35 @@ for iT in range(1,n_ics+1):
         Datay       = pd.read_csv(FileName, header=0)
         tVec        = Datay['t'].to_numpy()[...,np.newaxis]
         yTemp       = np.maximum(Datay[KeptSpeciesNames].to_numpy(), 0.)
-        #print('yTemp = ', yTemp)
 
-        if   (scale == 'lin'):
-            yMat_pca    = ((yTemp - C)/D).dot(AT)
-        elif (scale == 'log'):
-            yMat_pca    = ((np.log(yTemp + MinVal ) - C)/D).dot(AT)
-        elif (scale == 'log10'):
-            yMat_pca    = ((np.log10(yTemp + MinVal) - C)/D).dot(AT)
+
+        FileName    = OutputDir+'/Orig/'+DirName+'/ext/ySource.csv.'+str(iT) 
+        Datay       = pd.read_csv(FileName, header=0)
+        tVec        = Datay['t'].to_numpy()[...,np.newaxis]
+        ySourceTemp = np.maximum(Datay[KeptSpeciesNames].to_numpy(), 0.)
+
+
+        yMat_pca       = ((yTemp - C)/D).dot(AT)
+        ySourceMat_pca = ((ySourceTemp)/D).dot(AT)
+
         FileName    = OutputDir+'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/PC.csv.'+str(iT)
         Temp        = np.concatenate((tVec, yMat_pca), axis=1)
         np.savetxt(FileName, Temp, delimiter=',', header=Header, comments='')
 
 
-        yMat_pca0   = np.tile(yMat_pca[0,:],(yMat_pca.shape[0],1)) 
-        Temp0        = np.concatenate((tVec, yMat_pca0), axis=1)
-        if (iT==1):
-            np.savetxt(fDeepOnetInput,  Temp0, delimiter=',', header=Header, comments='')
-            np.savetxt(fDeepOnetOutput, Temp,  delimiter=',', header=Header, comments='')
-        else:
-            np.savetxt(fDeepOnetInput,  Temp0, delimiter=',')
-            np.savetxt(fDeepOnetOutput, Temp,  delimiter=',')
+        FileName    = OutputDir+'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/SPC.csv.'+str(iT)
+        Temp        = np.concatenate((tVec, ySourceMat_pca), axis=1)
+        np.savetxt(FileName, Temp, delimiter=',', header=HeaderS, comments='')
+
+
+        # yMat_pca0   = np.tile(yMat_pca[0,:],(yMat_pca.shape[0],1)) 
+        # Temp0        = np.concatenate((tVec, yMat_pca0), axis=1)
+        # if (iT==1):
+        #     np.savetxt(fDeepOnetInput,  Temp0, delimiter=',', header=Header, comments='')
+        #     np.savetxt(fDeepOnetOutput, Temp,  delimiter=',', header=Header, comments='')
+        # else:
+        #     np.savetxt(fDeepOnetInput,  Temp0, delimiter=',')
+        #     np.savetxt(fDeepOnetOutput, Temp,  delimiter=',')
     except:
         pass
 
@@ -412,5 +420,5 @@ for iT in range(1,n_ics+1):
         # Temp        = np.concatenate((tVec, ySource_pca), axis=1)
         # np.savetxt(FileName, Temp, delimiter=',', header=HeaderS, comments='')
 
-fDeepOnetInput.close()
-fDeepOnetOutput.close()
+# fDeepOnetInput.close()
+# fDeepOnetOutput.close()

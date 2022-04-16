@@ -23,11 +23,11 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_50Cases_H2_Sources/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2_Sources/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
-t0                 = 1.e-7
-tEnd               = 1.0
+t0                 = 1.e-8
+tEnd               = 1.e-2
 
 # ### METHANE
 # OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
@@ -38,6 +38,7 @@ tEnd               = 1.0
 
 MixtureFile        = 'gri30.yaml'
 P0                 = ct.one_atm
+KeepVec            = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
 
 NtInt              = 5000
 Integration        = 'Canteras'
@@ -49,21 +50,25 @@ delta_T_max        = 1.
 
 # # FIRST TIME
 # DirName            = 'train'
-# n_ics              = 50
-# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# n_ics              = 10
+# T0Exts             = np.array([999., 1001.], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
+# # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 # X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
 # SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
-# NPerT0             = 50
+# NPerT0             = 1000
 
 ## SECOND TIME
 DirName            = 'test'
 n_ics              = 10
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+T0Exts             = np.array([999., 1001.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
 X0Exts             = None
 SpeciesVec         = None
-NPerT0             = 50
+NPerT0             = 500
 
 
 
@@ -116,16 +121,19 @@ def IdealGasConstPressureReactor_SciPY(t, y):
 
 def IdealGasConstPressureReactor(t, T, Y):
 
-    gas_.TPY = T, P_, Y
+    gas_.TP   = T, P_
+    gas_sub   = gas_[KeepVec]
+    gas_sub.Y = Y 
+
     
-    wdot     = gas_.net_production_rates
+    wdot     = gas_sub.net_production_rates
 
-    Tdot     = - np.dot(wdot, gas_.partial_molar_enthalpies) / gas_.cp / gas_.density
-    Ydot     = wdot * gas_.molecular_weights / gas_.density
+    Tdot     = - np.dot(wdot, gas_sub.partial_molar_enthalpies) / gas_sub.cp / gas_sub.density
+    Ydot     = wdot * gas_sub.molecular_weights / gas_sub.density
 
-    HR       = - np.dot(gas_.net_production_rates, gas_.partial_molar_enthalpies)
+    HR       = - np.dot(gas_sub.net_production_rates,gas_sub.partial_molar_enthalpies)
 
-    return Tdot, Ydot, HR
+    return Tdot*t, Ydot*t, HR
 
 
 def IdealGasReactor_SciPY(t, y):
@@ -258,6 +266,11 @@ for iIC in range(n_ics):
     ### Create Mixture
     gas     = ct.Solution(MixtureFile)
 
+    Mask_ = []
+    for Keep in KeepVec:
+        Mask_.append(gas.species_names.index(Keep))
+    Mask_ = np.array(Mask_)
+
     ### Create Reactor
     gas.TP  = T0, P0
 
@@ -328,18 +341,20 @@ for iIC in range(n_ics):
     # tVec     = np.concatenate([[0.], np.logspace(tMin, tMax, 3000)])
     #tVec     = np.concatenate([[0.], np.logspace(-12, tMin, 20), np.logspace(tMin, tMax, 480)[1:]])
     #tVec     = np.concatenate([[0.], np.logspace(-12, -6, 100), np.logspace(-5.99999999, -1., 4899)])
-    tVec     = np.concatenate([[1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt)])
-    #tVec     = np.concatenate([[0.], np.linspace(1.e-12, 1.e-2, 4999)])
+    #tVec     = np.concatenate([[1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt)])
+    
+    tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt)
+    #tVec     = np.linspace(t0, tEnd, NtInt)
     #############################################################################
 
 
     gas_             = gas
-    states           = ct.SolutionArray(gas, 1, extra={'t': [0.0]})
+    states           = ct.SolutionArray(gas['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2'], 1, extra={'t': [0.0]})
     
     if (Integration == 'Canteras'):
         #r.set_advance_limit('temperature', delta_T_max)
         TT               = r.T
-        YY               = r.thermo.Y
+        YY               = r.thermo.Y[Mask_]
         Vec              = np.concatenate(([TT],YY), axis=0)
         TTdot, YYdot, HR = IdealGasConstPressureReactor(tVec[0], TT, YY)
         Vecdot           = np.concatenate(([TTdot],YYdot), axis=0)
@@ -361,7 +376,7 @@ for iIC in range(n_ics):
         if (Integration == 'Canteras'):
             sim.advance(t)
             TT               = r.T
-            YY               = r.thermo.Y
+            YY               = r.thermo.Y[Mask_]
         else:
             TT               = output.y[0,it]
             YY               = output.y[1:,it]
@@ -432,8 +447,10 @@ for iIC in range(n_ics):
 
     ### Writing Results
     Header   = 't,T'
-    for iSpec in range(NSpec):
-        Header += ','+gas.species_name(iSpec)
+    # for iSpec in range(NSpec):
+    #     Header += ','+gas.species_name(iSpec)
+    for Keep in KeepVec:
+        Header += ','+Keep
 
     FileName = OutputDir+'/Orig/'+DirName+'/ext/y.csv.'+str(iIC+1)
     np.savetxt(FileName, yTemp,       delimiter=',', header=Header, comments='')

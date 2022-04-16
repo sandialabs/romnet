@@ -195,7 +195,7 @@ class Layer(object):
             Multivariate standard `Normal` distribution.å=
             """
             del name, trainable, add_variable_fn   # unused
-            dist = normal_lib.Normal(loc=tf.zeros(shape, dtype), scale=dtype.as_numpy_dtype(3.))
+            dist = normal_lib.Normal(loc=tf.zeros(shape, dtype), scale=dtype.as_numpy_dtype(5.))
             batch_ndims = tf.size(dist.batch_shape_tensor())
             return independent_lib.Independent(dist, reinterpreted_batch_ndims=batch_ndims)
 
@@ -204,7 +204,7 @@ class Layer(object):
 
         kernel_posterior_fn  = tfp.layers.default_mean_field_normal_fn( is_singular                     = False, 
                                                                         loc_initializer                 = initializers.random_normal(mean=0.,   stddev=0.1),
-                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-10.0, stddev=0.1), 
+                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-15.0, stddev=0.1), 
                                                                         loc_regularizer                 = None, 
                                                                         untransformed_scale_regularizer = None,
                                                                         loc_constraint                  = None, 
@@ -218,7 +218,7 @@ class Layer(object):
 
         bias_posterior_fn    = tfp.layers.default_mean_field_normal_fn( is_singular                     = True, 
                                                                         loc_initializer                 = initializers.random_normal(mean=0.,   stddev=0.1),
-                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-10.0, stddev=0.1), 
+                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-15.0, stddev=0.1), 
                                                                         loc_regularizer                 = None, 
                                                                         untransformed_scale_regularizer = None,
                                                                         loc_constraint                  = None, 

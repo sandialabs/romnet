@@ -114,7 +114,7 @@ class Component(object):
                 max_vals = self.transfered_model.get_layer(layer_name).max_vals.numpy()
                 layer    = CustomNormalization(mean=mean, variance=variance, min_vals=min_vals, max_vals=max_vals, name=layer_name, data_preproc_type=self.data_preproc_type)
             else:
-                layer    = CustomNormalization(name=layer_name)
+                layer    = CustomNormalization(name=layer_name, data_preproc_type=self.data_preproc_type)
                 layer.adapt(np.array(self.norm_input))
             layers_vec.append(layer)
             layer_names.append(layer_name)
@@ -148,7 +148,7 @@ class Component(object):
      
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_classic(self, inputs, layers_dict, shift, stretch, training=False):
+    def call_classic(self, inputs, layers_dict, shift, stretch, rotation, training=False):
 
         trans_flg = False
         comp_flg  = self.name
@@ -161,18 +161,26 @@ class Component(object):
                 trans_flg      = True
                 comp_flg_trans = self.name
 
-        if (stretch is not None):
+        if (stretch  is not None):
             if (trans_flg):
                 inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, tf.math.softplus(stretch)])
             else:
                 inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, stretch])
 
-        if (shift   is not None):
+        if (shift    is not None):
             # if (trans_flg):
             #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
             #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
             # else:
             inputs = layers_dict[self.system_name][comp_flg]['Shift']([inputs, shift])
+
+        if (rotation is not None):
+            # if (trans_flg):
+            #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
+            #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
+            # else:
+            inputs = layers_dict[self.system_name][comp_flg]['Rotation']([inputs, rotation])
+
             
         if (trans_flg):
             inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
@@ -183,13 +191,16 @@ class Component(object):
 
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_improved(self, inputs, layers_dict, shift, stretch, training=False):
+    def call_improved(self, inputs, layers_dict, shift, stretch, rotation, training=False):
 
         if (stretch is not None):
             inputs = layers_dict[self.system_name][self.name]['Stretch']([inputs, stretch])
 
         if (shift   is not None):
             inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, shift])
+
+        if (rotation is not None):
+            inputs = layers_dict[self.system_name][comp_flg]['Rotation']([inputs, rotation])
             
         if ('TransFun' in layers_dict[self.system_name][self.name]):
             inputs = layers_dict[self.system_name][self.name]['TransFun'](inputs)

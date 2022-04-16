@@ -59,6 +59,9 @@ class Data(object):
                     
                     elif (self.data_preproc_type == 'pareto'):
                         all_data[i][data_id][0] = (x_data - self.stat_input['mean'].to_numpy()) / np.sqrt(self.stat_input['std'].to_numpy())
+
+                    elif (self.data_preproc_type == 'log') or (self.data_preproc_type == 'log10'):
+                        all_data[i][data_id][0] = (x_data - self.stat_input['min'].to_numpy()+1e-10)
                     
                     # # PCA
                     # all_data[i][data_id][1] = (x_data - self.system.C) / self.system.D
@@ -90,6 +93,12 @@ class Data(object):
 
                     elif (self.data_preproc_type == 'pareto'):
                         all_data[i][data_id][1] = (y_data - self.stat_output['mean'].to_numpy()) / np.sqrt(self.stat_output['std'].to_numpy())
+
+                    elif (self.data_preproc_type == 'log'):
+                        all_data[i][data_id][1] = np.log(y_data - self.stat_output['min'].to_numpy()+1e-10)
+
+                    elif (self.data_preproc_type == 'log10'):
+                        all_data[i][data_id][1] = np.log10(y_data - self.stat_output['min'].to_numpy()+1e-10)
 
                     # # PCA
                     # all_data[i][data_id][1] = (y_data - self.system.C) / self.system.D
