@@ -42,11 +42,25 @@ class DeepONet(NN):
         self.n_branches                = len([name for name in InputData.structure['DeepONet'].keys() if 'Branch' in name])
         self.n_trunks                  = len([name for name in InputData.structure['DeepONet'].keys() if 'Trunk'  in name])
 
+        self.n_rigids                  = 0
         try:
-            self.n_rigids              = len([name for name in InputData.structure['DeepONet'].keys() if 'Rigid' in name]) 
-            self.rigid_vars            = InputData.input_vars['DeepONet']['Rigid']
+            self.n_shifts              = len([name for name in InputData.structure['DeepONet'].keys() if 'Shift' in name]) 
+            self.n_rigids             += 1 
+            self.shift_vars            = InputData.input_vars[self.name]['Shift']
         except:
-            self.n_rigids              = 0
+            self.n_shifts              = 0
+        try:
+            self.n_stretches           = len([name for name in InputData.structure['DeepONet'].keys() if 'Stretch' in name]) 
+            self.n_rigids             += 1
+            self.stretch_vars          = InputData.input_vars[self.name]['Stretch']
+        except:
+            self.n_stretches           = 0
+        try:
+            self.n_rotations           = len([name for name in InputData.structure['DeepONet'].keys() if 'Rotation' in name]) 
+            self.n_rigids             += 1
+            self.rotation_vars         = InputData.input_vars[self.name]['Rotation']
+        except:
+            self.n_rotations           = 0
 
         try:
             self.internal_pca_flg      = InputData.internal_pca_flg
@@ -118,19 +132,15 @@ class DeepONet(NN):
                         self.layers_dict['DeepONet']['Trunk'+temp_str]['TransFun']      = layer
                         self.layer_names_dict['DeepONet']['Trunk'+temp_str]['TransFun'] = layer_name
 
-        # Trunk-Rigid Blocks Coupling Layers
+        # Trunk-PreNets Blocks Coupling Layers
         if (self.n_rigids > 0):
             for i_trunk in range(self.n_trunks):
                 if (self.n_trunks > 1):
                     temp_str = '_'+str(i_trunk+1)
                 else:
                     temp_str = ''
-                self.layers_dict['DeepONet']['Trunk'+temp_str]['Shift']         = tf.keras.layers.subtract
-                self.layers_dict['DeepONet']['Trunk'+temp_str]['Stretch']       = tf.keras.layers.multiply
-                self.layers_dict['DeepONet']['Trunk'+temp_str]['Rotation']      = MultiplyMatrixVector(len(self.trunk_vars))
-                self.layer_names_dict['DeepONet']['Trunk'+temp_str]['Shift']    = 'Subtract'
-                self.layer_names_dict['DeepONet']['Trunk'+temp_str]['Stretch']  = 'Multiply'
-                self.layer_names_dict['DeepONet']['Trunk'+temp_str]['Rotation'] = 'MultiplyMatrixVector'
+                self.layers_dict['DeepONet']['Trunk'+temp_str]['PreNet']      = PreNet(len(self.trunk_vars))
+                self.layer_names_dict['DeepONet']['Trunk'+temp_str]['PreNet'] ='PreNet'
 
 
         # Main System of Components
@@ -416,39 +426,11 @@ class MultLayer(tf.keras.layers.Layer):
 
 
 #=======================================================================================================================================
-@keras_export('keras.layers.MultiplyMatrixVector')
-class MultiplyMatrixVector(_Merge):
+@keras_export('keras.layers.PreNet')
+class PreNet(_Merge):
 
     def __init__(self, n_y, **kwargs):
-        """Initializes a layer that computes the element-wise dot product.
-            >>> x = np.arange(10).reshape(1, 5, 2)
-            >>> print(x)
-            [[[0 1]
-                [2 3]
-                [4 5]
-                [6 7]
-                [8 9]]]
-            >>> y = np.arange(10, 20).reshape(1, 2, 5)
-            >>> print(y)
-            [[[10 11 12 13 14]
-                [15 16 17 18 19]]]
-            >>> tf.keras.layers.Dot(axes=(1, 2))([x, y])
-            <tf.Tensor: shape=(1, 2, 2), dtype=int64, numpy=
-            array([[[260, 360],
-                            [320, 445]]])>
-        Args:
-            axes: Integer or tuple of integers,
-                axis or axes along which to take the dot product. If a tuple, should
-                be two integers corresponding to the desired axis from the first input
-                and the desired axis from the second input, respectively. Note that the
-                size of the two selected axes must match.
-            normalize: Whether to L2-normalize samples along the
-                dot product axis before taking the dot product.
-                If set to True, then the output of the dot product
-                is the cosine proximity between the two samples.
-            **kwargs: Standard layer keyword arguments.
-        """
-        super(MultiplyMatrixVector, self).__init__(**kwargs)
+        super(PreNet, self).__init__(**kwargs)
         self.n_y              = n_y
         self.supports_masking = True
 
@@ -601,56 +583,40 @@ class MultiplyMatrixVector(_Merge):
 
 
     def _merge_function(self, inputs):
-        #x        = inputs[0]
-        # a_list   = tf.split(inputs[1], num_or_size_splits=self.n_y+1, axis=1)
-
         # # Adding Rotations
-        # b_list   = [tf.math.multiply(x, a_list[i]) for i in range(self.n_y)]
-        # b        = a_list[self.n_y]
-        # for i in range(self.n_y):
-        #     b = tf.math.add(b, b_list[i])
-
-        # Adding Stretch
-        # b        = tf.math.multiply(x, a_list[-2])
+        # a_list   = tf.split(inputs[1], num_or_size_splits=[2,1,1], axis=1)
+        # x_shift  = tf.keras.layers.add([inputs[0], a_list[0]])
+        # x_str    = tf.keras.layers.multiply([x_shift, a_list[1]])
+    
+        # x_split  = tf.split(x_str, num_or_size_splits=self.n_y, axis=1)
+        # cphi     = tf.math.cos(a_list[2])
+        # sphi     = tf.math.sin(a_list[2])
+        # rot      = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
+        # b_list   = [tf.keras.layers.multiply([x_split[i], rot[i]]) for i in range(self.n_y)]
+        # b        = tf.keras.layers.add(b_list)
+        
+        y_merge    = inputs[0]
+        y_pre_list = inputs[1]
+    
+        y_rotation = y_pre_list[2]
+        if (y_rotation is not None):
+            y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
+            cphi            = tf.math.cos(y_rotation)
+            sphi            = tf.math.sin(y_rotation)
+            y_rotation_list = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
+            y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
+            y_merge         = tf.keras.layers.add(y_merge_list)
+ 
+        # Adding Stretching
+        y_stretch  = y_pre_list[1]
+        if (y_stretch is not None):
+            y_merge  = tf.keras.layers.multiply([y_merge, y_stretch])
 
         # Adding Shift
-        # b        = tf.math.add(b, a_list[self.n_y])
+        y_shift    = y_pre_list[0]
+        if (y_shift is not None):
+            y_merge  = tf.keras.layers.add([y_merge, y_shift])
 
-        # tf.keras.backend.print_tensor('b = ', b)
-
-        # # Adding Rotations
-        # a_list   = tf.split(inputs[1], num_or_size_splits=self.n_y+1, axis=1)
-        # b_list   = [tf.keras.layers.multiply([x, a_list[i]]) for i in range(self.n_y)]
-        # b_list.append(a_list[self.n_y])
-        # b        = tf.keras.layers.add(b_list)
-        
-        # # Adding Rotations
-        # a_list   = tf.split(inputs[1], num_or_size_splits=[self.n_y,self.n_y-1,self.n_y], axis=1)
-        # x_str    = tf.keras.layers.multiply([x, a_list[0]])
-        
-        # phi      = a_list[1]
-        # cphi     = tf.math.cos(phi)
-        # sphi     = tf.math.sin(phi)
-        # rot      = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
-        # b_list   = [tf.keras.layers.multiply([x_str, rot[i]]) for i in range(2)]
-        
-        # b_list.append(a_list[-1])
-        # b        = tf.keras.layers.add(b_list)
-
-
-        # Adding Rotations
-        a_list   = tf.split(inputs[1], num_or_size_splits=[2,1,1], axis=1)
-        x_shift  = tf.keras.layers.add([inputs[0], a_list[0]])
-        x_str    = tf.keras.layers.multiply([x_shift, a_list[1]])
-    
-        x_split  = tf.split(x_str, num_or_size_splits=self.n_y, axis=1)
-        cphi     = tf.math.cos(a_list[2])
-        sphi     = tf.math.sin(a_list[2])
-        rot      = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
-        b_list   = [tf.keras.layers.multiply([x_split[i], rot[i]]) for i in range(self.n_y)]
-        b        = tf.keras.layers.add(b_list)
-    
-        return b
-
+        return y_merge
 
 #=======================================================================================================================================

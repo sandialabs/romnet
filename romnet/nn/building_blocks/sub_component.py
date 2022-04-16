@@ -115,8 +115,31 @@ class Sub_Component(object):
             except:
                 self.softmax_flg   = None
 
-
-        self.weight_decay_coeffs   = InputData.weight_decay_coeffs
+        try:
+            self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_type][self.name]
+            notfnd_flg           = False
+        except:
+            notfnd_flg           = True
+        if (notfnd_flg):
+            try:
+                self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_name]
+                notfnd_flg           = False
+            except:
+                notfnd_flg           = True
+        if (notfnd_flg):
+            try:
+                self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_type]
+                notfnd_flg           = False
+            except:
+                notfnd_flg           = True
+        if (notfnd_flg):
+            try:
+                self.reg_coeffs        = InputData.reg_coeffs[self.system_name]
+                notfnd_flg             = False
+            except:
+                notfnd_flg             = True
+        if (notfnd_flg):
+            self.reg_coeffs          = InputData.weight_decay_coeffs
         
         try:
             self.transfered_model  = InputData.transfered_model
@@ -131,15 +154,16 @@ class Sub_Component(object):
 
             # Adding Layer
             layer      =  Layer(InputData, 
-                                layer_type       = self.layer_type[i_layer],
-                                i_layer          = i_layer, 
-                                n_layers         = self.n_layers, 
-                                layer_name       = layer_name, 
-                                n_neurons        = self.n_neurons[i_layer], 
-                                act_func         = self.act_funcs[i_layer], 
-                                use_bias         = True, 
-                                trainable_flg    = self.trainable_flg, 
-                                transfered_model = self.transfered_model)
+                                layer_type          = self.layer_type[i_layer],
+                                i_layer             = i_layer, 
+                                n_layers            = self.n_layers, 
+                                layer_name          = layer_name, 
+                                n_neurons           = self.n_neurons[i_layer], 
+                                act_func            = self.act_funcs[i_layer], 
+                                use_bias            = True, 
+                                trainable_flg       = self.trainable_flg, 
+                                reg_coeffs          = self.reg_coeffs,
+                                transfered_model    = self.transfered_model)
             self.layers_vec.append(layer.build())
 
 

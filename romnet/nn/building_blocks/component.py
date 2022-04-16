@@ -99,14 +99,6 @@ class Component(object):
 
             layer_name        = self.long_name + '_Normalization'
         
-            # if ( (BlockName == 'Trunk') and (self.PathToPCAFile) ):
-            #     with h5py.File(self.PathToPCAFile, "r") as f:
-            #         Key_       = 'NN_PCA_1_Normalization'
-            #         Mean       = np.array(f[Key_+'/mean:0'][:])
-            #         Variance   = np.array(f[Key_+'/variance:0'][:])[...,np.newaxis]
-            #         MinVals    = np.array(f[Key_+'/min_vals:0'][:])[...,np.newaxis]
-            #         MaxVals    = np.array(f[Key_+'/max_vals:0'][:])[...,np.newaxis]
-            #         normalizer = CustomNormalization(mean=Mean, variance=Variance, min_vals=MinVals, max_vals=MaxVals, name=layer_name)
             if (self.transfered_model is not None): 
                 mean     = self.transfered_model.get_layer(layer_name).mean.numpy()
                 variance = self.transfered_model.get_layer(layer_name).variance.numpy()
@@ -148,7 +140,7 @@ class Component(object):
      
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_classic(self, inputs, layers_dict, shift, stretch, rotation, training=False):
+    def call_classic(self, inputs, layers_dict, y_pre, training=False):
 
         trans_flg = False
         comp_flg  = self.name
@@ -161,25 +153,10 @@ class Component(object):
                 trans_flg      = True
                 comp_flg_trans = self.name
 
-        if (stretch  is not None):
-            if (trans_flg):
-                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, tf.math.softplus(stretch)])
-            else:
-                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, stretch])
-
-        if (shift    is not None):
-            # if (trans_flg):
-            #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
-            #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
-            # else:
-            inputs = layers_dict[self.system_name][comp_flg]['Shift']([inputs, shift])
-
-        if (rotation is not None):
-            # if (trans_flg):
-            #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
-            #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
-            # else:
-            inputs = layers_dict[self.system_name][comp_flg]['Rotation']([inputs, rotation])
+        if (y_pre is not None):
+            if (trans_flg) and (y_pre[1] is not None):
+                y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
 
             
         if (trans_flg):
@@ -191,19 +168,27 @@ class Component(object):
 
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_improved(self, inputs, layers_dict, shift, stretch, rotation, training=False):
+    def call_improved(self, inputs, layers_dict, y_pre, training=False):
 
-        if (stretch is not None):
-            inputs = layers_dict[self.system_name][self.name]['Stretch']([inputs, stretch])
+        trans_flg = False
+        comp_flg  = self.name
+        try:
+            if ('TransFun' in layers_dict[self.system_name][self.type]):
+                trans_flg      = True
+                comp_flg_trans = self.type
+        except:
+            if ('TransFun' in layers_dict[self.system_name][self.name]):
+                trans_flg      = True
+                comp_flg_trans = self.name
 
-        if (shift   is not None):
-            inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, shift])
+        if (y_pre is not None):
+            if (trans_flg) and (y_pre[1] is not None):
+                y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
 
-        if (rotation is not None):
-            inputs = layers_dict[self.system_name][comp_flg]['Rotation']([inputs, rotation])
             
-        if ('TransFun' in layers_dict[self.system_name][self.name]):
-            inputs = layers_dict[self.system_name][self.name]['TransFun'](inputs)
+        if (trans_flg):
+            inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
 
         y                  = inputs
 

@@ -20,18 +20,18 @@ class Layer(object):
     # ---------------------------------------------------------------------------------------------------------------------------
     def __init__(self, 
                  InputData, 
-                 layer_type       = 'TF',
-                 i_layer          = 1, 
-                 n_layers         = 1, 
-                 layer_name       = '', 
-                 n_neurons        = 1, 
-                 act_func         = 'linear', 
-                 use_bias         = True, 
-                 trainable_flg    = 'all', 
-                 transfered_model = None):
+                 layer_type          = 'TF',
+                 i_layer             = 1, 
+                 n_layers            = 1, 
+                 layer_name          = '', 
+                 n_neurons           = 1, 
+                 act_func            = 'linear', 
+                 use_bias            = True, 
+                 trainable_flg       = 'all', 
+                 reg_coeffs          = [0., 0.],
+                 transfered_model    = None):
 
         ### Weights L1 and L2 Regularization Coefficients 
-        self.weight_decay_coeffs = InputData.weight_decay_coeffs
         self.batch_size          = InputData.batch_size
 
         self.layer_type          = layer_type
@@ -42,6 +42,7 @@ class Layer(object):
         self.act_func            = act_func
         self.use_bias            = use_bias
         self.trainable_flg       = trainable_flg
+        self.reg_coeffs          = reg_coeffs
         self.transfered_model    = transfered_model
         self.last_flg            = True if (i_layer >= n_layers-1) else False
 
@@ -56,15 +57,15 @@ class Layer(object):
 
         # Parameters Initialization
         ### Biases L1 and L2 Regularization Coefficients 
-        kW1 = self.weight_decay_coeffs[0]
-        kW2 = self.weight_decay_coeffs[1]
+        kW1 = self.reg_coeffs[0]
+        kW2 = self.reg_coeffs[1]
         if (not self.last_flg):
-            if (len(self.weight_decay_coeffs) == 2):
-                kb1 = self.weight_decay_coeffs[0]
-                kb2 = self.weight_decay_coeffs[1]
+            if (len(self.reg_coeffs) == 2):
+                kb1 = self.reg_coeffs[0]
+                kb2 = self.reg_coeffs[1]
             else:
-                kb1 = self.weight_decay_coeffs[2]
-                kb2 = self.weight_decay_coeffs[3]
+                kb1 = self.reg_coeffs[2]
+                kb2 = self.reg_coeffs[3]
         else:
             kb1 = 0.
             kb2 = 0.
