@@ -71,14 +71,14 @@ class inputdata(object):
         self.n_branch_out        = self.n_modes+1                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
-                                                  'Shift': {'Main': np.array([64,64,64,64,2])},  
-                                                'Stretch': {'Main': np.array([64,64,64,64,1])},  
-                                               'Rotation': {'Main': np.array([64,64,64,64,1])},  
+                                                  'Shift': {'Main': np.array([128,64,32,2])},  
+                                                'Stretch': {'Main': np.array([128,64,32,1])},  
+                                               'Rotation': {'Main': np.array([128,64,32,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                  'Shift': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
-                                                'Stretch': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
-                                               'Rotation': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
+                                                  'Shift': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                               'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
                                                   'Shift': {'Main': [1.e-16,1.e-16]},  
@@ -121,7 +121,7 @@ class inputdata(object):
         self.batch_size          = 1024                                                                        # Mini-Batch Size
         self.valid_batch_size    = 8192                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 50000, 0.99]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.callbacks_dict           = {
