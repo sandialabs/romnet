@@ -22,10 +22,10 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_500Instants_TransRotScale_Diff/'                              # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale/'                              # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
         # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_500Instants_TransRotScale_Diff/Orig/'                           # Path To Training-Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -71,29 +71,29 @@ class inputdata(object):
         self.n_branch_out        = self.n_modes+1                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
-                                                  'Shift': {'Main': np.array([64,64,64,64,2])},  
-                                                'Stretch': {'Main': np.array([64,64,64,64,1])},  
-                                               'Rotation': {'Main': np.array([64,64,64,64,1])},  
+                                                  'Shift': {'Main': np.array([16,16,16,2])},  
+                                                'Stretch': {'Main': np.array([8,8,8,1])},  
+                                               'Rotation': {'Main': np.array([8,8,8,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                  'Shift': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
-                                                'Stretch': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
-                                               'Rotation': {'Main': ['tanh','tanh','tanh','tanh','linear']}, 
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
+                                                  'Shift': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                               'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
-                                                  'Shift': {'Main': [1.e-16,1.e-16]},  
-                                                'Stretch': {'Main': [1.e-16,1.e-16]},  
-                                               'Rotation': {'Main': [1.e-16,1.e-16]},  
+                                                  'Shift': {'Main': [1.e-8,1.e-8]},  
+                                                'Stretch': {'Main': [1.e-8,1.e-8]},  
+                                               'Rotation': {'Main': [1.e-8,1.e-8]},  
                                                   'Trunk': {'Main': [1.e-8,1.e-8]}}}  
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
-                                                  'Shift': {'Main': 1.e-2},  
-                                                'Stretch': {'Main': 1.e-2},  
-                                               'Rotation': {'Main': 1.e-2},  
+                                                  'Shift': {'Main': None},  
+                                                'Stretch': {'Main': None},  
+                                               'Rotation': {'Main': None},  
                                                   'Trunk': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Shift': {'Main': True},
-                                                'Stretch': {'Main': True},
-                                               'Rotation': {'Main': True},
+                                                  'Shift': {'Main': False},
+                                                'Stretch': {'Main': False},
+                                               'Rotation': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONet': True}
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  

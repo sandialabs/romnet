@@ -22,10 +22,10 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale_Diff/'                                 # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale/'                                 # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
         # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale_Diff/Orig/'                           # Path To Training-Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
         ### Physical System

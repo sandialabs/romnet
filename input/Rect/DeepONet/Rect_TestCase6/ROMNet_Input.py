@@ -75,7 +75,7 @@ class inputdata(object):
                                                 'Stretch': {'Main': np.array([128,64,32,1])},  
                                                'Rotation': {'Main': np.array([128,64,32,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
                                                   'Shift': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
