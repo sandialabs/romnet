@@ -380,6 +380,7 @@ class Model_TF(Model):
         History       = self.net.fit(x=x, 
                                      y=y, 
                                      batch_size=InputData.batch_size, 
+                                     validation_batch_size=InputData.valid_batch_size, 
                                      validation_data=xy_valid, 
                                      verbose=1, 
                                      epochs=InputData.n_epoch, 
