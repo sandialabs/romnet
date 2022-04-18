@@ -71,9 +71,9 @@ class inputdata(object):
         self.n_branch_out        = self.n_modes+1                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
-                                                  'Shift': {'Main': np.array([16,16,16,2])},  
+                                                  'Shift': {'Main': np.array([32,32,32,2])},  
                                                 'Stretch': {'Main': np.array([8,8,8,1])},  
-                                               'Rotation': {'Main': np.array([8,8,8,1])},  
+                                               'Rotation': {'Main': np.array([32,32,32,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
                                                   'Shift': {'Main': ['tanh','tanh','tanh','linear']}, 
@@ -81,9 +81,9 @@ class inputdata(object):
                                                'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
-                                                  'Shift': {'Main': [1.e-8,1.e-8]},  
-                                                'Stretch': {'Main': [1.e-8,1.e-8]},  
-                                               'Rotation': {'Main': [1.e-8,1.e-8]},  
+                                                  'Shift': {'Main': [1.e-5,1.e-5]},  
+                                                'Stretch': {'Main': [1.e-5,1.e-5]},  
+                                               'Rotation': {'Main': [1.e-5,1.e-5]},  
                                                   'Trunk': {'Main': [1.e-8,1.e-8]}}}  
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
                                                   'Shift': {'Main': None},  
@@ -95,7 +95,7 @@ class inputdata(object):
                                                 'Stretch': {'Main': False},
                                                'Rotation': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
+        self.dotlayer_bias_flg   = {'DeepONet': False}
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Shift': {'Main': False},
                                                 'Stretch': {'Main': False},
@@ -117,11 +117,11 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 10000                                                                     # Number of Epoches
-        self.batch_size          = 1024                                                                        # Mini-Batch Size
-        self.valid_batch_size    = 8192                                                                        # Validation Mini-Batch Size
+        self.n_epoch             = 20000                                                                     # Number of Epoches
+        self.batch_size          = 10000                                                                        # Mini-Batch Size
+        self.valid_batch_size    = 10000                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.callbacks_dict           = {

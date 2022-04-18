@@ -42,25 +42,32 @@ class DeepONet(NN):
         self.n_branches                = len([name for name in InputData.structure['DeepONet'].keys() if 'Branch' in name])
         self.n_trunks                  = len([name for name in InputData.structure['DeepONet'].keys() if 'Trunk'  in name])
 
-        self.n_rigids                  = 0
+        self.n_pre_blocks            = 0
         try:
             self.n_shifts              = len([name for name in InputData.structure['DeepONet'].keys() if 'Shift' in name]) 
-            self.n_rigids             += 1 
+            self.n_pre_blocks       += 1 
             self.shift_vars            = InputData.input_vars[self.name]['Shift']
         except:
             self.n_shifts              = 0
         try:
             self.n_stretches           = len([name for name in InputData.structure['DeepONet'].keys() if 'Stretch' in name]) 
-            self.n_rigids             += 1
+            self.n_pre_blocks       += 1
             self.stretch_vars          = InputData.input_vars[self.name]['Stretch']
         except:
             self.n_stretches           = 0
         try:
             self.n_rotations           = len([name for name in InputData.structure['DeepONet'].keys() if 'Rotation' in name]) 
-            self.n_rigids             += 1
+            self.n_pre_blocks       += 1
             self.rotation_vars         = InputData.input_vars[self.name]['Rotation']
         except:
             self.n_rotations           = 0
+        try:
+            self.n_prenets             = len([name for name in InputData.structure['DeepONet'].keys() if 'PreNet' in name]) 
+            self.n_pre_blocks         += 1
+            self.prenet_vars           = InputData.input_vars[self.name]['PreNet']
+        except:
+            self.n_prenets             = 0
+
 
         try:
             self.internal_pca_flg      = InputData.internal_pca_flg
@@ -133,7 +140,7 @@ class DeepONet(NN):
                         self.layer_names_dict['DeepONet']['Trunk'+temp_str]['TransFun'] = layer_name
 
         # Trunk-PreNets Blocks Coupling Layers
-        if (self.n_rigids > 0):
+        if (self.n_pre_blocks > 0):
             for i_trunk in range(self.n_trunks):
                 if (self.n_trunks > 1):
                     temp_str = '_'+str(i_trunk+1)
@@ -597,8 +604,13 @@ class PreNet(_Merge):
         
         y_merge    = inputs[0]
         y_pre_list = inputs[1]
-    
-        y_rotation = y_pre_list[2]
+        y_prenet   = y_pre_list[-1]
+        if (y_prenet is not None):
+            y_pre_list_ = tf.split(y_prenet, num_or_size_splits=[self.n_y,1,1], axis=1)
+        else:
+            y_pre_list_ = y_pre_list
+
+        y_rotation = y_pre_list_[2]
         if (y_rotation is not None):
             y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
             cphi            = tf.math.cos(y_rotation)
@@ -608,12 +620,12 @@ class PreNet(_Merge):
             y_merge         = tf.keras.layers.add(y_merge_list)
  
         # Adding Stretching
-        y_stretch  = y_pre_list[1]
+        y_stretch  = y_pre_list_[1]
         if (y_stretch is not None):
             y_merge  = tf.keras.layers.multiply([y_merge, y_stretch])
 
         # Adding Shift
-        y_shift    = y_pre_list[0]
+        y_shift    = y_pre_list_[0]
         if (y_shift is not None):
             y_merge  = tf.keras.layers.add([y_merge, y_shift])
 

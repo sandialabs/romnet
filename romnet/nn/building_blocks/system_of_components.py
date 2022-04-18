@@ -55,25 +55,31 @@ class System_of_Components(object):
             self.n_branches                = len([name for name in self.structure[self.name].keys() if 'Branch' in name])
             self.branch_vars               = InputData.input_vars[self.name]['Branch']
 
-            self.n_rigids                  = 0
+            self.n_pre_blocks              = 0
             try:
                 self.n_shifts              = len([name for name in self.structure[self.name].keys() if 'Shift' in name]) 
-                self.n_rigids             += 1 
+                self.n_pre_blocks         += 1 
                 self.shift_vars            = InputData.input_vars[self.name]['Shift']
             except:
                 self.n_shifts              = 0
             try:
                 self.n_stretches           = len([name for name in self.structure[self.name].keys() if 'Stretch' in name]) 
-                self.n_rigids             += 1 
+                self.n_pre_blocks         += 1 
                 self.stretch_vars          = InputData.input_vars[self.name]['Stretch']
             except:
                 self.n_stretches           = 0
             try:
                 self.n_rotations           = len([name for name in self.structure[self.name].keys() if 'Rotation' in name]) 
-                self.n_rigids             += 1 
+                self.n_pre_blocks         += 1 
                 self.rotation_vars         = InputData.input_vars[self.name]['Rotation']
             except:
                 self.n_rotations           = 0
+            try:
+                self.n_prenets             = len([name for name in self.structure[self.name].keys() if 'PreNet' in name]) 
+                self.n_pre_blocks         += 1
+                self.prenet_vars           = InputData.input_vars[self.name]['PreNet']
+            except:
+                self.n_prenets             = 0
 
             self.n_trunks                  = len([name for name in self.structure[self.name].keys() if 'Trunk' in name])
             self.trunk_vars                = InputData.input_vars[self.name]['Trunk']
@@ -132,6 +138,7 @@ class System_of_Components(object):
         self.shift_names    = []
         self.stretch_names  = []
         self.rotation_names = []
+        self.prenet_names   = []
         self.trunk_names    = []
         for component_name in self.structure[self.name]:
 
@@ -143,6 +150,8 @@ class System_of_Components(object):
                 self.stretch_names.append(component_name)
             elif ('Rotation' in component_name):
                 self.rotation_names.append(component_name)
+            elif ('PreNet' in component_name):
+                self.prenet_names.append(component_name)
             elif ('Trunk' in component_name):
                 self.trunk_names.append(component_name)
 
@@ -210,13 +219,25 @@ class System_of_Components(object):
         else:
             y_rotation_vec = [None]*self.n_trunks
 
+        # Checking if Any Pre-Net Block is Part of the flexDeepONet
+        if (self.n_prenets > 0):
+            for i_prenet in range(self.n_prenets):
+                prenet_name  = self.prenet_names[i_prenet]
+                y_prenet     = self.components[prenet_name].call(inputs_branch, layers_dict, None, training=training)
+                if (self.n_trunks > 1):
+                    y_prenet_vec = tf.split(y_prenet, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                else:
+                    y_prenet_vec = [y_prenet]
+        else:
+            y_prenet_vec = [None]*self.n_trunks
+
 
         # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
             trunk_name  = self.trunk_names[i_trunk]
-            if (self.n_rigids > 0 ):
-                y_pre_vec = [y_shift_vec[i_trunk], y_stretch_vec[i_trunk], y_rotation_vec[i_trunk]]
+            if (self.n_pre_blocks > 0 ):
+                y_pre_vec = [y_shift_vec[i_trunk], y_stretch_vec[i_trunk], y_rotation_vec[i_trunk], y_prenet_vec[i_trunk]]
             else:
                 y_pre_vec = None 
             y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, y_pre_vec, training=training))
@@ -338,13 +359,25 @@ class System_of_Components(object):
         else:
             y_rotation_vec = [None]*self.n_trunks
 
+        # Checking if Any Pre-Net Block is Part of the flexDeepONet
+        if (self.n_prenets > 0):
+            for i_prenet in range(self.n_prenets):
+                prenet_name  = self.prenet_names[i_prenet]
+                y_prenet     = self.components[prenet_name].call(inputs_branch, layers_dict, None, training=training)
+                if (self.n_trunks > 1):
+                    y_prenet_vec = tf.split(y_prenet, num_or_size_splits=[1]*self.n_trunks, axis=1)
+                else:
+                    y_prenet_vec = [y_prenet]
+        else:
+            y_prenet_vec = [None]*self.n_trunks
+
 
         # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
             trunk_name  = self.trunk_names[i_trunk]
-            if (self.n_rigids > 0 ):
-                y_pre_vec = [y_shift_vec[i_trunk], y_stretch_vec[i_trunk], y_rotation_vec[i_trunk]]
+            if (self.n_pre_blocks > 0 ):
+                y_pre_vec = [y_shift_vec[i_trunk], y_stretch_vec[i_trunk], y_rotation_vec[i_trunk], y_prenet_vec[i_trunk]]
             else:
                 y_pre_vec = None 
             y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, y_pre_vec, training=training))

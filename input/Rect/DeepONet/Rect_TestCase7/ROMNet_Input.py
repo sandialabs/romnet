@@ -23,8 +23,8 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
         self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_500Instants_TransRotScale_Diff/'                              # Path To Training Folder
-        # self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
-        self.path_to_load_fld    = self.ROMNet_fld +'/../Rect_500Instants_TransRotScale_Diff/DeepONet/Run_16//'     # Path To Pre-Trained Model Folder 
+        self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
+        # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
         self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_500Instants_TransRotScale_Diff/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
@@ -46,48 +46,72 @@ class inputdata(object):
 
         #=======================================================================================================================================
         ## NN Model Structure
-        self.surrogate_type      = 'DeepONet'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
-        self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
+        self.surrogate_type      = 'VI_DeepONet'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
+        self.plot_graph_flg      = False                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.output_vars         = ['z']                                                                 # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['t','x','y']                                                             # List Containing all the Input Data Variable Names
-        self.input_vars          = {'DeepONet': {'Branch': ['t'],  
-                                                  'PreNet': ['t'],
+        self.input_vars          = {'DeepONetMean': {'Branch': ['t'],  
+                                                  'Shift': ['t'],
+                                                'Stretch': ['t'],
+                                               'Rotation': ['t'],
                                                   'Trunk': ['x','y']}}                                          # Dictionary Containing the Input  Data Variable Names for each Component
-        self.norm_input_flg      = {'DeepONet': {'Branch': False,   
-                                                  'PreNet': False,
+        self.norm_input_flg      = {'DeepONetMean': {'Branch': False,   
+                                                  'Shift': False,
+                                                'Stretch': False,
+                                               'Rotation': False,
                                                   'Trunk': False}}
-        self.structure           = {'DeepONet': {'Branch': ['Main'],  
-                                                  'PreNet': ['Main'],  
+        self.structure           = {'DeepONetMean': {'Branch': ['Main'],  
+                                                  'Shift': ['Main'],  
+                                                'Stretch': ['Main'],  
+                                               'Rotation': ['Main'],  
                                                   'Trunk': ['Main']}}                                      # Dictionary Containing the Structure of the Network
-        self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
+        self.branch_to_trunk     = {'DeepONetMean': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
-                                                 'PreNet': {'Main': np.array([100,100,100,4])},  
+        self.n_neurons           = {'DeepONetMean': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
+                                                  'Shift': {'Main': np.array([64,64,64,2])},  
+                                                'Stretch': {'Main': np.array([64,64,64,1])},  
+                                               'Rotation': {'Main': np.array([64,64,64,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
-                                                 'PreNet': {'Main': ['tanh','tanh','tanh','linear']}, 
+        self.act_funcs           = {'DeepONetMean': {'Branch': {'Main': ['tanh','tanh','linear']},  
+                                                  'Shift': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                               'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
-                                                 'PreNet': {'Main': [1.e-16,1.e-16]},  
+        self.layer_type          = {'DeepONetMean': {'Branch': {'Main': ['TF','TF','TF']},  
+                                                      'Shift': {'Main': ['TFP','TFP','TFP','TF']},  
+                                                    'Stretch': {'Main': ['TFP','TFP','TFP','TF']},  
+                                                   'Rotation': {'Main': ['TFP','TFP','TFP','TF']},  
+                                                      'Trunk': {'Main': ['TF','TF','TF']}}}      # Dictionary Containing the Activation Funct.s for each Layer
+        self.reg_coeffs          = {'DeepONetMean': {'Branch': {'Main': [1.e-8,1.e-8]},
+                                                  'Shift': {'Main': [1.e-16,1.e-16]},  
+                                                'Stretch': {'Main': [1.e-16,1.e-16]},  
+                                               'Rotation': {'Main': [1.e-16,1.e-16]},  
                                                   'Trunk': {'Main': [1.e-8,1.e-8]}}}  
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
-                                                 'PreNet': {'Main': 1.e-2},  
+        self.dropout_rate        = {'DeepONetMean': {'Branch': {'Main': None},
+                                                  'Shift': {'Main': None},  
+                                                'Stretch': {'Main': None},  
+                                               'Rotation': {'Main': None},  
                                                   'Trunk': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
-        self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                 'PreNet': {'Main': True},
+        self.dropout_pred_flg    = {'DeepONetMean': {'Branch': {'Main': False},  
+                                                  'Shift': {'Main': True},
+                                                'Stretch': {'Main': True},
+                                               'Rotation': {'Main': True},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': False}
-        self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
-                                                 'PreNet': {'Main': False},
+        self.dotlayer_bias_flg   = {'DeepONetMean': False}
+        self.softmax_flg         = {'DeepONetMean': {'Branch': {'Main': False},  
+                                                  'Shift': {'Main': False},
+                                                'Stretch': {'Main': False},
+                                               'Rotation': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.sigma_like          = [1.e2]
 
         #=======================================================================================================================================
         ### Losses
         ## Fully Data Driven
-        self.losses              = {'pts': {'name': 'MSE', 'axis': 0}}                                       # Dictionary Containing Loss Functions for Each Data Type
+        self.losses              = {'pts': {'name': 'NLL', 'axis': 0}}                                       # Dictionary Containing Loss Functions for Each Data Type
         self.loss_weights        = {'pts': 1.}                                                               # Dictionary Containing Weights for Each Data Type
         # ## Physics Informed
         # self.losses              = {'ics': {'name': 'MSE', 'axis': 0}, 'res': {'name': 'MSE', 'axis': 0}}    # Dictionary Containing Loss Functions for Each Data Type
@@ -100,8 +124,8 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 10000                                                                     # Number of Epoches
-        self.batch_size          = 10000                                                                        # Mini-Batch Size
-        self.valid_batch_size    = 10000                                                                        # Validation Mini-Batch Size
+        self.batch_size          = 1024                                                                        # Mini-Batch Size
+        self.valid_batch_size    = 8192                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer

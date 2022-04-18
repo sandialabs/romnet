@@ -53,49 +53,33 @@ class inputdata(object):
         self.output_vars         = ['z']                                                                 # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['t','x','y']                                                             # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': ['t'],  
-                                                  'Rigid': ['t'],
+                                               'Rotation': ['t'],
                                                   'Trunk': ['x','y']}}                                          # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg      = {'DeepONet': {'Branch': False,   
-                                                  'Rigid': False,
+                                               'Rotation': False,
                                                   'Trunk': False}}
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
-                                                  'Rigid': ['Main'],
+                                               'Rotation': ['Main'],
                                                   'Trunk': ['Main']}}                                      # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.rigid_type          = 'rotation'    
-        self.n_branch_out        = self.n_modes                                                              # No of Neurons in Branches' Last Layers
+        self.n_branch_out        = self.n_modes+1                                                             # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([4,4,self.n_branch_out])},
-                                                  'Rigid': {'Main': np.array([4,4,4])},  
+                                               'Rotation': {'Main': np.array([4,4,4])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
-                                                  'Rigid': {'Main': ['tanh','tanh','linear']}, 
+                                               'Rotation': {'Main': ['tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
-                                                  'Rigid': {'Main': None},  
+                                               'Rotation': {'Main': None},  
                                                   'Trunk': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Rigid': {'Main': False},
+                                               'Rotation': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
+        self.dotlayer_bias_flg   = {'DeepONet': False}
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Rigid': {'Main': False},
+                                               'Rotation': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
-        # self.structure           = {'DeepONet': {'Branch_1': ['Main', 'U', 'V'],
-        #                                          'Branch_2': ['Main', 'U', 'V'],
-        #                                             'Trunk': ['Main']}}                                      # Dictionary Containing the Structure of the Network
-        # self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_modes+2]),
-        #                                                        'U': np.array([32]),
-        #                                                        'V': np.array([32])},
-        #                                           'Trunk': {'Main': np.array([32,32,32,self.n_modes])}}}     # Dictionary Containing the No of Neurons for each Layer
-        # self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['sigmoid','sigmoid','sigmoid','linear'],
-        #                                                        'U': ['tanh'],
-        #                                                        'V': ['tanh']},
-        #                                           'Trunk': {'Main': ['sigmoid','sigmoid','sigmoid','linear']}}}  # Dictionary Containing the Activation Funct.s for each Layer
-        # self.dropout_rate        = {'DeepONet': {'Branch': {'Main':  1.e-3, 'U': None,  'V': None},
-        #                                           'Trunk': {'Main':  1.e-3}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
-        # self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False,  'U': False, 'V': False}}}        # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        # self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
 
         #=======================================================================================================================================
         ### Losses
