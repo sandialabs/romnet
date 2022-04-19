@@ -22,10 +22,10 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale/'                                 # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale_Rand/'                                 # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
         # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale/Orig/'                           # Path To Training-Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale_Rand/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -103,11 +103,11 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 10000                                                                     # Number of Epoches
-        self.batch_size          = 2048                                                                        # Mini-Batch Size
-        self.valid_batch_size    = 2048                                                                        # Validation Mini-Batch Size
+        self.n_epoch             = 20000                                                                     # Number of Epoches
+        self.batch_size          = 80000                                                                        # Mini-Batch Size
+        self.valid_batch_size    = 80000                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 20000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-6, 1.e-6], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

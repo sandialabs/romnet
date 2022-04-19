@@ -22,10 +22,10 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_200Instants_TransRotScale/'                              # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../Rect_100Instants_TransRotScale_Rand/'                              # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
         # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_200Instants_TransRotScale/Orig/'                           # Path To Training-Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/Rect_100Instants_TransRotScale_Rand/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -70,7 +70,7 @@ class inputdata(object):
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,self.n_branch_out])},
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([4,4,self.n_branch_out])},
                                                   'Shift': {'Main': np.array([32,32,32,2])},  
                                                 'Stretch': {'Main': np.array([8,8,8,1])},  
                                                'Rotation': {'Main': np.array([32,32,32,1])},  

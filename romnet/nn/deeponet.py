@@ -615,7 +615,7 @@ class PreNet(_Merge):
             y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
             cphi            = tf.math.cos(y_rotation)
             sphi            = tf.math.sin(y_rotation)
-            y_rotation_list = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
+            y_rotation_list = [tf.concat([cphi, sphi],  axis=1), tf.concat([-sphi, cphi], axis=1)]
             y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
             y_merge         = tf.keras.layers.add(y_merge_list)
  
