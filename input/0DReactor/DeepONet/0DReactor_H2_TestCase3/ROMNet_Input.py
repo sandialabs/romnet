@@ -72,7 +72,6 @@ class inputdata(object):
         self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = self.Vars0 + ['t']                                                                    # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
-                                                  'Rigid': self.Vars0,
                                                   'Trunk': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
         self.n_branches          = len(self.Vars)
         self.n_trunks            = self.n_branches

@@ -55,7 +55,7 @@ class inputdata(object):
         self.trans_fun           = {'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'std'
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
-                                                  'Rigid': True,
+                                                'Stretch': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
@@ -74,7 +74,7 @@ class inputdata(object):
         # self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
         # self.input_vars_all      = self.Vars0 + ['t']                                                                    # List Containing all the Input Data Variable Names
         # self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
-        #                                           'Rigid': self.Vars0,
+        #                                           'Stretch': self.Vars0,
         #                                           'Trunk': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
         # self.n_branches          = self.NRODsSel #len(self.Vars)
         # self.n_trunks            = self.n_branches
@@ -85,38 +85,37 @@ class inputdata(object):
         self.output_vars         = ['PC_'+str(i+1) for i in self.i_redSel]                                                 # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['PC0_'+str(i+1) for i in range(self.NRODs)]+['t']                                      # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
-                                                  'Rigid': ['PC0_'+str(i+1) for i in range(self.NRODs)],
+                                                'Stretch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
                                                   'Trunk': ['t']}}                                                         # Dictionary Containing the Input  Data Variable Names for each Component
         self.n_branches          = self.NRODsSel
         self.n_trunks            = self.n_branches
         # -----------------------------------------------------------------------------------
 
         self.gaussnoise_rate     = {'DeepONet': {'Branch': None,
-                                                  'Rigid': None}}    
+                                                'Stretch': None}}    
         self.structure           = {'DeepONet': {}}
         for i in range(self.n_branches):
            self.structure['DeepONet']['Branch_'+str(i+1)] = ['Main']
-        self.structure['DeepONet']['Rigid']               = ['Main']
+        self.structure['DeepONet']['Stretch']               = ['Main']
         for i in range(self.n_trunks):
            self.structure['DeepONet']['Trunk_'+str(i+1)]  = ['Main']                                         # Dictionary Containing the Structure of the Network
-        self.rigid_type          = 'stretch'                                                                 # Type of Rigid Block Preprocessing ('shift'/'stretch'/'shift_and_stretch')
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                                  'Rigid': {'Main': np.array([32,32,32,self.n_trunks])},
+                                                'Stretch': {'Main': np.array([32,32,32,self.n_trunks])},
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                  'Rigid': {'Main': ['tanh','tanh','tanh','linear']},
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','linear']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-3},  
-                                                  'Rigid': {'Main': 1.e-3},  
+                                                'Stretch': {'Main': 1.e-3},  
                                                   'Trunk': {'Main': 1.e-3}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': True},  
-                                                  'Rigid': {'Main': True},
+                                                'Stretch': {'Main': True},
                                                   'Trunk': {'Main': True}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Rigid': {'Main': False},
+                                                'Stretch': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONet': False}
 

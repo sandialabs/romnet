@@ -610,24 +610,29 @@ class PreNet(_Merge):
         else:
             y_pre_list_ = y_pre_list
 
-        y_rotation = y_pre_list_[2]
+        y_merge    = inputs[0]
+        y_pre_list = inputs[1]
+
+        y_rotation = y_pre_list[2]
         if (y_rotation is not None):
             y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
             cphi            = tf.math.cos(y_rotation)
             sphi            = tf.math.sin(y_rotation)
-            y_rotation_list = [tf.concat([cphi, sphi],  axis=1), tf.concat([-sphi, cphi], axis=1)]
+            y_rotation_list = [tf.concat([cphi, -sphi],  axis=1), tf.concat([sphi, cphi], axis=1)]
             y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
             y_merge         = tf.keras.layers.add(y_merge_list)
- 
+
+        # Adding Shift
+        y_shift    = y_pre_list[0]
+        if (y_shift is not None):
+            y_merge  = tf.keras.layers.add([y_merge, y_shift])
+
         # Adding Stretching
-        y_stretch  = y_pre_list_[1]
+        y_stretch  = y_pre_list[1]
         if (y_stretch is not None):
             y_merge  = tf.keras.layers.multiply([y_merge, y_stretch])
 
-        # Adding Shift
-        y_shift    = y_pre_list_[0]
-        if (y_shift is not None):
-            y_merge  = tf.keras.layers.add([y_merge, y_shift])
+        #y_merge = tf.math.tanh(y_merge)
 
         return y_merge
 

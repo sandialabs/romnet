@@ -65,10 +65,10 @@ class inputdata(object):
         self.n_branch_out        = self.n_modes+1                                                             # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([4,4,self.n_branch_out])},
-                                               'Rotation': {'Main': np.array([4,4,4])},  
+                                               'Rotation': {'Main': np.array([16,16,16,1])},  
                                                   'Trunk': {'Main': np.array([4,1,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','linear']},  
-                                               'Rotation': {'Main': ['tanh','tanh','linear']}, 
+                                               'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
                                                'Rotation': {'Main': None},  
@@ -99,11 +99,11 @@ class inputdata(object):
         self.n_epoch             = 10000                                                                     # Number of Epoches
         self.batch_size          = 2048                                                                        # Mini-Batch Size
         self.valid_batch_size    = 2048                                                                        # Validation Mini-Batch Size
-        self.lr                  = 5.e-3                                                                     # Initial Learning Rate
+        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-8, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-6, 1.e-6], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

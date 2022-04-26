@@ -63,6 +63,18 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 		- 0DReact_*_TestCase4: Fully data-driven training of flexDeepONet n the original (i.e., thermodynamic state variables) space
 		- 0DReact_*_TestCase5: -
 		- 0DReact_*_TestCase6: Physics-informed training of flexDeepONet n the original (i.e., thermodynamic state variables) space
+	
+		
+	- 4. Moving Rectangle
+	
+		- Rect_TestCase1:  Fully data-driven training of vanilla DeepONet for a rotating-translating-scaling rigid body (~ rectangle)
+		- Rect_TestCase2: -
+		- Rect_TestCase3: -
+		- Rect_TestCase4: -
+		- Rect_TestCase5: Fully data-driven training of flexDeepONet for a rotating-translating-scaling rigid body (~ rectangle)
+		- Rect_TestCase6: - 
+		- Rect_TestCase7: - 
+
 
 
 --------------------------------------------------------------------------------------
