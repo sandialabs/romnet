@@ -81,11 +81,11 @@ class inputdata(object):
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                'Rotation': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-8,1.e-8]},
-                                                  'Shift': {'Main': [1.e-8,1.e-8]},  
-                                                'Stretch': {'Main': [1.e-8,1.e-8]},  
-                                               'Rotation': {'Main': [1.e-8,1.e-8]},  
-                                                  'Trunk': {'Main': [1.e-8,1.e-8]}}}  
+        self.reg_coeffs          = {'DeepONet': {'Branch': {'Main': [1.e-6,1.e-6]},
+                                                  'Shift': {'Main': [1.e-6,1.e-6]},  
+                                                'Stretch': {'Main': [1.e-6,1.e-6]},  
+                                               'Rotation': {'Main': [1.e-6,1.e-6]},  
+                                                  'Trunk': {'Main': [1.e-6,1.e-6]}}}  
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},
                                                   'Shift': {'Main': None},  
                                                 'Stretch': {'Main': None},  
@@ -122,7 +122,7 @@ class inputdata(object):
         self.batch_size          = 2048                                                                        # Mini-Batch Size
         self.valid_batch_size    = 2048                                                                        # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.callbacks_dict           = {
