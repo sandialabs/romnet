@@ -31,7 +31,7 @@ MinVal                = 1.e-20
 
 ## FIRST TIME
 DirName               = 'train'
-n_ics                 = 500
+n_ics                 = 1000
 
 # # SECOND TIME
 # DirName            = 'test'
