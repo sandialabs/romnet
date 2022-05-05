@@ -257,7 +257,7 @@ for it, t in enumerate(tVec):
     axs[1].add_patch(rect)
     axs[1].text( -9.5,  8.2, r'Test Predictions', color=ColorVec[0], fontsize=26, weight='bold')
     axs[1].text(-14.5, 13.2, r'Extrapolations', color=ColorVec[0], fontsize=26, weight='bold')
-    axs[1].set_title("Vanilla DeepONet Architecture,\n 165,761 Trainable Parameters", pad=10, fontsize=26)
+    axs[1].set_title("Vanilla DeepONet architecture,\n 165,761 trainable parameters", pad=10, fontsize=26)
     axs[1].set_xlabel('x', fontsize=24)
     axs[1].set_yticklabels([])
 
@@ -267,7 +267,7 @@ for it, t in enumerate(tVec):
     axs[2].add_patch(rect)
     axs[2].text( -9.5,  8.2, r'Test Predictions', color=ColorVec[1], fontsize=26, weight='bold')
     axs[2].text(-14.5, 13.2, r'Extrapolations', color=ColorVec[1], fontsize=26, weight='bold')
-    axs[2].set_title("flexDeepONet Architecture,\n 1,921 Trainable Parameters", pad=10, fontsize=26)
+    axs[2].set_title("Proposed DeepONet extension,\n 1,921 trainable parameters", pad=10, fontsize=26)
     axs[2].set_xlabel('x', fontsize=24)
     axs[2].set_yticklabels([])
     

@@ -89,7 +89,6 @@ class Sub_Component(object):
             except:
                 self.dropout_rate  = None 
 
-
         try:
             self.dropout_pred_flg  = InputData.dropout_pred_flg[self.system_name][self.component_type][self.name]
             notfnd_flg             = False

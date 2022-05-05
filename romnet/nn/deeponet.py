@@ -289,7 +289,7 @@ class OutputTransLayer(tf.keras.layers.Layer):
 
     def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputTrans'):
         super(OutputTransLayer, self).__init__(name=name, trainable=False)
-        self.data_preproc_type = type
+        self.data_preproc_type = data_preproc_type
         self.output_min        = output_min
         self.output_max        = output_max
         self.output_mean       = output_mean
@@ -330,7 +330,7 @@ class OutputInvTransLayer(tf.keras.layers.Layer):
 
     def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputInvTrans'):
         super(OutputInvTransLayer, self).__init__(name=name, trainable=False)
-        self.data_preproc_type = type
+        self.data_preproc_type = data_preproc_type
         self.output_min        = output_min
         self.output_max        = output_max
         self.output_mean       = output_mean

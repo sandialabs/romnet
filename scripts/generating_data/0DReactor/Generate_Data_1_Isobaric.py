@@ -22,23 +22,24 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ##########################################################################################
 ### Input Data
 
-### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2_Sources/'
-Fuel0              = 'H2:1.0'         
-Oxydizer0          = 'O2:1.0, N2:4.0'
-t0                 = 1.e-8
-tEnd               = 1.e-2
+# ### HYDROGEN
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2/'
+# Fuel0              = 'H2:1.0'         
+# Oxydizer0          = 'O2:1.0, N2:4.0'
+# t0                 = 1.e-8
+# tEnd               = 1.e-2
+# KeepVec            = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
 
-# ### METHANE
-# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
-# Fuel0              = 'CH4:1.0'
-# Oxydizer0          = 'O2:0.21, N2:0.79'
-# t0                 = 1.e-7
-# tEnd               = 0.
+### METHANE
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+Fuel0              = 'CH4:1.0'
+Oxydizer0          = 'O2:0.21, N2:0.79'
+t0                 = 1.e-6
+tEnd               = 1.e2
+KeepVec            = None
 
 MixtureFile        = 'gri30.yaml'
 P0                 = ct.one_atm
-KeepVec            = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
 
 NtInt              = 5000
 Integration        = 'Canteras'
@@ -50,11 +51,11 @@ delta_T_max        = 1.
 
 # # FIRST TIME
 # DirName            = 'train'
-# n_ics              = 10
-# T0Exts             = np.array([999., 1001.], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
-# # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# n_ics              = 500
+# # T0Exts             = np.array([999., 1001.], dtype=np.float64)
+# # EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 # X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
 # SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
 # NPerT0             = 1000
@@ -62,13 +63,13 @@ delta_T_max        = 1.
 ## SECOND TIME
 DirName            = 'test'
 n_ics              = 10
-# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-T0Exts             = np.array([999., 1001.], dtype=np.float64)
-EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# T0Exts             = np.array([999., 1001.], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
 X0Exts             = None
 SpeciesVec         = None
-NPerT0             = 500
+NPerT0             = 5000
 
 
 
@@ -122,7 +123,10 @@ def IdealGasConstPressureReactor_SciPY(t, y):
 def IdealGasConstPressureReactor(t, T, Y):
 
     gas_.TP   = T, P_
-    gas_sub   = gas_[KeepVec]
+    if (KeepVec):
+        gas_sub = gas_[KeepVec]
+    else:
+        gas_sub = gas_
     gas_sub.Y = Y 
 
     
@@ -267,9 +271,12 @@ for iIC in range(n_ics):
     gas     = ct.Solution(MixtureFile)
 
     Mask_ = []
-    for Keep in KeepVec:
-        Mask_.append(gas.species_names.index(Keep))
-    Mask_ = np.array(Mask_)
+    if (KeepVec):
+        for Keep in KeepVec:
+            Mask_.append(gas.species_names.index(Keep))
+        Mask_ = np.array(Mask_)
+    else:
+        Mask_ = np.arange(len(gas.species_names))
 
     ### Create Reactor
     gas.TP  = T0, P0
@@ -349,7 +356,12 @@ for iIC in range(n_ics):
 
 
     gas_             = gas
-    states           = ct.SolutionArray(gas['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2'], 1, extra={'t': [0.0]})
+    if (KeepVec):
+        gas_kept     = gas[KeepVec]
+    else:
+        gas_kept     = gas
+    states           = ct.SolutionArray(gas_kept, 1, extra={'t': [0.0]})
+
     
     if (Integration == 'Canteras'):
         #r.set_advance_limit('temperature', delta_T_max)
@@ -447,10 +459,12 @@ for iIC in range(n_ics):
 
     ### Writing Results
     Header   = 't,T'
-    # for iSpec in range(NSpec):
-    #     Header += ','+gas.species_name(iSpec)
-    for Keep in KeepVec:
-        Header += ','+Keep
+    if (KeepVec):
+        for Keep in KeepVec:
+            Header += ','+Keep
+    else:
+        for iSpec in range(NSpec):
+            Header += ','+gas.species_name(iSpec)
 
     FileName = OutputDir+'/Orig/'+DirName+'/ext/y.csv.'+str(iIC+1)
     np.savetxt(FileName, yTemp,       delimiter=',', header=Header, comments='')
@@ -477,9 +491,9 @@ print('Original (', len(SpeciesNames), ') Species: ', SpeciesNames)
 VarsName    = ['T']
 if (DirName == 'train'):
     
-    for iSpec in range(1, yMat.shape[1]):
-        if (np.amax(np.abs(yMat[1:,iSpec] - yMat[:-1,iSpec])) > 1.e-10):
-            VarsName.append(SpeciesNames[iSpec-1]) 
+    for iSpec in range(yMat.shape[1]-2):
+        if (np.amax(np.abs(yMat[1:,iSpec+2] - yMat[:-1,iSpec+2])) > 1.e-10):
+            VarsName.append(SpeciesNames[iSpec]) 
 
     print('Non-zeros (', len(VarsName), ') Variables: ', VarsName)
  

@@ -162,7 +162,9 @@ class Component(object):
         if (trans_flg):
             inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
 
-        return self.sub_components['Main'].call(inputs, training)
+        y = self.sub_components['Main'].call(inputs, training)
+
+        return y
 
     # ---------------------------------------------------------------------------------------------------------------------------   
 

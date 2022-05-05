@@ -37,6 +37,8 @@ class System_of_Components(object):
         
         if (norm_input is not None):
             self.norm_input                = norm_input[self.input_vars]
+        else:
+            self.norm_input                = None
 
         self.output_vars                   = InputData.output_vars
         self.n_outputs                     = len(self.output_vars)
@@ -46,7 +48,7 @@ class System_of_Components(object):
         except:
             self.internal_pca_flg          = False
 
-        if ('FNN' in self.type):    
+        if ('FNN' in self.type) or ('coder' in self.type):    
             self.call                      = self.call_fnn
 
         elif ('DeepONet' in self.type):    
@@ -116,11 +118,11 @@ class System_of_Components(object):
                 self.dotlayer_mult_flg     = None
 
         try:
-            self.softmax_flg               = InputData.softmax_flg[self.name] if isinstance(InputData.softmax_flg[self.name], (int)) else False
+            self.softmax_flg               = InputData.softmax_flg[self.name]
         except:
             self.softmax_flg               = False
         if (self.softmax_flg):
-            self.softmax_layer             = tf.keras.layers.Softmax()
+            self.softmax_layer             = tf.keras.layers.Softmax(axis=1)
 
         try:
             self.rectify_flg               = InputData.rectify_flg
@@ -169,6 +171,18 @@ class System_of_Components(object):
     def call_fnn(self, inputs, layers_dict, training=False):
 
         y = self.components['FNN'].call(inputs, layers_dict, None, training=training)
+
+        if (self.softmax_flg):
+            # Apply SoftMax for Forcing Sum(y_i)=1
+
+            output_T, output_species = tf.split(y, [1,self.n_outputs-1], axis=1)
+            output_species           = self.softmax_layer(output_species)
+            y                        = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
+            # y                        = self.softmax_layer(y)
+
+        if (self.rectify_flg):
+            # Apply ReLu for Forcing y_i>0
+            y                        = self.rectify_layer(y)
 
         return y
 
@@ -282,7 +296,6 @@ class System_of_Components(object):
         else:
             output_concat            = output_vec[0]
 
-
         if (self.dotlayer_mult_flg):
             # Add Biases to Concatenated Dot-Layers
             output_concat            = layers_dict[self.name]['MultLayer'](output_concat)
@@ -299,9 +312,10 @@ class System_of_Components(object):
 
         if (self.softmax_flg):
             # Apply SoftMax for Forcing Sum(y_i)=1
-            output_T, output_species = tf.split(output_concat, [1,self.n_outputs-1], axis=1)
-            output_species           = self.softmax_layer(output_species)
-            output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_species])
+
+            output_T, output_concat  = tf.split(output_concat, [1,self.n_outputs-1], axis=1)
+            output_concat            = self.softmax_layer(output_concat)
+            output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_concat])
 
 
         if (self.rectify_flg):

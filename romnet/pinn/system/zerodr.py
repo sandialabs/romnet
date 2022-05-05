@@ -19,9 +19,9 @@ class ZeroDR(System):
         path_to_data_fld       = InputData.path_to_data_fld
         ROMNet_fld             = InputData.ROMNet_fld
         try:
-            self.ROM_pred_flg  = InputData.ROM_pred_flg
+            self.ROM_type      = InputData.ROM_type
         except:
-            self.ROM_pred_flg  = None
+            self.ROM_type      = None
         self.NRODs             = InputData.NRODs
 
         self.mixture_file      = 'gri30.yaml'
@@ -38,6 +38,7 @@ class ZeroDR(System):
         self.norm_output_flg   = InputData.norm_output_flg
         self.data_preproc_type = InputData.data_preproc_type
 
+        self.pinn_flg          = 'pts' in InputData.n_train
  
         self.order             = [1]
  
@@ -60,12 +61,15 @@ class ZeroDR(System):
 
         self.read_params_ROM(path_to_data_fld)
         
-        if (self.ROM_pred_flg):
+        if (self.ROM_type == 'PCA'):
             self.f_call = self.f_pc
             self.n_dims = self.n_pc
-        else:
+        elif (self.ROM_type == 'Autoencoder'):
+            self.f_call = self.f_pc
+            self.n_dims = self.NRODs
+        elif (self.ROM_type is None):
             self.f_call = self.f
-            self.n_dims = self.n_mask
+            self.n_dims = len(self.other_names)
 
         self.n_batch    = InputData.batch_size 
 
@@ -266,13 +270,13 @@ class ZeroDR(System):
     #===========================================================================
     def read_params_ROM(self, path_to_data_fld):
 
-        if (self.ROM_pred_flg):
+        if (self.ROM_type == 'PCA'):
             PathToParams    = path_to_data_fld + '/ROM/'
-        else:
-            PathToParams    = path_to_data_fld + '/../'+str(self.NRODs)+'PC/ROM/'
-            self.OutputVars = list(pd.read_csv(path_to_data_fld+'/train/ext/CleanVars.csv', header=None).to_numpy()[0,:])
+        # # elif (self.ROM_type ):
+        # #     PathToParams    = path_to_data_fld + '/../'+str(self.NRODs)+'PC/ROM/'
+        # #     self.OutputVars = list(pd.read_csv(path_to_data_fld+'/train/ext/CleanVars.csv', header=None).to_numpy()[0,:])
 
-        if (self.NRODs > 0):
+        # if (self.NRODs > 0):
             self.A         = pd.read_csv(PathToParams+'/A.csv', header=None).to_numpy()
             self.C         = pd.read_csv(PathToParams+'/C.csv', header=None).to_numpy().T
             self.D         = pd.read_csv(PathToParams+'/D.csv', header=None).to_numpy().T
@@ -281,7 +285,8 @@ class ZeroDR(System):
 
             self.to_orig   = pd.read_csv(PathToParams+'/ToOrig_Mask.csv',     header=None).to_numpy(int)[:,0]
             self.n_mask    = len(self.to_orig)
-        else:
+        
+        elif (self.ROM_type is None):
             self.to_orig   = pd.read_csv(path_to_data_fld+'/ToOrig_Mask.csv', header=None).to_numpy(int)[:,0]
             self.n_mask    = len(self.to_orig)
 
@@ -313,7 +318,7 @@ class ZeroDR(System):
             y_masked = tf.matmul(y_pc, self.A) #* self.D + self.C
             return y_masked
 
-        if (self.ROM_pred_flg):
+        if (self.ROM_type):
             return None
         else:
             return None #fROM_anti_PCA 
