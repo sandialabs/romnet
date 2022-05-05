@@ -8,7 +8,7 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.NRODs               = 10
+        self.NRODs               = 20
 
         #=======================================================================================================================================
         ### Case Name
@@ -23,7 +23,7 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
         self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_CH4_/Autoencoder/'                # Path To Training Data Folder 
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_CH4_Autoencoder_/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_CH4_Autoencoder/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -66,7 +66,7 @@ class inputdata(object):
                                     'Decoder': {'FNN': {'Main': np.array([20,30,40,self.n_outputs,self.n_outputs])}}}           # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'Encoder': {'FNN': {'Main': ['linear']}},
                                     'Decoder': {'FNN': {'Main': ['relu','relu','relu','relu','softplus']}}}               # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'Encoder': {'FNN': {'Main': 1.e-16}},
+        self.dropout_rate        = {'Encoder': {'FNN': {'Main': 1.e-8}},
                                     'Decoder': {'FNN': {'Main': 1.e-8}}}                                         # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'Encoder': {'FNN': {'Main': False}},
                                     'Decoder': {'FNN': {'Main': False}}}                                         # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
@@ -94,7 +94,7 @@ class inputdata(object):
         self.batch_size          = 512                                                                        # Batch Size for Training
         self.valid_batch_size    = 512                                                                      # Batch Size for Validation
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 20000, 0.98]                                               # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.98]                                               # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-11, 1.e-11], dtype=np.float64)                                # Hyperparameters for L1 and L2 Weight Decay Regularizations
