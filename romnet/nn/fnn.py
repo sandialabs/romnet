@@ -114,8 +114,8 @@ class FNN(NN):
 
         y = self.system_of_components['FNN'].call(inputs, self.layers_dict, training=training)
 
-        if (self.norm_output_flg) and (self.stat_output):   
-            y = self.layers_dict['All']['OutputTrans'](y)
+        # if (self.norm_output_flg) and (self.stat_output):   
+        #     y = self.layers_dict['All']['OutputTrans'](y)
 
         return y
 

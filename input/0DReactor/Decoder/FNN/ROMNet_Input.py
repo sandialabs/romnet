@@ -49,19 +49,21 @@ class inputdata(object):
         self.surrogate_type      = 'FNN'                                                                     # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
 
-        self.input_vars_all      = ['PC_'+str(iPC+1) for iPC in range(self.NRODs)]
+        FileName                 = self.path_to_data_fld+'/../../Vars.csv'
+        self.input_vars_all      = list(pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:])
+        #self.input_vars_all      = ['PC_'+str(iPC+1) for iPC in range(self.NRODs)]
         self.input_vars          = {'FNN': {'FNN': self.input_vars_all}}                                     # Dictionary Containing the Input  Data Variable Names for each Component
         FileName                 = self.path_to_data_fld+'/../../CleanVars_ToRed.csv'
-        self.output_vars         = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
+        self.output_vars         = list(pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:])
         self.n_outputs           = len(self.output_vars)
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_input_flg      = {'FNN': {'FNN': True}}                                                   # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = True                                                                    # Flag for Normalizing Output Data
-        self.data_preproc_type   = 'pareto'
+        self.data_preproc_type   = 'range'
         self.structure           = {'FNN': {'FNN': ['Main']}}                                                # Dictionary Containing the Structure of the Network
-        self.n_neurons           = {'FNN': {'FNN': {'Main': np.array([20,30,40,self.n_outputs,self.n_outputs])}}}           # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'FNN': {'FNN': {'Main': ['relu','relu','relu','relu','softmax']}}}               # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'FNN': {'FNN': {'Main': None}}}                                         # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.n_neurons           = {'FNN': {'FNN': {'Main': np.array([25,30,40,self.n_outputs,self.n_outputs])}}}           # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'FNN': {'FNN': {'Main': ['relu','relu','relu','relu','softplus']}}}               # Dictionary Containing the Activation Funct.s for each Layer
+        self.dropout_rate        = {'FNN': {'FNN': {'Main': 1.e-8}}}                                         # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'FNN': {'FNN': {'Main': False}}}                                         # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'FNN': False}                                         # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.rectify_flg         = False

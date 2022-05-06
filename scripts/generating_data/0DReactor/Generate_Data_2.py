@@ -22,7 +22,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 #OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4_/'
 
-NVarsRed              = 20
+NVarsRed              = 30
 CleanVars_FilePath    = OutputDir+'/Orig/CleanVars_ToRed.csv'
 NotCleanVars_FilePath = OutputDir+'/Orig/CleanVars_NotToRed.csv'
 
