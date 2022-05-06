@@ -8,7 +8,7 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.NRODs               = 10
+        self.NRODs               = 20
 
         #=======================================================================================================================================
         ### Case Name
@@ -22,7 +22,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_CH4_/10PC/ROM/Decoder/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_CH4_/20PC/ROM/Decoder/'                # Path To Training Data Folder 
         self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_CH4_Decoder_/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 

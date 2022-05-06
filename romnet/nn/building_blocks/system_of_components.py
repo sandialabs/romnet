@@ -172,7 +172,7 @@ class System_of_Components(object):
 
         y = self.components['FNN'].call(inputs, layers_dict, None, training=training)
 
-        if (self.softmax_flg):
+        if (self.softmax_flg is True):
             # Apply SoftMax for Forcing Sum(y_i)=1
 
             output_T, output_species = tf.split(y, [1,self.n_outputs-1], axis=1)
