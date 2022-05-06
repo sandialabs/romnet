@@ -310,7 +310,7 @@ class System_of_Components(object):
             output_concat            = layers_dict[self.name]['PCAInvLayer'](output_concat)
 
 
-        if (self.softmax_flg):
+        if (self.softmax_flg is True):
             # Apply SoftMax for Forcing Sum(y_i)=1
 
             output_T, output_concat  = tf.split(output_concat, [1,self.n_outputs-1], axis=1)

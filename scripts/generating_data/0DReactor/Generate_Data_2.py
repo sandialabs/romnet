@@ -19,10 +19,10 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 ###
 
-#OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2_Sources/'
-OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_1000Cases_CH4/'
+#OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4_/'
 
-NVarsRed              = 10
+NVarsRed              = 20
 CleanVars_FilePath    = OutputDir+'/Orig/CleanVars_ToRed.csv'
 NotCleanVars_FilePath = OutputDir+'/Orig/CleanVars_NotToRed.csv'
 
@@ -31,7 +31,7 @@ MinVal                = 1.e-20
 
 ## FIRST TIME
 DirName               = 'train'
-n_ics                 = 1000
+n_ics                 = 500
 
 # # SECOND TIME
 # DirName            = 'test'
@@ -67,9 +67,14 @@ try:
 except:
     pass
 
-shutil.copyfile(CleanVars_FilePath,    OutputDir+'/' + str(NVarsRed) + 'PC/CleanVars_ToRed.csv')
-shutil.copyfile(NotCleanVars_FilePath, OutputDir+'/' + str(NVarsRed) + 'PC/CleanVars_NotToRed.csv')
-
+try:
+    shutil.copyfile(CleanVars_FilePath,    OutputDir+'/' + str(NVarsRed) + 'PC/CleanVars_ToRed.csv')
+except:
+    pass
+try:
+    shutil.copyfile(NotCleanVars_FilePath, OutputDir+'/' + str(NVarsRed) + 'PC/CleanVars_NotToRed.csv')
+except:
+    pass
 
 
 ### Retrieving Data
@@ -106,7 +111,7 @@ for iSim in iSimVec:
         jSim+=1
 
     except:
-        pass
+        print('\n\n[PCA] File ', OutputDir+'/Orig/'+DirName+'/ext/y.csv.'+str(iSim+1) , ' Not Found!')
 
 
 
@@ -187,7 +192,7 @@ for iCol in range(yMatTemp.shape[1]):
                 yMatNot  = np.concatenate((yMatNot, np.log10(yMatTemp[:,iCol] + MinVal)[...,np.newaxis]), axis=1)
         NotVarsNames.append(OrigVar)
         jSpecNot += 1
-
+        
 
 if (DirName == 'train'):
     ToOrig = []
@@ -274,7 +279,10 @@ if (DirName == 'train'):
 #yMat_pca    = pca.transform(yMat, nocenter=False)
 yMat_pca    = ((yMat - C)/D).dot(AT)
 FileName    = OutputDir+'/' + str(NVarsRed) + 'PC/'+DirName+'/ext/PC.csv'
-np.savetxt(FileName, np.concatenate([yMatNot, yMat_pca], axis=1), delimiter=',', header=Header, comments='')
+if (jSpecNot == 0):
+    np.savetxt(FileName, yMat_pca, delimiter=',', header=Header, comments='')
+else:
+    np.savetxt(FileName, np.concatenate([yMatNot, yMat_pca], axis=1), delimiter=',', header=Header, comments='')
 
 #ySource_pca = pca.transform(ySource, nocenter=False)
 ySource_pca = (ySource/D).dot(AT) 

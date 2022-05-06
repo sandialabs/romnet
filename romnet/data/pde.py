@@ -161,8 +161,12 @@ class PDE(Data):
                     else:
                         input_file_name = 'Input.csv'
                     #input_file_name = 'Input.csv'
+                    print('\n[ROMNet - pde.py                    ]:   Reading input pts from  ', data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/'+input_file_name)
                     x_df   = pd.read_csv(data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/'+input_file_name)[data_obj.input_vars]
+                    
+                    print('\n[ROMNet - pde.py                    ]:   Reading output pts from ', data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/Output.csv')
                     y_df   = pd.read_csv(data_obj.path_to_data_fld+'/'+data_type+"/"+data_id+'/Output.csv')[data_obj.output_vars]
+                    
                     i_df   = pd.DataFrame( np.arange(x_df.shape[0]), columns=['indx'])
 
                     # for col in x_df.columns:

@@ -9,8 +9,6 @@ class inputdata(object):
     def __init__(self, WORKSPACE_PATH):
 
         self.NRODs               = 20
-        self.i_redSel            = range(self.NRODs)
-        self.NRODsSel            = len(self.i_redSel)
 
         self.n_modes             = 32                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
         self.ROM_pred_flg        = True
@@ -27,7 +25,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_1000Cases_CH4/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_CH4_PCA/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -81,13 +79,16 @@ class inputdata(object):
         # # -----------------------------------------------------------------------------------
 
         # -----------------------------------------------------------------------------------
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_1000Cases_CH4/'+str(self.NRODs)+'PC/' # Path To Training-Data Folder  
-        self.output_vars         = ['PC_'+str(i+1) for i in self.i_redSel]                                                 # List Containing the Output Data Variable Names for each System
-        self.input_vars_all      = ['PC0_'+str(i+1) for i in range(self.NRODs)]+['t']                                      # List Containing all the Input Data Variable Names
-        self.input_vars          = {'DeepONet': {'Branch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
-                                                'Stretch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
+        self.ROM_type            = 'PCA'
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_CH4_/'+str(self.NRODs)+'PC/'                # Path To Training Data Folder 
+        self.Vars0               = list(pd.read_csv(self.path_to_data_fld+'/Vars0.csv', delimiter=',', header=None).to_numpy()[0,:])
+        self.input_vars_all      = self.Vars0+['t']                                      # List Containing all the Input Data Variable Names
+        self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
+                                                'Stretch': self.Vars0,
                                                   'Trunk': ['t']}}                                                         # Dictionary Containing the Input  Data Variable Names for each Component
-        self.n_branches          = self.NRODsSel
+        self.Vars                = list(pd.read_csv(self.path_to_data_fld+'/Vars.csv',  delimiter=',', header=None).to_numpy()[0,:])
+        self.output_vars         = self.Vars                                               # List Containing the Output Data Variable Names for each System
+        self.n_branches          = len(self.Vars)
         self.n_trunks            = self.n_branches
         # -----------------------------------------------------------------------------------
 
@@ -114,9 +115,7 @@ class inputdata(object):
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                 'Stretch': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
-                                                'Stretch': {'Main': False},
-                                                  'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.softmax_flg         = {'DeepONet': False}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONet': False}
 
         #=======================================================================================================================================
