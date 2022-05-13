@@ -22,20 +22,20 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 #OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4_/'
 
-NVarsRed              = 30
+NVarsRed              = 20
 CleanVars_FilePath    = OutputDir+'/Orig/CleanVars_ToRed.csv'
 NotCleanVars_FilePath = OutputDir+'/Orig/CleanVars_NotToRed.csv'
 
 scale                 = 'lin'
 MinVal                = 1.e-20
 
-## FIRST TIME
-DirName               = 'train'
-n_ics                 = 500
+# ## FIRST TIME
+# DirName               = 'train'
+# n_ics                 = 500
 
-# # SECOND TIME
-# DirName            = 'test'
-# n_ics              = 10
+# SECOND TIME
+DirName            = 'test'
+n_ics              = 10
 
 iSimVec              = range(n_ics)
 
