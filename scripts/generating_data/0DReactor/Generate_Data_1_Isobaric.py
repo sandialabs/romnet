@@ -22,21 +22,24 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ##########################################################################################
 ### Input Data
 
-# ### HYDROGEN
-# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2/'
-# Fuel0              = 'H2:1.0'         
-# Oxydizer0          = 'O2:1.0, N2:4.0'
-# t0                 = 1.e-8
-# tEnd               = 1.e-2
-# KeepVec            = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
+### HYDROGEN
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_5000Cases_H2_Iter/'
+Fuel0              = 'H2:1.0'         
+Oxydizer0          = 'O2:1.0, N2:4.0'
+#t0                 = 1.e-5
+#Deltat             = 1.e-5
+DeltatMax          = 1.e-6
+DeltatMin          = 1.e-4
+tEnd               = 1.e-1
+KeepVec            = None #['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
 
-### METHANE
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
-Fuel0              = 'CH4:1.0'
-Oxydizer0          = 'O2:0.21, N2:0.79'
-t0                 = 1.e-6
-tEnd               = 1.e2
-KeepVec            = None
+# ### METHANE
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+# Fuel0              = 'CH4:1.0'
+# Oxydizer0          = 'O2:0.21, N2:0.79'
+# t0                 = 1.e-6
+# tEnd               = 1.e2
+# KeepVec            = None
 
 MixtureFile        = 'gri30.yaml'
 P0                 = ct.one_atm
@@ -49,27 +52,27 @@ delta_T_max        = 1.
 # atol               = 1.e-8
 # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
-# # FIRST TIME
-# DirName            = 'train'
-# n_ics              = 500
-# # T0Exts             = np.array([999., 1001.], dtype=np.float64)
-# # EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
+# FIRST TIME
+DirName            = 'train'
+n_ics              = 5000
+T0Exts             = np.array([900., 1100], dtype=np.float64)
+EqRatio0Exts       = np.array([0.90, 1.10], dtype=np.float64)
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
-# SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
-# NPerT0             = 1000
+X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
+SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
+NPerT0             = 10000
 
-## SECOND TIME
-DirName            = 'test'
-n_ics              = 10
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# T0Exts             = np.array([999., 1001.], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.999, 1.001], dtype=np.float64)
-X0Exts             = None
-SpeciesVec         = None
-NPerT0             = 5000
+# ## SECOND TIME
+# DirName            = 'test'
+# n_ics              = 10
+# # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# T0Exts             = np.array([950., 1050.], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.95, 1.05], dtype=np.float64)
+# X0Exts             = None
+# SpeciesVec         = None
+# NPerT0             = 5000
 
 
 
@@ -321,37 +324,23 @@ for iIC in range(n_ics):
     ############################################################################
 
     ############################################################################
-    # TVec  = np.array([700, 800, 900, 1000, 1200, 1500, 1700, 1850, 2000])
-    # tVec1 = np.array([5.e1, 5.e0, 1.e-1, 1.e-4, 1.e-5, 5.e-6, 1.e-6, 5.e-7, 5.e-7])
-    # tVec2 = np.array([5.e0, 1.e0, 1.e-2, 1.e-5, 1.e-6, 5.e-7, 1.e-7, 5.e-8, 5.e-8])
-    # tVec3 = np.array([1.e4, 1.e2, 1.e0, 1.e-1, 5.e-2, 1.e-2, 1.e-1, 5.e-2, 1.e-2])
-
-    # f1 = interp1d(1000/TVec, np.log10(tVec1), kind='cubic')
-    # f2 = interp1d(1000/TVec, np.log10(tVec2), kind='cubic')
-    # f3 = interp1d(1000/TVec, np.log10(tVec3), kind='cubic')
-
-    # tMin     = f1(1000/T0) #1.e-5
-    # dt0      = f2(1000/T0) #1.e-5
-    # tMax     = f3(1000/T0) #1.e-3
-    # tMaxAll  = f1(1.) #1.e-5
-
-    # tStratch = 1.3
-    # tVec     = [0.0]
-    # t        = 1.e-12 #10**tMin
-    # dt0      = 1.e-6  #10**dt0
-    # dt       = dt0
-    # while (t <= 1.e-2):#10**tMax):
-    #     tVec.append(t)
-    #     t  =   t + dt
-    #     dt = dt0 * tStratch
-    # print(len(tVec))
-    # tVec     = np.concatenate([[0.], np.logspace(tMin, tMax, 3000)])
-    #tVec     = np.concatenate([[0.], np.logspace(-12, tMin, 20), np.logspace(tMin, tMax, 480)[1:]])
-    #tVec     = np.concatenate([[0.], np.logspace(-12, -6, 100), np.logspace(-5.99999999, -1., 4899)])
-    #tVec     = np.concatenate([[1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt)])
+    # A
+    #tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt)
     
-    tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt)
+    # B
     #tVec     = np.linspace(t0, tEnd, NtInt)
+    
+    # C
+    # NtInt    = int(tEnd/Deltat)
+    # t0       = np.random.rand() * Deltat
+    # tVec     = np.append([0.], np.arange(NtInt-1) * Deltat + t0)
+
+    # D
+    tVec = []
+    t    = 0.
+    while (t<=tEnd):
+        tVec.append(t)
+        t += np.random.rand() * (DeltatMax-DeltatMin)+DeltatMin
     #############################################################################
 
 
