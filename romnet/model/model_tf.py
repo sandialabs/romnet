@@ -167,7 +167,7 @@ class Model_TF(Model):
 
 
         #-----------------------------------------------------------------------
-        self.net = Net(InputData, self.norm_input, self.stat_input, self.stat_output, system)
+        self.net = Net(InputData, self.norm_input, None, self.stat_output, system)
 
         self.net.AntiPCA_flg = False
         # try:
