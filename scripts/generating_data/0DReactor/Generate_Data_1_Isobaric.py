@@ -23,7 +23,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_5000Cases_H2_Iter/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2_Iter/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 #t0                 = 1.e-5
@@ -52,27 +52,27 @@ delta_T_max        = 1.
 # atol               = 1.e-8
 # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
-# FIRST TIME
-DirName            = 'train'
-n_ics              = 5000
-T0Exts             = np.array([900., 1100], dtype=np.float64)
-EqRatio0Exts       = np.array([0.90, 1.10], dtype=np.float64)
-# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
-SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
-NPerT0             = 10000
-
-# ## SECOND TIME
-# DirName            = 'test'
-# n_ics              = 10
+# # FIRST TIME
+# DirName            = 'train'
+# n_ics              = 100
+# T0Exts             = np.array([950., 1050], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.95, 1.05], dtype=np.float64)
 # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# T0Exts             = np.array([950., 1050.], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.95, 1.05], dtype=np.float64)
-# X0Exts             = None
-# SpeciesVec         = None
-# NPerT0             = 5000
+# X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
+# SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
+# NPerT0             = 10000
+
+## SECOND TIME
+DirName            = 'test'
+n_ics              = 10
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+T0Exts             = np.array([980., 1020.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.98, 1.02], dtype=np.float64)
+X0Exts             = None
+SpeciesVec         = None
+NPerT0             = 5000
 
 
 

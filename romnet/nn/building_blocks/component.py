@@ -41,17 +41,17 @@ class Component(object):
         self.structure            = InputData.structure
 
 
-        try:   
-            self.norm_input_flg   = InputData.norm_input_flg[self.system_name][self.type]
-            notfnd_flg            = False
-        except:   
-            self.norm_input_flg   = None
-            notfnd_flg            = True
-        if notfnd_flg:
-            try:   
-                self.norm_input_flg = InputData.norm_input_flg[self.system_name][self.name]
-            except:   
-                self.norm_input_flg = None
+        # try:   
+        #     self.norm_input_flg   = InputData.norm_input_flg[self.system_name][self.type]
+        #     notfnd_flg            = False
+        # except:   
+        #     self.norm_input_flg   = None
+        #     notfnd_flg            = True
+        # if notfnd_flg:
+        #     try:   
+        #         self.norm_input_flg = InputData.norm_input_flg[self.system_name][self.name]
+        #     except:   
+        #         self.norm_input_flg = None
 
 
         try:   
@@ -73,8 +73,8 @@ class Component(object):
             self.input_vars       = InputData.input_vars[self.system_name]
 
 
-        if (norm_input is not None):
-            self.norm_input       = norm_input[self.input_vars]
+        # if (norm_input is not None):
+        #     self.norm_input       = norm_input[self.input_vars]
 
 
         try:
@@ -94,22 +94,14 @@ class Component(object):
 
 
 
-        # Normalizing Layer
-        if (self.norm_input_flg):
+        # # Normalizing Layer
+        # if (self.norm_input_flg):
 
-            layer_name        = self.long_name + '_Normalization'
-        
-            if (self.transfered_model is not None): 
-                mean     = self.transfered_model.get_layer(layer_name).mean.numpy()
-                variance = self.transfered_model.get_layer(layer_name).variance.numpy()
-                min_vals = self.transfered_model.get_layer(layer_name).min_vals.numpy()
-                max_vals = self.transfered_model.get_layer(layer_name).max_vals.numpy()
-                layer    = CustomNormalization(mean=mean, variance=variance, min_vals=min_vals, max_vals=max_vals, name=layer_name, data_preproc_type=self.data_preproc_type)
-            else:
-                layer    = CustomNormalization(name=layer_name, data_preproc_type=self.data_preproc_type)
-                layer.adapt(np.array(self.norm_input))
-            layers_vec.append(layer)
-            layer_names.append(layer_name)
+        #     layer_name = self.long_name + '_Normalization'
+        #     layer      = CustomNormalization(name=layer_name, data_preproc_type=self.data_preproc_type)
+        #     layer.adapt(np.array(self.norm_input))
+        #     layers_vec.append(layer)
+        #     layer_names.append(layer_name)
 
 
         if (self.gaussnoise_rate):
@@ -153,14 +145,20 @@ class Component(object):
                 trans_flg      = True
                 comp_flg_trans = self.name
 
-        if (y_pre is not None):
-            if (trans_flg) and (y_pre[1] is not None):
-                y_pre[1] = tf.math.softplus(y_pre[1])
-            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
+
+        # if (y_pre is not None):
+        #     if (trans_flg) and (y_pre[1] is not None):
+        #         y_pre[1] = tf.math.softplus(y_pre[1])
+        #     inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
 
             
         if (trans_flg):
             inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
+
+
+        if (y_pre is not None):
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
+
 
         y = self.sub_components['Main'].call(inputs, training)
 

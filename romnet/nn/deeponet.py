@@ -20,7 +20,7 @@ class DeepONet(NN):
     """
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def __init__(self, InputData, norm_input, stat_output, system):
+    def __init__(self, InputData, norm_input, stat_input, stat_output, system):
         super(DeepONet, self).__init__()
 
         self.structure_name            = 'DeepONet'
@@ -77,6 +77,10 @@ class DeepONet(NN):
         if (norm_input is None):
             norm_input                 = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
         self.norm_input                = norm_input
+        if (stat_input is not None):
+            self.stat_input            = stat_input
+        else:
+            self.stat_input            = None
 
         self.trans_fun                 = InputData.trans_fun
 
@@ -152,7 +156,7 @@ class DeepONet(NN):
 
         # Main System of Components
         self.system_of_components                          = {}
-        self.system_of_components['DeepONet']              = System_of_Components(InputData, 'DeepONet', self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+        self.system_of_components['DeepONet']              = System_of_Components(InputData, 'DeepONet', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
         # Adding Biases to the DeepONet's Dot-Layers

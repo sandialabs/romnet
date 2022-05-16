@@ -153,11 +153,13 @@ class Model_TF(Model):
 
         if (self.train_int_flg > 0):
             self.norm_input  = self.data.norm_input
+            self.stat_input  = self.data.stat_input
             self.stat_output = self.data.stat_output
         else:
             try:
                 self.read_data_statistics()
             except:
+                self.stat_input  = None
                 self.stat_output = None
             self.norm_input  = None
             
@@ -165,7 +167,7 @@ class Model_TF(Model):
 
 
         #-----------------------------------------------------------------------
-        self.net = Net(InputData, self.norm_input, self.stat_output, system)
+        self.net = Net(InputData, self.norm_input, self.stat_input, self.stat_output, system)
 
         self.net.AntiPCA_flg = False
         # try:

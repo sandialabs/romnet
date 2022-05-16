@@ -10,13 +10,14 @@ from tensorflow.python.keras.utils        import tf_utils
 from tensorflow.python.util.tf_export     import keras_export
 
 from .component                           import Component
+from .normalization                       import CustomNormalization
 
 
 #=======================================================================================================================================
 class System_of_Components(object):
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def __init__(self, InputData, system_name, norm_input, layers_dict=[], layer_names_dict=[]):
+    def __init__(self, InputData, system_name, norm_input, stat_input, layers_dict=[], layer_names_dict=[]):
         
         self.name                          = system_name
 
@@ -36,9 +37,18 @@ class System_of_Components(object):
         self.n_inputs                      = len(self.input_vars)
         
         if (norm_input is not None):
-            self.norm_input                = norm_input[self.input_vars]
+            self.norm_input                = norm_input
         else:
             self.norm_input                = None
+        if (stat_input is not None):
+            self.stat_input                = stat_input
+        else:
+            self.stat_input                = None
+
+        try:
+            self.data_preproc_type         = InputData.data_preproc_type
+        except:
+            self.data_preproc_type         = 'std'
 
         self.output_vars                   = InputData.output_vars
         self.n_outputs                     = len(self.output_vars)
@@ -134,6 +144,24 @@ class System_of_Components(object):
         print("[ROMNet - system_of_components.py   ]:     Constructing System of Components: " + self.name) 
 
 
+        # Normalizing Layer
+        self.norm_layers_dict = []
+        if (InputData.norm_input_flg[self.name]):
+
+            for key, value in InputData.norm_input_flg[self.name].items():
+                if (InputData.norm_input_flg[self.name][key]):
+
+                    layer_name                              = self.name + '-' + key + '_Normalization'
+                    layer                                   = CustomNormalization(name=layer_name, data_preproc_type=self.data_preproc_type)
+                    norm_input                              = np.array(self.norm_input[InputData.input_vars[self.name][key]])
+                    layer.adapt(norm_input)
+                    if (not key in layers_dict[self.name]):
+                        layers_dict[self.name][key]         = {}
+                    layers_dict[self.name][key][layer_name] = layer
+
+                    self.norm_layers_dict.append(key)
+            
+
         # Iterating over Components
         self.components     = {}
         self.branch_names   = []
@@ -146,21 +174,30 @@ class System_of_Components(object):
 
             if  ('Branch' in component_name):
                 self.branch_names.append(component_name)
+                component_type = 'Branch'
             elif ('Shift' in component_name):
                 self.shift_names.append(component_name)
+                component_type = 'Shift'
             elif ('Stretch' in component_name):
                 self.stretch_names.append(component_name)
+                component_type = 'Stretch'
             elif ('Rotation' in component_name):
                 self.rotation_names.append(component_name)
+                component_type = 'Rotation'
             elif ('PreNet' in component_name):
                 self.prenet_names.append(component_name)
+                component_type = 'PreNet'
             elif ('Trunk' in component_name):
                 self.trunk_names.append(component_name)
+                component_type = 'Trunk'
+            elif ('FNN' in component_name):
+                component_type = 'FNN'
 
             if (not component_name in layers_dict[self.name]):
                 layers_dict[self.name][component_name]      = {}
                 layer_names_dict[self.name][component_name] = {}
-            self.components[component_name]                 = Component(InputData, self.name, component_name, self.norm_input, layers_dict=layers_dict, layer_names_dict=layer_names_dict)
+
+            self.components[component_name]            = Component(InputData, self.name, component_name, self.norm_input, layers_dict=layers_dict, layer_names_dict=layer_names_dict)
 
 
 
@@ -169,6 +206,10 @@ class System_of_Components(object):
 
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_fnn(self, inputs, layers_dict, training=False):
+
+        if ('FNN' in self.norm_layers_dict):
+            inputs = layers_dict[self.name]['FNN'][self.name+'-FNN_Normalization'](inputs)
+
 
         y = self.components['FNN'].call(inputs, layers_dict, None, training=training)
 
@@ -193,6 +234,13 @@ class System_of_Components(object):
     def call_deeponet(self, inputs, layers_dict, training):
 
         inputs_branch, inputs_trunk = inputs
+
+
+        if ('Branch' in self.norm_layers_dict):
+            inputs_branch = layers_dict[self.name]['Branch'][self.name+'-Branch_Normalization'](inputs_branch)
+        if ('Trunk'  in self.norm_layers_dict):
+            inputs_trunk  = layers_dict[self.name]['Trunk'][self.name+'-Trunk_Normalization'](inputs_trunk)
+
 
         # tf.keras.backend.print_tensor('inputs_branch = ', inputs_branch)
         # tf.keras.backend.print_tensor('inputs_trunk  = ', inputs_trunk)

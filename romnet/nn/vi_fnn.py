@@ -15,7 +15,7 @@ class VI_FNN(NN):
     """
     
     # ---------------------------------------------------------------------------------------------------------------------------
-    def __init__(self, InputData, norm_input, stat_output, system):
+    def __init__(self, InputData, norm_input, stat_input, stat_output, system):
         super(VI_FNN, self).__init__()
 
         self.structure_name   = 'VI_FNN'
@@ -37,7 +37,11 @@ class VI_FNN(NN):
         if (norm_input is None):
             norm_input        = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
         self.norm_input       = norm_input
- 
+        if (stat_input is not None):
+            self.stat_input   = stat_input
+        else:
+            self.stat_input   = None
+
         self.norm_output_flg  = InputData.norm_output_flg
  
         self.trans_fun        = InputData.trans_fun
@@ -90,7 +94,7 @@ class VI_FNN(NN):
 
             
             # Main System of Components    
-            self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+            self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
         # Output Normalizing Layer
