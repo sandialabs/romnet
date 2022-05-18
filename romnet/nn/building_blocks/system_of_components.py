@@ -160,7 +160,23 @@ class System_of_Components(object):
                     layers_dict[self.name][key][layer_name] = layer
 
                     self.norm_layers_dict.append(key)
-            
+
+
+        # Gaussian Noise Layer
+        self.noise_layers_dict = []
+        if (InputData.gaussnoise_rate[self.name]):
+
+            for key, value in InputData.gaussnoise_rate[self.name].items():
+                if (InputData.norm_input_flg[self.name][key]):
+
+                    layer_name                              = self.name + '-' + key + '_GaussNoise'
+                    layer                                   = tf.keras.layers.GaussianNoise(value)
+                    if (not key in layers_dict[self.name]):
+                        layers_dict[self.name][key]         = {}
+                    layers_dict[self.name][key][layer_name] = layer
+
+                    self.noise_layers_dict.append(key)
+
 
         # Iterating over Components
         self.components     = {}
@@ -210,6 +226,9 @@ class System_of_Components(object):
         if ('FNN' in self.norm_layers_dict):
             inputs = layers_dict[self.name]['FNN'][self.name+'-FNN_Normalization'](inputs)
 
+        if ('FNN' in self.noise_layers_dict):
+            inputs = layers_dict[self.name]['FNN'][self.name+'-FNN_GaussNoise'](inputs, training=training)
+
 
         y = self.components['FNN'].call(inputs, layers_dict, None, training=training)
 
@@ -240,6 +259,11 @@ class System_of_Components(object):
             inputs_branch = layers_dict[self.name]['Branch'][self.name+'-Branch_Normalization'](inputs_branch)
         if ('Trunk'  in self.norm_layers_dict):
             inputs_trunk  = layers_dict[self.name]['Trunk'][self.name+'-Trunk_Normalization'](inputs_trunk)
+
+        if ('Branch' in self.noise_layers_dict):
+            inputs_branch = layers_dict[self.name]['Branch'][self.name+'-Branch_GaussNoise'](inputs_branch, training=training)
+        if ('Trunk' in self.noise_layers_dict):
+            inputs_trunk = layers_dict[self.name]['Trunk'][self.name+'-Trunk_GaussNoise'](inputs_trunk, training=training)
 
 
         # tf.keras.backend.print_tensor('inputs_branch = ', inputs_branch)

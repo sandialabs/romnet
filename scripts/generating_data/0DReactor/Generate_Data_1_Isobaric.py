@@ -28,8 +28,8 @@ Fuel0              = 'H2:1.0'
 Oxydizer0          = 'O2:1.0, N2:4.0'
 #t0                 = 1.e-5
 #Deltat             = 1.e-5
-DeltatMax          = 1.e-6
-DeltatMin          = 1.e-4
+DeltatMax          = 7
+DeltatMin          = 4
 tEnd               = 1.e-1
 KeepVec            = None #['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
 
@@ -54,9 +54,9 @@ delta_T_max        = 1.
 
 # # FIRST TIME
 # DirName            = 'train'
-# n_ics              = 100
-# T0Exts             = np.array([950., 1050], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.95, 1.05], dtype=np.float64)
+# n_ics              = 10
+# T0Exts             = np.array([980., 1020], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.98, 1.02], dtype=np.float64)
 # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 # X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
@@ -68,11 +68,11 @@ DirName            = 'test'
 n_ics              = 10
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-T0Exts             = np.array([980., 1020.], dtype=np.float64)
-EqRatio0Exts       = np.array([0.98, 1.02], dtype=np.float64)
+T0Exts             = np.array([990., 1010.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.99, 1.01], dtype=np.float64)
 X0Exts             = None
 SpeciesVec         = None
-NPerT0             = 5000
+NPerT0             = 10000
 
 
 
@@ -340,7 +340,8 @@ for iIC in range(n_ics):
     t    = 0.
     while (t<=tEnd):
         tVec.append(t)
-        t += np.random.rand() * (DeltatMax-DeltatMin)+DeltatMin
+        #t += np.random.rand() * (DeltatMax-DeltatMin)+DeltatMin
+        t += 10.**( - ( DeltatMax - np.random.rand() * (DeltatMax-DeltatMin) ) )
     #############################################################################
 
 

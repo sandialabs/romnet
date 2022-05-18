@@ -54,17 +54,17 @@ class Component(object):
         #         self.norm_input_flg = None
 
 
-        try:   
-            self.gaussnoise_rate  = InputData.gaussnoise_rate[self.system_name][self.type]
-            notfnd_flg            = False
-        except:   
-            self.gaussnoise_rate  = None
-            notfnd_flg            = True
-        if notfnd_flg:
-            try:   
-                self.gaussnoise_rate = InputData.gaussnoise_rate[self.system_name][self.name]
-            except:   
-                self.gaussnoise_rate = None
+        # try:   
+        #     self.gaussnoise_rate  = InputData.gaussnoise_rate[self.system_name][self.type]
+        #     notfnd_flg            = False
+        # except:   
+        #     self.gaussnoise_rate  = None
+        #     notfnd_flg            = True
+        # if notfnd_flg:
+        #     try:   
+        #         self.gaussnoise_rate = InputData.gaussnoise_rate[self.system_name][self.name]
+        #     except:   
+        #         self.gaussnoise_rate = None
 
     
         try:          
@@ -104,11 +104,11 @@ class Component(object):
         #     layer_names.append(layer_name)
 
 
-        if (self.gaussnoise_rate):
-            layer      = tf.keras.layers.GaussianNoise(self.gaussnoise_rate)
-            layer_name = self.long_name + '_GaussNoise'
-            layers_vec.append(layer)
-            layer_names.append(layer_name)
+        # if (self.gaussnoise_rate):
+        #     layer      = tf.keras.layers.GaussianNoise(self.gaussnoise_rate)
+        #     layer_name = self.long_name + '_GaussNoise'
+        #     layers_vec.append(layer)
+        #     layer_names.append(layer_name)
 
 
         # Feed-forward Component (i.e., "Sub-Component")

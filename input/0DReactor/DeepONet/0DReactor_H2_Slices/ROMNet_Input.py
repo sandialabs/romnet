@@ -25,7 +25,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_5000Cases_H2_Iter/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_10Cases_H2_Iter_LOG/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -50,10 +50,12 @@ class inputdata(object):
         ## NN Model Structure
         self.surrogate_type      = 'DeepONet'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
-        self.trans_fun           = None #{'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
+        self.trans_fun           = {'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'range'
         self.norm_input_flg      = {'DeepONet': { 'Branch': True, 
                                                    'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
+        self.gaussnoise_rate     = {'DeepONet': {'Branch': 1.e-2,
+                                                  'Trunk': None}}
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
 
@@ -61,7 +63,7 @@ class inputdata(object):
 
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_5000Cases_H2_Iter/Orig/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_10Cases_H2_Iter_LOG/Orig/'                # Path To Training Data Folder 
         FileName   = self.path_to_data_fld+'/train/ext/CleanVars.csv'
         Vars       = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
         self.Vars  = list(Vars[np.arange(self.n_outputs)])   
@@ -79,9 +81,7 @@ class inputdata(object):
         self.n_trunks            = self.n_branches
         # -----------------------------------------------------------------------------------
 
-        self.gaussnoise_rate     = {'DeepONet': {'Branch': None,
-                                                'Stretch': None,
-                                                  'Shift': None}}
+
         self.structure           = {'DeepONet': {}}
         for i in range(self.n_branches):
            self.structure['DeepONet']['Branch_'+str(i+1)] = ['Main']
@@ -93,8 +93,8 @@ class inputdata(object):
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([16,16,16,self.n_branch_out])},  
-                                                'Stretch': {'Main': np.array([16,16,16,16,16,self.n_trunks])},
-                                                  'Shift': {'Main': np.array([16,16,16,16,16,self.n_trunks])},
+                                                'Stretch': {'Main': np.array([32,32,32,32,32,self.n_trunks])},
+                                                  'Shift': {'Main': np.array([32,32,32,32,32,self.n_trunks])},
                                                   'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']},
