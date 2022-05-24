@@ -177,7 +177,7 @@ class Sub_Component(object):
         
 
         # Adding SoftMax if Needed
-        if (self.softmax_flg):
+        if (self.softmax_flg is True):
             layer_name = self.long_name + '-SoftMax'
             self.layer_names.append(layer_name)
             self.layers_vec.append(tf.keras.layers.Softmax())

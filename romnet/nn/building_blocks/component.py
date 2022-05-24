@@ -117,7 +117,7 @@ class Component(object):
 
             if (sub_component_name == 'U'):
                 self.call = self.call_improved                
-            
+
             layers_dict[system_name][component_name][sub_component_name]       = []
             layers_dict[system_name][component_name][sub_component_name]      += layers_vec
             layers_vec_                                                        = layers_dict[system_name][component_name][sub_component_name]
@@ -146,18 +146,16 @@ class Component(object):
                 comp_flg_trans = self.name
 
 
-        # if (y_pre is not None):
-        #     if (trans_flg) and (y_pre[1] is not None):
-        #         y_pre[1] = tf.math.softplus(y_pre[1])
-        #     inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
+        if (y_pre is not None):
+            # if (trans_flg) and (y_pre[0] is not None):
+            #     y_pre[0] = tf.math.softplus(y_pre[0])
+            # if (trans_flg) and (y_pre[1] is not None):
+            #     y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre]) 
 
-            
+
         if (trans_flg):
             inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
-
-
-        if (y_pre is not None):
-            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
 
 
         y = self.sub_components['Main'].call(inputs, training)

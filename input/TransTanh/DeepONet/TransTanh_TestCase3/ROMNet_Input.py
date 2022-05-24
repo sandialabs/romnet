@@ -61,13 +61,12 @@ class inputdata(object):
                                                   'Shift': ['x'],
                                                   'Trunk': ['t']}}                                             # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg      = {'DeepONet': {'Branch_1': False,   
-                                                    'Shift': False,
                                                     'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
                                                   'Shift': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                  # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes+2
+        self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([3,self.n_branch_out])},  
                                                   'Shift': {'Main': np.array([1])},
@@ -84,7 +83,7 @@ class inputdata(object):
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
                                                   'Shift': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
+        self.dotlayer_bias_flg   = {'DeepONet': False}
         ###########################################################################################################
 
         #=======================================================================================================================================

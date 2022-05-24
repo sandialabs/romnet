@@ -128,6 +128,11 @@ class System_of_Components(object):
                 self.dotlayer_mult_flg     = None
 
         try:
+            self.gaussnoise_rate           = InputData.gaussnoise_rate[self.name]
+        except:
+            self.gaussnoise_rate           = None
+
+        try:
             self.softmax_flg               = InputData.softmax_flg[self.name]
         except:
             self.softmax_flg               = False
@@ -157,23 +162,27 @@ class System_of_Components(object):
                     layer.adapt(norm_input)
                     if (not key in layers_dict[self.name]):
                         layers_dict[self.name][key]         = {}
+                        layer_names_dict[self.name][key]    = {}
                     layers_dict[self.name][key][layer_name] = layer
+                    layer_names_dict[self.name][key][layer_name] = layer_name
 
                     self.norm_layers_dict.append(key)
 
 
         # Gaussian Noise Layer
         self.noise_layers_dict = []
-        if (InputData.gaussnoise_rate[self.name]):
+        if (self.gaussnoise_rate):
 
-            for key, value in InputData.gaussnoise_rate[self.name].items():
-                if (InputData.norm_input_flg[self.name][key]):
+            for key, value in self.gaussnoise_rate.items():
+                if (self.gaussnoise_rate[key]):
 
                     layer_name                              = self.name + '-' + key + '_GaussNoise'
                     layer                                   = tf.keras.layers.GaussianNoise(value)
                     if (not key in layers_dict[self.name]):
                         layers_dict[self.name][key]         = {}
+                        ayer_names_dict[self.name][key]     = {}
                     layers_dict[self.name][key][layer_name] = layer
+                    layer_names_dict[self.name][key][layer_name] = layer_name
 
                     self.noise_layers_dict.append(key)
 
@@ -390,8 +399,9 @@ class System_of_Components(object):
             output_concat            = tf.keras.layers.Concatenate(axis=1)([output_T, output_concat])
 
 
-        if (self.rectify_flg):
+        if (self.rectify_flg is True):
             # Apply ReLu for Forcing y_i>0
+            
             output_concat            = self.rectify_layer(output_concat)
 
 
