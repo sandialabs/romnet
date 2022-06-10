@@ -248,8 +248,8 @@ def integration_(iIC, ICs, MixtureFile, SpeciesVec, Mask_, y00, yEnd):
 
         it+=1 
 
-    y00[iIC,:]  = np.concatenate(([tVecFinal[0]],  np.log10(Mat[0, :]+1.e-30)), axis=0)
-    yEnd[iIC,:] = np.concatenate(([tVecFinal[-1]], np.log10(Mat[-1,:]+1.e-30)), axis=0)
+    y00[iIC,:]  = np.concatenate(([tVecFinal[0]],  np.log10(np.clip(Mat[0, :], 1.e-30, 1e10))), axis=0)
+    yEnd[iIC,:] = np.concatenate(([tVecFinal[-1]], np.log10(np.clip(Mat[-1,:], 1.e-30, 1e10))), axis=0)
 
 
 
