@@ -25,7 +25,7 @@ import multiprocessing
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_100000Cases_H2_SmallSteps/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_5000000Cases_H2_SmallSteps/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 t0                 = 1.e-14
@@ -56,7 +56,7 @@ delta_T_max        = 1.
 
 # FIRST TIME
 DirName            = 'train'
-n_ics              = 100000
+n_ics              = 5000000
 # T0Exts             = np.array([980., 1020], dtype=np.float64)
 # EqRatio0Exts       = np.array([0.98, 1.02], dtype=np.float64)
 T0Exts             = 'File' #np.array([1000., 2000.], dtype=np.float64)
@@ -76,7 +76,7 @@ SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
 # SpeciesVec         = None
 # NPerT0             = 10000
 
-n_processors         = 10
+n_processors         = 50
 
 
 
@@ -180,7 +180,7 @@ def IdealGasReactor(t, T, Y):
 
 
 
-def integration_(iIC, ICs, MixtureFile, SpeciesVec, Mask_, y00, yEnd):
+def integration_(iIC, n_processors, OutputDir, DirName, ICs, MixtureFile, SpeciesVec, Mask_):
     
     P0       = ICs[iIC,0]
     T0       = ICs[iIC,1]
@@ -248,10 +248,32 @@ def integration_(iIC, ICs, MixtureFile, SpeciesVec, Mask_, y00, yEnd):
 
         it+=1 
 
-    y00[iIC,:]  = np.concatenate(([tVecFinal[0]],  np.log10(np.clip(Mat[0, :], 1.e-30, 1e10))), axis=0)
-    yEnd[iIC,:] = np.concatenate(([tVecFinal[-1]], np.log10(np.clip(Mat[-1,:], 1.e-30, 1e10))), axis=0)
+
+    if (iIC<n_processors):
+        WrtFlg = "w"
+    else:
+        WrtFlg = "ab"
 
 
+    y00      = np.concatenate(([tVecFinal[0]],  np.log10(np.clip(Mat[0, :], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
+    FileName = OutputDir+'/Orig/'+DirName+'/ext/y0.csv.'+str((iIC%n_processors)+1)
+    with open(FileName, WrtFlg) as f:
+        if (iIC<n_processors):
+            Header0  = 't,T'
+            for Keep in SpeciesVec:
+                Header0 += '0,'+Keep   
+            f.write(Header0+"\n")
+        np.savetxt(f, y00)
+
+    yEnd     = np.concatenate(([tVecFinal[-1]], np.log10(np.clip(Mat[-1,:], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
+    FileName = OutputDir+'/Orig/'+DirName+'/ext/yEnd.csv.'+str((iIC%n_processors)+1)
+    with open(FileName, WrtFlg) as f:
+        if (iIC<n_processors):
+            Header   = 't,T'
+            for Keep in SpeciesVec:
+                Header  += ','+Keep
+            f.write(Header+"\n")
+        np.savetxt(f, yEnd)
 
 
 ##########################################################################################
@@ -321,31 +343,8 @@ else:
     Mask_ = np.arange(len(gas.species_names))
 
 
-y00     = np.zeros((n_ics,NDims+1))
-yEnd    = np.zeros((n_ics,NDims+1))
-results = Parallel(n_jobs=n_processors, require='sharedmem')(delayed(integration_)(iIC, ICs, MixtureFile, SpeciesVec, Mask_, y00, yEnd) for iIC in range(n_ics))
+results = Parallel(n_jobs=n_processors)(delayed(integration_)(iIC, n_processors, OutputDir, DirName, ICs, MixtureFile, SpeciesVec, Mask_) for iIC in range(n_ics))
 
-
-print('y00  = ', y00)
-print('yEnd = ', yEnd)
-
-### Writing Results
-Header0  = 't,T'
-Header   = 't,T'
-if (SpeciesVec):
-    for Keep in SpeciesVec:
-        Header0 += '0,'+Keep
-        Header  += ','+Keep
-else:
-    for iSpec in range(NSpec):
-        Header0 += '0,'+gas.species_name(iSpec)
-        Header  += ','+gas.species_name(iSpec)
-
-FileName = OutputDir+'/Orig/'+DirName+'/ext/y0.csv'
-np.savetxt(FileName, y00,      delimiter=',', header=Header0, comments='')
-
-FileName = OutputDir+'/Orig/'+DirName+'/ext/yEnd.csv'
-np.savetxt(FileName, yEnd,     delimiter=',', header=Header, comments='')
 
 
 
