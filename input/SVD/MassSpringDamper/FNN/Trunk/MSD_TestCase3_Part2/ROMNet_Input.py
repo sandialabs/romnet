@@ -58,10 +58,12 @@ class inputdata(object):
         self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.output_vars         = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]                  # List Containing the Output Data Variable Names for each System of Components
         self.norm_input_flg      = {'FNN': {'FNN': True}}                                                    # Dictionary Containing Flags for Normalizing Input Data for each Component
+        self.norm_output_flg     = False  
+        self.data_preproc_type   = 'std'
         self.structure           = {'FNN': {'FNN': ['Main']}}                                                # Dictionary Containing the Structure of the Network
         self.n_neurons           = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.n_modes])}}}             # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','linear']}}}               # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'FNN': {'FNN': {'Main': 1.e-6}}}                                         # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_rate        = {'FNN': {'FNN': {'Main': None}}}                                        # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'FNN': {'FNN': {'Main': False}}}                                         # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'FNN': {'FNN': {'Main': False}}}                                         # Dictionary Containing the Softmax Flag for each Sub-Component 
         # self.structure           = {'FNN': {'FNN': ['Main', 'U', 'V']}}                                      # Dictionary Containing the Structure of the Network
@@ -91,13 +93,13 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 32                                                                        # Batch Size for Training
-        self.valid_batch_size    = 32                                                                        # Batch Size for Validation
+        self.batch_size          = 4                                                                        # Batch Size for Training
+        self.valid_batch_size    = 4                                                                       # Batch Size for Validation
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 3000, 0.98]                                               # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 1000, 0.98]                                               # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-16, 1.e-10], dtype=np.float64)                                # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                                # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict      = {
             'base': {
                 'stateful_metrics': None

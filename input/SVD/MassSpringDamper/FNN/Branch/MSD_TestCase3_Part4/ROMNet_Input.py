@@ -56,14 +56,14 @@ class inputdata(object):
         self.plot_graph_flg       = True                                                                     # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun            = None #{'log': ['t']}                                                     # Dictionary Containing Functions to Be Applied to Input Data 
         self.norm_output_flg      = False                                                                    # Flag for Normalizing Output Data
-        self.output_vars          = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]#+['C']+['D']    # List Containing the Output Data Variable Names for each System
+        self.output_vars          = ['PCA_'+str(i_mode+1) for i_mode in range(self.n_modes)]+['C']+['D']     # List Containing the Output Data Variable Names for each System
         self.input_vars_all       = ['x','v']                                                                # List Containing all the Input Data Variable Names
         self.input_vars           = {'FNN': {'FNN': self.input_vars_all}}                                    # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg       = {'FNN': {'FNN': True}}                                                   # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure            = {'FNN': {'FNN': ['Main']}}                                               # Dictionary Containing the Structure of the Network
-        self.n_neurons            = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.n_modes])}}}            # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons            = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.n_modes+2])}}}          # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs            = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','linear']}}}              # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate         = {'FNN': {'FNN': {'Main': 1.e-10}}}                                       # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_rate         = {'FNN': {'FNN': {'Main': 1.e-6}}}                                       # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg     = {'FNN': {'FNN': {'Main': False}}}                                        # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg          = {'FNN': {'FNN': {'Main': False}}}                                        # Dictionary Containing the Softmax Flag for each Sub-Component 
         # self.structure           = {'FNN': {'FNN': ['Main', 'U', 'V']}}                                    # Dictionary Containing the Structure of the Network

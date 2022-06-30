@@ -25,7 +25,7 @@ import multiprocessing
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_5000000Cases_H2_SmallSteps/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_80000Cases_H2_SmallSteps/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 t0                 = 1.e-14
@@ -55,12 +55,13 @@ delta_T_max        = 1.
 # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
 # FIRST TIME
-DirName            = 'train'
-n_ics              = 5000000
+DirName            = 'train_file'
+#n_ics              = 20
 # T0Exts             = np.array([980., 1020], dtype=np.float64)
 # EqRatio0Exts       = np.array([0.98, 1.02], dtype=np.float64)
 T0Exts             = 'File' #np.array([1000., 2000.], dtype=np.float64)
-ExtsFile           = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2//Orig/MinMax.csv'
+#ExtsFile           = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_10Cases_H2/Orig/MinMax.csv'
+ExtsFile           = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_1000Cases_H2//Orig/train/ext/Uniformized.csv'
 EqRatio0Exts       = None #np.array([.5, 4.], dtype=np.float64)
 X0Exts             = None #np.array([0.05, 0.95], dtype=np.float64)
 SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
@@ -76,7 +77,7 @@ SpeciesVec         = None #['H2','H','O','O2','OH','N','NH','NO','N2']
 # SpeciesVec         = None
 # NPerT0             = 10000
 
-n_processors         = 50
+n_processors         = 8
 
 
 
@@ -181,100 +182,107 @@ def IdealGasReactor(t, T, Y):
 
 
 def integration_(iIC, n_processors, OutputDir, DirName, ICs, MixtureFile, SpeciesVec, Mask_):
-    
-    P0       = ICs[iIC,0]
-    T0       = ICs[iIC,1]
-    X0       = ICs[iIC,2::]
 
-    ### Create Reactor
-    gas     = ct.Solution(MixtureFile)
-    gas.TP  = T0, P0
+    try:
+        
+        P0       = ICs[iIC,0]
+        T0       = ICs[iIC,1]
+        Y0       = ICs[iIC,2::]
+        print('Y0 = ', Y0)
 
-
-    SpecDict = {}
-    for iS, Spec in enumerate(SpeciesVec):
-        SpecDict[Spec] = ICs[iIC,iS+2]
-    gas.X    = SpecDict
-    
-
-    r       = ct.IdealGasConstPressureReactor(gas)
-    sim     = ct.ReactorNet([r])
-    sim.verbose = False
-
-    gas_    = gas
-    mass_   = r.mass
-    # print('   Mass = ', mass_)
-    density_= r.density
-    P_      = P0
-    y0      = np.array(np.hstack((gas_.T, gas_.Y)), dtype=np.float64)
+        ### Create Reactor
+        gas     = ct.Solution(MixtureFile)
+        gas.TP  = T0, P0
 
 
+        SpecDict = {}
+        for iS, Spec in enumerate(SpeciesVec):
+            SpecDict[Spec] = ICs[iIC,iS+2]
+        gas.Y    = SpecDict
+        
 
-    ############################################################################
-    # E
-    tEnd = np.random.rand() * (DeltatMax - DeltatMin) + DeltatMin
-    tVec = np.logspace(np.log10(t0), tEnd, NtInt)
-    #############################################################################
+        r       = ct.IdealGasConstPressureReactor(gas)
+        sim     = ct.ReactorNet([r])
+        sim.verbose = False
+
+        gas_    = gas
+        mass_   = r.mass
+        # print('   Mass = ', mass_)
+        density_= r.density
+        P_      = P0
+        y0      = np.array(np.hstack((gas_.T, gas_.Y)), dtype=np.float64)
 
 
-    gas_             = gas
-    if (SpeciesVec):
-        gas_kept     = gas[SpeciesVec]
-    else:
-        gas_kept     = gas
-    states           = ct.SolutionArray(gas_kept, 1, extra={'t': [0.0]})
 
-    
-    #r.set_advance_limit('temperature', delta_T_max)
-    TT               = r.T
-    YY               = r.thermo.Y[Mask_]
-    Vec              = np.concatenate(([TT],YY), axis=0)
-    Mat              = np.array(Vec[np.newaxis,...])
-    tVecFinal        = np.array(tVec, dtype=np.float64)
+        ############################################################################
+        # E
+        tEnd = np.random.rand() * (DeltatMax - DeltatMin) + DeltatMin
+        tVec = np.logspace(np.log10(t0), tEnd, NtInt)
+        #############################################################################
 
-   
-    ### Integrate
-    it               = 0
-    for t in tVecFinal[it:]:
 
-        sim.advance(t)
-        TT                   = r.T
-        YY                   = r.thermo.Y[Mask_]
-        Vec                  = np.concatenate(([TT],YY), axis=0)
-        if (it == 0):
-            Mat              = np.array(Vec[np.newaxis,...])
+        gas_             = gas
+        if (SpeciesVec):
+            gas_kept     = gas[SpeciesVec]
         else:
-            Mat              = np.concatenate((Mat, Vec[np.newaxis,...]), axis=0)
+            gas_kept     = gas
+        states           = ct.SolutionArray(gas_kept, 1, extra={'t': [0.0]})
 
-        it+=1 
+        
+        #r.set_advance_limit('temperature', delta_T_max)
+        TT               = r.T
+        YY               = r.thermo.Y[Mask_]
+        Vec              = np.concatenate(([TT],YY), axis=0)
+        Mat              = np.array(Vec[np.newaxis,...])
+        tVecFinal        = np.array(tVec, dtype=np.float64)
+
+       
+        ### Integrate
+        it               = 0
+        for t in tVecFinal[it:]:
+
+            sim.advance(t)
+            TT                   = r.T
+            YY                   = r.thermo.Y[Mask_]
+            Vec                  = np.concatenate(([TT],YY), axis=0)
+            if (it == 0):
+                Mat              = np.array(Vec[np.newaxis,...])
+            else:
+                Mat              = np.concatenate((Mat, Vec[np.newaxis,...]), axis=0)
+
+            it+=1 
 
 
-    if (iIC<n_processors):
-        WrtFlg = "w"
-    else:
-        WrtFlg = "ab"
-
-
-    y00      = np.concatenate(([tVecFinal[0]],  np.log10(np.clip(Mat[0, :], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
-    FileName = OutputDir+'/Orig/'+DirName+'/ext/y0.csv.'+str((iIC%n_processors)+1)
-    with open(FileName, WrtFlg) as f:
         if (iIC<n_processors):
-            Header0  = 't,T'
-            for Keep in SpeciesVec:
-                Header0 += '0,'+Keep   
-            f.write(Header0+"\n")
-        np.savetxt(f, y00)
+            WrtFlg = "w"
+        else:
+            WrtFlg = "ab"
 
-    yEnd     = np.concatenate(([tVecFinal[-1]], np.log10(np.clip(Mat[-1,:], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
-    FileName = OutputDir+'/Orig/'+DirName+'/ext/yEnd.csv.'+str((iIC%n_processors)+1)
-    with open(FileName, WrtFlg) as f:
-        if (iIC<n_processors):
-            Header   = 't,T'
-            for Keep in SpeciesVec:
-                Header  += ','+Keep
-            f.write(Header+"\n")
-        np.savetxt(f, yEnd)
 
+        y00      = np.concatenate(([tVecFinal[0]],  np.log10(np.clip(Mat[0, :], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
+        FileName = OutputDir+'/Orig/'+DirName+'/ext/y0.csv.'+str((iIC%n_processors)+1)
+        with open(FileName, WrtFlg) as f:
+            if (iIC<n_processors):
+                Header0  = 't,T'
+                for Keep in SpeciesVec:
+                    Header0 += '0,'+Keep   
+                f.write(Header0+"0\n")
+            np.savetxt(f, y00, delimiter=',')
+
+        yEnd     = np.concatenate(([tVecFinal[-1]], np.log10(np.clip(Mat[-1,:], 1.e-30, 1e10))), axis=0)[np.newaxis,...]
+        FileName = OutputDir+'/Orig/'+DirName+'/ext/yEnd.csv.'+str((iIC%n_processors)+1)
+        with open(FileName, WrtFlg) as f:
+            if (iIC<n_processors):
+                Header   = 't,T'
+                for Keep in SpeciesVec:
+                    Header  += ','+Keep
+                f.write(Header+"\n")
+            np.savetxt(f, yEnd, delimiter=',')
+
+    except:
+        pass
+
+        
 
 ##########################################################################################
 ### Generating Training Data
@@ -290,7 +298,7 @@ if (DirName == 'train'):
     MaxVals    = np.log10(MaxVals)
 
     NDims      = len(SpeciesVec)+1
-    ICs        = pyDOE.lhs(len(SpeciesVec)+1, samples=n_ics, criterion='center')
+    ICs        = pyDOE.lhs(NDims, samples=n_ics, criterion='center')
     for i in range(NDims):
         ICs[:,i] = ICs[:,i] * (MaxVals[i] - MinVals[i]) + MinVals[i]
         ICs[:,i] = 10.**(ICs[:,i])
@@ -301,6 +309,20 @@ if (DirName == 'train'):
     Header   = 'P,T,'+','.join(SpeciesVec)
     np.savetxt(FileName, ICs, delimiter=',', header=Header, comments='')
 
+
+elif (DirName == 'train_file'):
+
+    DataDF     = pd.read_csv(ExtsFile, header=0)
+    n_ics      = len(DataDF)
+    SpeciesVec = list(DataDF.columns)[1::]
+    ICs        = DataDF.to_numpy()
+    NDims      = len(SpeciesVec)+1
+    ICs        = np.concatenate([P0*np.ones((n_ics,1)),ICs], axis=1)
+
+    ### Writing Initial Temperatures
+    FileName = OutputDir+'/Orig/'+DirName+'/ext/ICs.csv'
+    Header   = 'P,T,'+','.join(SpeciesVec)
+    np.savetxt(FileName, ICs, delimiter=',', header=Header, comments='')
 
 
 elif (DirName == 'test'):
