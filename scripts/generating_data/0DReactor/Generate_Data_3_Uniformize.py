@@ -20,9 +20,9 @@ import pandas                            as pd
 
 
 DataDir      = os.path.join(WORKSPACE_PATH, 'ROMNet/Data/0DReact_Isobaric_1000Cases_H2/')
-NIC          = 1000
+NIC          = 1
 QoIName      = 'N'
-NPoints      = 4000
+NPoints      = 1000
 
 
 #with alive_bar(NIC) as bar:

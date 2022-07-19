@@ -20,7 +20,7 @@
 3. From $WORKSPACE_PATH/ROMNet/romnet/, install the code (i.e., $ python3 setup.py install)
 
 4. From $WORKSPACE_PATH/ROMNet/romnet/app/, launch the code (i.e., $ python3 RomNet.py path-to-input-folder) 
-	(e.g. fpython3 RomNet.py ../input/MassSpringDamper/DeepONet/)
+	(e.g. python3 RomNet.py ../input/MassSpringDamper/DeepONet/)
 
 
 

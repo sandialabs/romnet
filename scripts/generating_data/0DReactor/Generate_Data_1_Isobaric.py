@@ -47,7 +47,7 @@ SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','
 MixtureFile        = 'gri30.yaml'
 P0                 = ct.one_atm
 
-NtInt              = 5000
+NtInt              = 1000
 Integration        = 'Canteras'
 delta_T_max        = 1.e0
 # Integration        = ''
@@ -57,12 +57,12 @@ delta_T_max        = 1.e0
 
 # FIRST TIME
 DirName            = 'train'
-n_ics              = 1000
+n_ics              = 1
 T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-NPerT0             = 10000
+NPerT0             = 2000
 
 # ## SECOND TIME
 # DirName            = 'test'
