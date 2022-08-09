@@ -18,6 +18,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 
 from joblib import Parallel, delayed
 import multiprocessing
+import itertools
 
 
 
@@ -26,10 +27,10 @@ import multiprocessing
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_1000Cases_H2/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2_NoNoise/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
-t0                 = 1.e-10
+t0                 = 1.e-7
 # Deltat             = 1.e-5
 DeltatMax          = None #7
 DeltatMin          = None #4
@@ -45,38 +46,43 @@ SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','
 # KeepVec            = None
 
 MixtureFile        = 'gri30.yaml'
+#MixtureFile        = '/Users/sventur/WORKSPACE/Modify_CANTERA/Run_4_/gri30'
 P0                 = ct.one_atm
 
-NtInt              = 1000
+NtInt              = 500
 Integration        = 'Canteras'
-delta_T_max        = 1.e0
+delta_T_max        = 5.e0
 # Integration        = ''
 # rtol               = 1.e-12
 # atol               = 1.e-8
 # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
-# FIRST TIME
-DirName            = 'train'
-n_ics              = 1
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
+# # FIRST TIME
+# DirName            = 'train'
+# n_ics              = 500
+# n_samples          = 1
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-NPerT0             = 2000
-
-# ## SECOND TIME
-# DirName            = 'test'
-# n_ics              = 10
+# EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# T0Exts             = np.array([990., 1010.], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.99, 1.01], dtype=np.float64)
-# X0Exts             = None
-# SpeciesVec         = None
-# NPerT0             = 10000
+# NPerT0             = 500
+# NoiseStd           = 5.e-2
+
+## SECOND TIME
+DirName            = 'test'
+n_ics              = 10
+n_samples          = 1
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.50, 4.0], dtype=np.float64)
+X0Exts             = None
+SpeciesVec         = None
+NPerT0             = 500
+NoiseStd           = None
 
 
-n_processors      = 16
+n_processors       = 8
 
 
 ##########################################################################################
@@ -175,8 +181,9 @@ def IdealGasReactor(t, T, Y):
 
 
 
-def integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot):
-
+def integration_(i_tot, zipp, n_samples, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot):
+    iIC      = zipp[0]
+    i_sample = zipp[1]
 
     P0       = ICs[iIC,0]
     EqRatio0 = ICs[iIC,1]
@@ -185,7 +192,11 @@ def integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NP
 
 
     ### Create Mixture
-    gas     = ct.Solution(MixtureFile)
+    if (n_samples > 1):
+        MixtureFile_ = MixtureFile + '_' + str(i_sample+1) + '.yaml'
+    else:
+        MixtureFile_ = MixtureFile
+    gas = ct.Solution(MixtureFile_)
 
     ### Create Reactor
     gas.TP  = T0, P0
@@ -223,7 +234,7 @@ def integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NP
 
     ############################################################################
     # A
-    tVec     = np.append([1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt-1))
+    tVec     = np.append([0., 1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt-2))
     #tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt-1)
     
     # B
@@ -306,6 +317,18 @@ def integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NP
         Mask = np.linspace(0,Nt-1,NPerT0, dtype=int)
         Ntt  = NPerT0
 
+
+    if (NoiseStd):
+        Mat_ = np.maximum(Mat, 1.e-30)
+        Mat_ = np.log10(Mat_)
+        C    = Mat_.mean(axis=0)
+        D    = Mat_.std(axis=0)
+        Mat_ = ( Mat_ - C ) / D
+        Mat_ = Mat_ * np.random.normal(1., NoiseStd, size=Mat_.shape)
+        Mat_ = Mat_ * D + C
+        Mat  = 10**Mat_
+
+
     yTemp        = np.concatenate((tVecFinal[Mask,np.newaxis], Mat[Mask,:]), axis=1)
     # ySourceTemp  = np.concatenate((tVecFinal[Mask,np.newaxis], Source[Mask,:]), axis=1)
         
@@ -329,7 +352,7 @@ def integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NP
     for iSpec in range(NSpec):
         Header += ','+gas.species_name(iSpec)
 
-    FileName = OutputDir+'/Orig/'+DirName+'/ext/y.csv.'+str(iIC+1)
+    FileName = OutputDir+'/Orig/'+DirName+'/ext/y.csv.'+str(i_tot+1)
 
     DF = pd.DataFrame(yTemp, columns=['t','T']+SpeciesVec)
     DF.to_csv(FileName, index=False)
@@ -393,7 +416,11 @@ elif (DirName == 'test'):
 
 
 ### Create Mixture
-gas     = ct.Solution(MixtureFile)
+if (n_samples > 1):
+    MixtureFile_ = MixtureFile + '_1.yaml'
+else:
+    MixtureFile_ = MixtureFile
+gas = ct.Solution(MixtureFile_)
 
 Mask_ = []
 if (SpeciesVec):
@@ -409,12 +436,16 @@ iEnd            = np.zeros(n_ics)
 iTot            = np.zeros(n_ics)
 
 if (n_processors == 1):
+    i_tot = 0
     for iIC in range(n_ics):
-        integration_(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot)
+        for i_sample in range(n_samples):
+            zipp = (iIC,i_sample)
+            integration_(i_tot, zipp, n_samples, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot)
+            i_tot += 1
 else:
-    results = Parallel(n_jobs=n_processors)(delayed(integration_)(iIC, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot) for iIC in range(n_ics))
-
-
+    zipps   = list(itertools.product(np.arange(n_ics),np.arange(n_samples)))
+    print(zipps)
+    results = Parallel(n_jobs=n_processors)(delayed(integration_)(i_tot, zipp, n_samples, OutputDir, DirName, ICs, MixtureFile, Fuel0, Oxydizer0, NPerT0, t0, tEnd, DeltatMin, DeltatMax, delta_T_max, SpeciesVec, Mask_, iTot) for i_tot, zipp in enumerate(zipps))
 
 # FileName = OutputDir+'/Orig/'+DirName+'/ext/SimIdxs.csv'
 # Header   = 'iStart,iEnd'
@@ -422,30 +453,10 @@ else:
 
 
 
-# print('Original (', len(SpeciesNames), ') Species: ', SpeciesNames)
-# VarsName    = ['T']
-# if (DirName == 'train'):
-    
-#     for iSpec in range(yMat.shape[1]-2):
-#         if (np.amax(np.abs(yMat[1:,iSpec+2] - yMat[:-1,iSpec+2])) > 1.e-10):
-#             VarsName.append(SpeciesNames[iSpec]) 
+VarsName = ['T'] + SpeciesVec
+FileName = OutputDir+'/Orig/'+DirName+'/ext/CleanVars.csv'
+StrSep   = ','
+with open(FileName, 'w') as the_file:
+    the_file.write(StrSep.join(VarsName)+'\n')
 
-#     print('Non-zeros (', len(VarsName), ') Variables: ', VarsName)
- 
-
-#     ToOrig       = []
-#     OrigVarNames = ['T']+SpeciesNames
-#     for Var in VarsName:
-#         ToOrig.append(OrigVarNames.index(Var))
-#     ToOrig = np.array(ToOrig, dtype=int)
-
-#     FileName = OutputDir+'/Orig/ToOrig_Mask.csv'
-#     np.savetxt(FileName, ToOrig, delimiter=',')
-
-
-#     FileName = OutputDir+'/Orig/'+DirName+'/ext/CleanVars.csv'
-#     StrSep = ','
-#     with open(FileName, 'w') as the_file:
-#         the_file.write(StrSep.join(VarsName)+'\n')
-
-# ##########################################################################################
+##########################################################################################

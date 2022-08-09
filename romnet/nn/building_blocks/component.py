@@ -132,7 +132,7 @@ class Component(object):
      
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_classic(self, inputs, layers_dict, y_pre, training=False):
+    def call_classic(self, inputs, layers_dict, y_pre_dict_, training=False):
 
         trans_flg = False
         comp_flg  = self.name
@@ -146,12 +146,12 @@ class Component(object):
                 comp_flg_trans = self.name
 
 
-        if (y_pre is not None):
+        if (y_pre_dict_ is not None):
             # if (trans_flg) and (y_pre[0] is not None):
             #     y_pre[0] = tf.math.softplus(y_pre[0])
             # if (trans_flg) and (y_pre[1] is not None):
             #     y_pre[1] = tf.math.softplus(y_pre[1])
-            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre]) 
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre_dict_]) 
 
 
         if (trans_flg):
@@ -166,7 +166,7 @@ class Component(object):
 
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_improved(self, inputs, layers_dict, y_pre, training=False):
+    def call_improved(self, inputs, layers_dict, y_pre_dict_, training=False):
 
         trans_flg = False
         comp_flg  = self.name
@@ -179,10 +179,10 @@ class Component(object):
                 trans_flg      = True
                 comp_flg_trans = self.name
 
-        if (y_pre is not None):
-            if (trans_flg) and (y_pre[1] is not None):
-                y_pre[1] = tf.math.softplus(y_pre[1])
-            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre])
+        if (y_pre_dict_ is not None):
+            # if (trans_flg) and (y_pre[1] is not None):
+            #     y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre_dict_])
 
             
         if (trans_flg):

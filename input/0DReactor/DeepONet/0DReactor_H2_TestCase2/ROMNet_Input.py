@@ -8,9 +8,9 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.NRODs               = 10
+        self.NRODs               = 8
 
-        self.n_modes             = 16                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 32                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
         self.ROM_pred_flg        = True
 
         #=======================================================================================================================================
@@ -25,7 +25,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2_NoNoise/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -80,7 +80,7 @@ class inputdata(object):
 
         # -----------------------------------------------------------------------------------
         self.ROM_type            = 'PCA'
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_H2/'+str(self.NRODs)+'PC/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_H2_NoNoise/'+str(self.NRODs)+'PPC/'                # Path To Training Data Folder 
         self.Vars0               = list(pd.read_csv(self.path_to_data_fld+'/Vars0.csv', delimiter=',', header=None).to_numpy()[0,:])
         self.input_vars_all      = self.Vars0+['t']                                      # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
@@ -107,14 +107,14 @@ class inputdata(object):
                                                 'Stretch': {'Main': np.array([32,32,32,self.n_trunks])},
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                'Stretch': {'Main': ['tanh','tanh','tanh','linear']},
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','softplus']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
-                                                'Stretch': {'Main': None},  
-                                                  'Trunk': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
-        self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                'Stretch': {'Main': False},
-                                                  'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
+        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-3},  
+                                                'Stretch': {'Main': 1.e-3},  
+                                                  'Trunk': {'Main': 1.e-3}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': True},  
+                                                'Stretch': {'Main': True},
+                                                  'Trunk': {'Main': True}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': False}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONet': False}
 
@@ -136,10 +136,10 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches
-        self.batch_size          = 4096                                                                      # Mini-Batch Size
-        self.valid_batch_size    = 4096                                                                      # Validation Mini-Batch Size
+        self.batch_size          = 1024                                                                       # Mini-Batch Size
+        self.valid_batch_size    = 1024                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 1000, 0.99]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

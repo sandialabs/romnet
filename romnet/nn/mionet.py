@@ -493,67 +493,7 @@ class PreNet(_Merge):
     def call(self, inputs):
         if not isinstance(inputs, (list, tuple)):
             raise ValueError('A merge layer should be called on a list of inputs.')
-        if self._reshape_required:
-            reshaped_inputs = []
-            input_ndims = list(map(K.ndim, inputs))
-            if None not in input_ndims:
-                # If ranks of all inputs are available,
-                # we simply expand each of them at axis=1
-                # until all of them have the same rank.
-                max_ndim = max(input_ndims)
-                for x in inputs:
-                    x_ndim = K.ndim(x)
-                    for _ in range(max_ndim - x_ndim):
-                        x = array_ops.expand_dims(x, axis=1)
-                    reshaped_inputs.append(x)
-                return self._merge_function(reshaped_inputs)
-            else:
-                # Transpose all inputs so that batch size is the last dimension.
-                # (batch_size, dim1, dim2, ... ) -> (dim1, dim2, ... , batch_size)
-                transposed = False
-                for x in inputs:
-                    x_ndim = K.ndim(x)
-                    if x_ndim is None:
-                        x_shape = array_ops.shape(x)
-                        batch_size = x_shape[0]
-                        new_shape = K.concatenate(
-                                [x_shape[1:],
-                                 array_ops.expand_dims(batch_size, axis=-1)])
-                        x_transposed = array_ops.reshape(
-                                x,
-                                array_ops.stack(
-                                        [batch_size, math_ops.reduce_prod(x_shape[1:])], axis=0))
-                        x_transposed = array_ops.transpose(x_transposed, perm=(1, 0))
-                        x_transposed = array_ops.reshape(x_transposed, new_shape)
-                        reshaped_inputs.append(x_transposed)
-                        transposed = True
-                    elif x_ndim > 1:
-                        dims = list(range(1, x_ndim)) + [0]
-                        reshaped_inputs.append(array_ops.transpose(x, perm=dims))
-                        transposed = True
-                    else:
-                        # We don't transpose inputs if they are 1D vectors or scalars.
-                        reshaped_inputs.append(x)
-                y = self._merge_function(reshaped_inputs)
-                y_ndim = K.ndim(y)
-                if transposed:
-                    # If inputs have been transposed, we have to transpose the output too.
-                    if y_ndim is None:
-                        y_shape = array_ops.shape(y)
-                        y_ndim = array_ops.shape(y_shape)[0]
-                        batch_size = y_shape[y_ndim - 1]
-                        new_shape = K.concatenate([
-                                array_ops.expand_dims(batch_size, axis=-1), y_shape[:y_ndim - 1]
-                        ])
-                        y = array_ops.reshape(y, (-1, batch_size))
-                        y = array_ops.transpose(y, perm=(1, 0))
-                        y = array_ops.reshape(y, new_shape)
-                    elif y_ndim > 1:
-                        dims = [y_ndim - 1] + list(range(y_ndim - 1))
-                        y = array_ops.transpose(y, perm=dims)
-                return y
-        else:
-            return self._merge_function(inputs)
+        return self._merge_function(inputs)
 
 
 
@@ -595,49 +535,29 @@ class PreNet(_Merge):
 
 
     def _merge_function(self, inputs):
-        # # Adding Rotations
-        # a_list   = tf.split(inputs[1], num_or_size_splits=[2,1,1], axis=1)
-        # x_shift  = tf.keras.layers.add([inputs[0], a_list[0]])
-        # x_str    = tf.keras.layers.multiply([x_shift, a_list[1]])
-    
-        # x_split  = tf.split(x_str, num_or_size_splits=self.n_y, axis=1)
-        # cphi     = tf.math.cos(a_list[2])
-        # sphi     = tf.math.sin(a_list[2])
-        # rot      = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
-        # b_list   = [tf.keras.layers.multiply([x_split[i], rot[i]]) for i in range(self.n_y)]
-        # b        = tf.keras.layers.add(b_list)
-        
-        y_merge    = inputs[0]
-        y_pre_list = inputs[1]
-        y_prenet   = y_pre_list[-1]
-        if (y_prenet is not None):
-            y_pre_list_ = tf.split(y_prenet, num_or_size_splits=[self.n_y,1,1], axis=1)
-        else:
-            y_pre_list_ = y_pre_list
 
-        y_merge    = inputs[0]
-        y_pre_list = inputs[1]
+        y_merge     = inputs[0]
+        y_pre_dict_ = inputs[1]
 
-        y_rotation = y_pre_list[2]
-        if (y_rotation is not None):
-            y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
-            cphi            = tf.math.cos(y_rotation)
-            sphi            = tf.math.sin(y_rotation)
-            y_rotation_list = [tf.concat([cphi, -sphi],  axis=1), tf.concat([sphi, cphi], axis=1)]
-            y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
-            y_merge         = tf.keras.layers.add(y_merge_list)
+        for key in y_pre_dict_:
+            if ('rot' in key.lower()):
+                y_rotation      = y_pre_dict_[key]
+                y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
+                cphi            = tf.math.cos(y_rotation)
+                sphi            = tf.math.sin(y_rotation)
+                y_rotation_list = [tf.concat([cphi, -sphi],  axis=1), tf.concat([sphi, cphi], axis=1)]
+                y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
+                y_merge         = tf.keras.layers.add(y_merge_list)
 
-        # Adding Shift
-        y_shift    = y_pre_list[0]
-        if (y_shift is not None):
-            y_merge  = tf.keras.layers.add([y_merge, y_shift])
+        for key in y_pre_dict_:
+            if ('shift' in key.lower()):
+                y_shift         = y_pre_dict_[key]
+                y_merge         = tf.keras.layers.add([y_merge, y_shift])
 
-        # Adding Stretching
-        y_stretch  = y_pre_list[1]
-        if (y_stretch is not None):
-            y_merge  = tf.keras.layers.multiply([y_merge, y_stretch])
-
-        #y_merge = tf.math.tanh(y_merge)
+        for key in y_pre_dict_:
+            if ('stretch' in key.lower()):
+                y_stretch       = y_pre_dict_[key]
+                y_merge         = tf.keras.layers.multiply([y_merge, y_stretch])
 
         return y_merge
 

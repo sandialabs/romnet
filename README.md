@@ -60,9 +60,9 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 		- 0DReact_*_TestCase1: Fully data-driven training of Vanilla DeepONet in the reduced-order (i.e., principal components) space
 		- 0DReact_*_TestCase2: Fully data-driven training of flexDeepONet in the reduced-order (i.e., principal components) space
 		- 0DReact_*_TestCase3: Fully data-driven training of Vanilla DeepONet in the original (i.e., thermodynamic state variables) space
-		- 0DReact_*_TestCase4: Fully data-driven training of flexDeepONet n the original (i.e., thermodynamic state variables) space
+		- 0DReact_*_TestCase4: Fully data-driven training of flexDeepONet in the original (i.e., thermodynamic state variables) space
 		- 0DReact_*_TestCase5: -
-		- 0DReact_*_TestCase6: Physics-informed training of flexDeepONet n the original (i.e., thermodynamic state variables) space
+		- 0DReact_*_TestCase6: Physics-informed training of flexDeepONet in the original (i.e., thermodynamic state variables) space
 	
 		
 	- 4. Moving Rectangle

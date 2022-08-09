@@ -277,15 +277,19 @@ class ZeroDR(System):
         # #     self.OutputVars = list(pd.read_csv(path_to_data_fld+'/train/ext/CleanVars.csv', header=None).to_numpy()[0,:])
 
         # if (self.NRODs > 0):
-            self.A         = pd.read_csv(PathToParams+'/A.csv', header=None).to_numpy()
-            self.C         = pd.read_csv(PathToParams+'/C.csv', header=None).to_numpy().T
-            self.D         = pd.read_csv(PathToParams+'/D.csv', header=None).to_numpy().T
-            self.AT        = self.A.T
-            self.n_pc      = self.A.shape[0]
+            try:
+                self.A         = pd.read_csv(PathToParams+'/A.csv', header=None).to_numpy()
+                self.C         = pd.read_csv(PathToParams+'/C.csv', header=None).to_numpy().T
+                self.D         = pd.read_csv(PathToParams+'/D.csv', header=None).to_numpy().T
+                self.AT        = self.A.T
+                self.n_pc      = self.A.shape[0]
 
-            self.to_orig   = pd.read_csv(PathToParams+'/ToOrig_Mask.csv',     header=None).to_numpy(int)[:,0]
-            self.n_mask    = len(self.to_orig)
-        
+                self.to_orig   = pd.read_csv(PathToParams+'/ToOrig_Mask.csv',     header=None).to_numpy(int)[:,0]
+                self.n_mask    = len(self.to_orig)
+            except:
+                self.n_pc      = self.NRODs
+                pass
+
         elif (self.ROM_type is None):
             self.to_orig   = pd.read_csv(path_to_data_fld+'/ToOrig_Mask.csv', header=None).to_numpy(int)[:,0]
             self.n_mask    = len(self.to_orig)
