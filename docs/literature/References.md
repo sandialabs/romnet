@@ -55,18 +55,19 @@
 		- S. Guswami et al - A physics-informed variational DeepONet for predicting crack path in quasi-brittle materials - 2022
 		
 		
-	### POD Analogy, Seed Idea
-
+	### POD Analogy
+	
 		- L. Lu et al - A comprehensive and fair comparison of two neural operators (with practical extensions) based on FAIR data - 2021
 		
 		
 	### Improved Architectures
 
-		- S. Wang et al - IMPROVED ARCHITECTURES AND TRAINING ALGORITHMS FOR DEEP OPERATOR NETWORKS - 2021
+		- S. Wang et al - IMPROVED ARCHITECTURES AND TRAINING ALGORITHMS FOR DEEP OPERATOR NETWORKS - 2021 (Connecting branches and trunks)
 		
 		- M. Yin et al - Simulating progressive intramural damage leading to aortic dissection using DeepONet- an operator–regression neural network - 2022 (Introduction of Branches' Biases)
+		
+		- P. Jin et al - MIONet: Learning multiple-input operators via tensor product - 2022 (Multiple input spaces -> Multiple branches)
 
-	
 
 	### Kernels for Trunks
 		

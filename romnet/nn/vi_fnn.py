@@ -15,7 +15,7 @@ class VI_FNN(NN):
     """
     
     # ---------------------------------------------------------------------------------------------------------------------------
-    def __init__(self, InputData, norm_input, stat_output, system):
+    def __init__(self, InputData, norm_input, stat_input, stat_output, system):
         super(VI_FNN, self).__init__()
 
         self.structure_name   = 'VI_FNN'
@@ -37,7 +37,11 @@ class VI_FNN(NN):
         if (norm_input is None):
             norm_input        = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
         self.norm_input       = norm_input
- 
+        if (stat_input is not None):
+            self.stat_input   = stat_input
+        else:
+            self.stat_input   = None
+
         self.norm_output_flg  = InputData.norm_output_flg
  
         self.trans_fun        = InputData.trans_fun
@@ -49,9 +53,9 @@ class VI_FNN(NN):
             self.internal_pca_flg = False
 
         try:
-            self.sigma_like            = InputData.sigma_like
+            self.sigma_like       = InputData.sigma_like
         except:
-            self.sigma_like            = None
+            self.sigma_like       = None
 
         print("\n[ROMNet - fnn.py                    ]:   Constructing Variational-Inference Feed-Forward Network: ") 
 
@@ -82,7 +86,7 @@ class VI_FNN(NN):
                                 indxs.append(ivar)
 
                         if (len(indxs) > 0):
-                            layer_name = 'PreTransformation' + fun + '-' + str(i_trunk+1)
+                            layer_name = system_name+'-PreTransformation' + fun + '-' + str(i_trunk+1)
                             layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
 
                             self.layers_dict[system_name]['FNN']['TransFun']      = layer
@@ -90,27 +94,22 @@ class VI_FNN(NN):
 
             
             # Main System of Components    
-            self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+            self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
-            # # Softmax Layer
-            # if (self.internal_pca_flg):
-            #     self.layers_dict['FNN']['SoftMax'] = tf.keras.layers.Softmax()
+        # Output Normalizing Layer
+        self.norm_output_flg             = InputData.norm_output_flg
+        self.stat_output                 = stat_output
+        if (self.norm_output_flg) and (self.stat_output):                    
+            self.output_min                                = tf.constant(stat_output['min'],  dtype=tf.keras.backend.floatx())
+            self.output_max                                = tf.constant(stat_output['max'],  dtype=tf.keras.backend.floatx())
+            self.output_range                              = tf.constant(self.output_max - self.output_min,   dtype=tf.keras.backend.floatx())
+            
+            self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.output_range, self.output_min)
+            self.layer_names_dict['All']['OutputTrans']    = 'OutputTrans'
 
-
-            # # Output Normalizing Layer
-            # self.norm_output_flg             = InputData.norm_output_flg
-            # self.stat_output                 = stat_output
-            # if (self.norm_output_flg) and (self.stat_output):                    
-            #     self.output_min                                = tf.constant(stat_output['min'],  dtype=tf.keras.backend.floatx())
-            #     self.output_max                                = tf.constant(stat_output['max'],  dtype=tf.keras.backend.floatx())
-            #     self.output_range                              = tf.constant(self.output_max - self.output_min,   dtype=tf.keras.backend.floatx())
-                
-            #     self.layers_dict['All']['OutputTrans']         = OutputTransLayer(   self.output_range, self.output_min)
-            #     self.layer_names_dict['All']['OutputTrans']    = 'OutputTrans'
-
-            #     self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.output_range, self.output_min)
-            #     self.layer_names_dict['All']['OutputInvTrans'] = 'OutputInvTrans'
+            self.layers_dict['All']['OutputInvTrans']      = OutputInvTransLayer(self.output_range, self.output_min)
+            self.layer_names_dict['All']['OutputInvTrans'] = 'OutputInvTrans'
 
     # ---------------------------------------------------------------------------------------------------------------------------
 
@@ -118,30 +117,29 @@ class VI_FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
-        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
+                inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+                inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+                inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+
+            hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=training)
             hypers_vec.append(hyper)
 
-
         if (self.n_hypers == 1):
-            hypers = hypers_vec[0]
-            
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=self.sigma_like)
-                return dist
-       
-        elif (self.n_hypers == 2):
-            hypers = tf.keras.layers.Concatenate(axis=1)(hypers_vec)
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=1e-8 + tf.math.softplus(0.05 * params[:,self.n_outputs:])) 
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0]
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
+                return dist
+        
+        elif (self.n_hypers == 2):
+
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0] 
+                sd   = hypers_vec[1] 
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.nn.relu(sd)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers) 
@@ -154,31 +152,29 @@ class VI_FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_predict(self, inputs):
 
-        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-
-
         hypers_vec = []
         for system_name in list(self.structure.keys()): 
             if (self.internal_pca_flg):
-                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=False)
+                inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
+                inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+                inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
+
+            hyper      = self.system_of_components[system_name].call(inputs, self.layers_dict, training=False)
             hypers_vec.append(hyper)
 
-
         if (self.n_hypers == 1):
-            hypers = hypers_vec[0]
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=self.sigma_like)
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0]
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
                 return dist
         
         elif (self.n_hypers == 2):
-            hypers = tf.keras.layers.Concatenate(axis=1)(hypers_vec)
 
-            def normal_sp(params): 
-                #dist = tfp.distributions.Normal(loc=params[:,0:1], scale=1e-3 + tf.math.softplus(0.05 * params[:,1:2])) 
-                dist = tfp.distributions.MultivariateNormalDiag(loc=params[:,0:self.n_outputs], scale_diag=1e-8 + tf.math.softplus(0.05 * params[:,self.n_outputs:])) 
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0] 
+                sd   = hypers_vec[1] 
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.nn.relu(sd)) 
                 return dist
 
         y = tfp.layers.DistributionLambda(normal_sp)(hypers) 

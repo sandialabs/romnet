@@ -56,36 +56,34 @@ class inputdata(object):
         self.n_trunks            = self.n_branches
         
         ###########################################################################################################
-        ### DeepONet with Rigid Block
+        ### DeepONet with Shift Block
         self.input_vars          = {'DeepONet': {'Branch': ['x'],
-                                                  'Rigid': ['x'],
+                                                  'Shift': ['x'],
                                                   'Trunk': ['t']}}                                             # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg      = {'DeepONet': {'Branch_1': False,   
-                                                    'Rigid': False,
                                                     'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
-                                                  'Rigid': ['Main'],  
+                                                  'Shift': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
-        self.rigid_type          = 'shift'                                                                     # Type of Rigid Block Preprocessing ('shift'/'stretch'/'shift_and_stretch')
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                  # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes+2
+        self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([3,self.n_branch_out])},  
-                                                  'Rigid': {'Main': np.array([1])},
+                                                  'Shift': {'Main': np.array([1])},
                                                   'Trunk': {'Main': np.array([self.n_trunk_out])}}}            # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','linear']}, 
-                                                  'Rigid': {'Main': ['linear']},
+                                                  'Shift': {'Main': ['linear']},
                                                   'Trunk': {'Main': ['tanh']}}}                                # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
-                                                  'Rigid': {'Main': None}, 
+                                                  'Shift': {'Main': None}, 
                                                   'Trunk': {'Main': None}}}                                    # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Rigid': {'Main': False},
+                                                  'Shift': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
-                                                  'Rigid': {'Main': False},
+                                                  'Shift': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
+        self.dotlayer_bias_flg   = {'DeepONet': False}
         ###########################################################################################################
 
         #=======================================================================================================================================

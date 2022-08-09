@@ -20,7 +20,7 @@
 3. From $WORKSPACE_PATH/ROMNet/romnet/, install the code (i.e., $ python3 setup.py install)
 
 4. From $WORKSPACE_PATH/ROMNet/romnet/app/, launch the code (i.e., $ python3 RomNet.py path-to-input-folder) 
-	(e.g. fpython3 RomNet.py ../input/MassSpringDamper/DeepONet/)
+	(e.g. python3 RomNet.py ../input/MassSpringDamper/DeepONet/)
 
 
 
@@ -60,9 +60,21 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 		- 0DReact_*_TestCase1: Fully data-driven training of Vanilla DeepONet in the reduced-order (i.e., principal components) space
 		- 0DReact_*_TestCase2: Fully data-driven training of flexDeepONet in the reduced-order (i.e., principal components) space
 		- 0DReact_*_TestCase3: Fully data-driven training of Vanilla DeepONet in the original (i.e., thermodynamic state variables) space
-		- 0DReact_*_TestCase4: Fully data-driven training of flexDeepONet n the original (i.e., thermodynamic state variables) space
+		- 0DReact_*_TestCase4: Fully data-driven training of flexDeepONet in the original (i.e., thermodynamic state variables) space
 		- 0DReact_*_TestCase5: -
-		- 0DReact_*_TestCase6: Physics-informed training of flexDeepONet n the original (i.e., thermodynamic state variables) space
+		- 0DReact_*_TestCase6: Physics-informed training of flexDeepONet in the original (i.e., thermodynamic state variables) space
+	
+		
+	- 4. Moving Rectangle
+	
+		- Rect_TestCase1:  Fully data-driven training of vanilla DeepONet for a rotating-translating-scaling rigid body (~ rectangle)
+		- Rect_TestCase2: -
+		- Rect_TestCase3: -
+		- Rect_TestCase4: -
+		- Rect_TestCase5: Fully data-driven training of flexDeepONet for a rotating-translating-scaling rigid body (~ rectangle)
+		- Rect_TestCase6: - 
+		- Rect_TestCase7: - 
+
 
 
 --------------------------------------------------------------------------------------

@@ -41,30 +41,30 @@ class Component(object):
         self.structure            = InputData.structure
 
 
-        try:   
-            self.norm_input_flg   = InputData.norm_input_flg[self.system_name][self.type]
-            notfnd_flg            = False
-        except:   
-            self.norm_input_flg   = None
-            notfnd_flg            = True
-        if notfnd_flg:
-            try:   
-                self.norm_input_flg = InputData.norm_input_flg[self.system_name][self.name]
-            except:   
-                self.norm_input_flg = None
+        # try:   
+        #     self.norm_input_flg   = InputData.norm_input_flg[self.system_name][self.type]
+        #     notfnd_flg            = False
+        # except:   
+        #     self.norm_input_flg   = None
+        #     notfnd_flg            = True
+        # if notfnd_flg:
+        #     try:   
+        #         self.norm_input_flg = InputData.norm_input_flg[self.system_name][self.name]
+        #     except:   
+        #         self.norm_input_flg = None
 
 
-        try:   
-            self.gaussnoise_rate  = InputData.gaussnoise_rate[self.system_name][self.type]
-            notfnd_flg            = False
-        except:   
-            self.gaussnoise_rate  = None
-            notfnd_flg            = True
-        if notfnd_flg:
-            try:   
-                self.gaussnoise_rate = InputData.gaussnoise_rate[self.system_name][self.name]
-            except:   
-                self.gaussnoise_rate = None
+        # try:   
+        #     self.gaussnoise_rate  = InputData.gaussnoise_rate[self.system_name][self.type]
+        #     notfnd_flg            = False
+        # except:   
+        #     self.gaussnoise_rate  = None
+        #     notfnd_flg            = True
+        # if notfnd_flg:
+        #     try:   
+        #         self.gaussnoise_rate = InputData.gaussnoise_rate[self.system_name][self.name]
+        #     except:   
+        #         self.gaussnoise_rate = None
 
     
         try:          
@@ -73,8 +73,8 @@ class Component(object):
             self.input_vars       = InputData.input_vars[self.system_name]
 
 
-        if (norm_input is not None):
-            self.norm_input       = norm_input[self.input_vars]
+        # if (norm_input is not None):
+        #     self.norm_input       = norm_input[self.input_vars]
 
 
         try:
@@ -94,37 +94,21 @@ class Component(object):
 
 
 
-        # Normalizing Layer
-        if (self.norm_input_flg):
+        # # Normalizing Layer
+        # if (self.norm_input_flg):
 
-            layer_name        = self.long_name + '_Normalization'
-        
-            # if ( (BlockName == 'Trunk') and (self.PathToPCAFile) ):
-            #     with h5py.File(self.PathToPCAFile, "r") as f:
-            #         Key_       = 'NN_PCA_1_Normalization'
-            #         Mean       = np.array(f[Key_+'/mean:0'][:])
-            #         Variance   = np.array(f[Key_+'/variance:0'][:])[...,np.newaxis]
-            #         MinVals    = np.array(f[Key_+'/min_vals:0'][:])[...,np.newaxis]
-            #         MaxVals    = np.array(f[Key_+'/max_vals:0'][:])[...,np.newaxis]
-            #         normalizer = CustomNormalization(mean=Mean, variance=Variance, min_vals=MinVals, max_vals=MaxVals, name=layer_name)
-            if (self.transfered_model is not None): 
-                mean     = self.transfered_model.get_layer(layer_name).mean.numpy()
-                variance = self.transfered_model.get_layer(layer_name).variance.numpy()
-                min_vals = self.transfered_model.get_layer(layer_name).min_vals.numpy()
-                max_vals = self.transfered_model.get_layer(layer_name).max_vals.numpy()
-                layer    = CustomNormalization(mean=mean, variance=variance, min_vals=min_vals, max_vals=max_vals, name=layer_name, data_preproc_type=self.data_preproc_type)
-            else:
-                layer    = CustomNormalization(name=layer_name)
-                layer.adapt(np.array(self.norm_input))
-            layers_vec.append(layer)
-            layer_names.append(layer_name)
+        #     layer_name = self.long_name + '_Normalization'
+        #     layer      = CustomNormalization(name=layer_name, data_preproc_type=self.data_preproc_type)
+        #     layer.adapt(np.array(self.norm_input))
+        #     layers_vec.append(layer)
+        #     layer_names.append(layer_name)
 
 
-        if (self.gaussnoise_rate):
-            layer      = tf.keras.layers.GaussianNoise(self.gaussnoise_rate)
-            layer_name = self.long_name + '_GaussNoise'
-            layers_vec.append(layer)
-            layer_names.append(layer_name)
+        # if (self.gaussnoise_rate):
+        #     layer      = tf.keras.layers.GaussianNoise(self.gaussnoise_rate)
+        #     layer_name = self.long_name + '_GaussNoise'
+        #     layers_vec.append(layer)
+        #     layer_names.append(layer_name)
 
 
         # Feed-forward Component (i.e., "Sub-Component")
@@ -133,7 +117,7 @@ class Component(object):
 
             if (sub_component_name == 'U'):
                 self.call = self.call_improved                
-            
+
             layers_dict[system_name][component_name][sub_component_name]       = []
             layers_dict[system_name][component_name][sub_component_name]      += layers_vec
             layers_vec_                                                        = layers_dict[system_name][component_name][sub_component_name]
@@ -148,50 +132,61 @@ class Component(object):
      
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_classic(self, inputs, layers_dict, shift, stretch, training=False):
+    def call_classic(self, inputs, layers_dict, y_pre_dict_, training=False):
 
         trans_flg = False
+        comp_flg  = self.name
         try:
             if ('TransFun' in layers_dict[self.system_name][self.type]):
-                trans_flg = True
-                comp_flg  = self.type
+                trans_flg      = True
+                comp_flg_trans = self.type
         except:
             if ('TransFun' in layers_dict[self.system_name][self.name]):
-                trans_flg = True
-                comp_flg  = self.name
+                trans_flg      = True
+                comp_flg_trans = self.name
 
-        if (stretch is not None):
-            if (trans_flg):
-                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, tf.math.softplus(stretch)])
-            else:
-                inputs = layers_dict[self.system_name][comp_flg]['Stretch']([inputs, stretch])
 
-        if (shift   is not None):
-            # if (trans_flg):
-            #     inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, tf.math.softplus(shift)])
-            #     inputs = tf.keras.layers.ReLU()(inputs) + 1.e-14
-            # else:
-            inputs = layers_dict[self.system_name][comp_flg]['Shift']([inputs, shift])
-            
+        if (y_pre_dict_ is not None):
+            # if (trans_flg) and (y_pre[0] is not None):
+            #     y_pre[0] = tf.math.softplus(y_pre[0])
+            # if (trans_flg) and (y_pre[1] is not None):
+            #     y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre_dict_]) 
+
+
         if (trans_flg):
-            inputs = layers_dict[self.system_name][comp_flg]['TransFun'](inputs)
+            inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
 
-        return self.sub_components['Main'].call(inputs, training)
+
+        y = self.sub_components['Main'].call(inputs, training)
+
+        return y
 
     # ---------------------------------------------------------------------------------------------------------------------------   
 
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def call_improved(self, inputs, layers_dict, shift, stretch, training=False):
+    def call_improved(self, inputs, layers_dict, y_pre_dict_, training=False):
 
-        if (stretch is not None):
-            inputs = layers_dict[self.system_name][self.name]['Stretch']([inputs, stretch])
+        trans_flg = False
+        comp_flg  = self.name
+        try:
+            if ('TransFun' in layers_dict[self.system_name][self.type]):
+                trans_flg      = True
+                comp_flg_trans = self.type
+        except:
+            if ('TransFun' in layers_dict[self.system_name][self.name]):
+                trans_flg      = True
+                comp_flg_trans = self.name
 
-        if (shift   is not None):
-            inputs = layers_dict[self.system_name][self.name]['Shift']([inputs, shift])
+        if (y_pre_dict_ is not None):
+            # if (trans_flg) and (y_pre[1] is not None):
+            #     y_pre[1] = tf.math.softplus(y_pre[1])
+            inputs = layers_dict[self.system_name][comp_flg]['PreNet']([inputs, y_pre_dict_])
+
             
-        if ('TransFun' in layers_dict[self.system_name][self.name]):
-            inputs = layers_dict[self.system_name][self.name]['TransFun'](inputs)
+        if (trans_flg):
+            inputs = layers_dict[self.system_name][comp_flg_trans]['TransFun'](inputs)
 
         y                  = inputs
 

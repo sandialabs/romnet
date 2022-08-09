@@ -49,7 +49,7 @@ class inputdata(object):
         self.surrogate_type      = 'VI_DeepONet'                                                             # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = False                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
-        self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
+        self.norm_output_flg     = True                                                                     # Flag for Normalizing Output Data
         self.output_vars         = ['x','v']                                                                 # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['x','v','t']                                                             # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONetMean': {'Branch': ['x','v'],  
@@ -76,18 +76,18 @@ class inputdata(object):
                                     'DeepONetSD':   'one_to_one'}                                           # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
-        self.layer_type          = {'DeepONetMean': {'Branch': {'Main': ['TFP','TFP','TFP','TFP']},  
-                                                       'Trunk': {'Main': ['TFP','TFP','TFP','TFP']}},
-                                    'DeepONetSD':   {'Branch': {'Main': ['TF','TF']},  
-                                                       'Trunk': {'Main': ['TF','TF']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.n_neurons           = {'DeepONetMean': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                                       'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}},
-                                    'DeepONetSD':   {'Branch': {'Main': np.array([32,self.n_branch_out])},  
-                                                       'Trunk': {'Main': np.array([32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONetMean': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-                                                       'Trunk': {'Main': ['tanh','tanh','tanh','linear']}},
-                                    'DeepONetSD':   {'Branch': {'Main': ['tanh','sigmoid']},  
-                                                       'Trunk': {'Main': ['tanh','sigmoid']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.layer_type          = {'DeepONetMean': {'Branch': {'Main': ['TFP','TFP','TFP','TFP','TFP']},  
+                                                       'Trunk': {'Main': ['TFP','TFP','TFP','TFP','TFP']}},
+                                    'DeepONetSD':   {'Branch': {'Main': ['TF','TF','TF','TF']},  
+                                                       'Trunk': {'Main': ['TF','TF','TF','TF']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.n_neurons           = {'DeepONetMean': {'Branch': {'Main': np.array([32,32,32,32,self.n_branch_out])},  
+                                                       'Trunk': {'Main': np.array([32,32,32,32,self.n_trunk_out])}},
+                                    'DeepONetSD':   {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
+                                                       'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'DeepONetMean': {'Branch': {'Main': ['tanh','tanh','tanh','tanh','linear']},  
+                                                       'Trunk': {'Main': ['tanh','tanh','tanh','tanh','linear']}},
+                                    'DeepONetSD':   {'Branch': {'Main': ['tanh','tanh','tanh','sigmoid']},  
+                                                       'Trunk': {'Main': ['tanh','tanh','tanh','sigmoid']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONetMean': {'Branch': {'Main': None},  
                                                        'Trunk': {'Main': None}},
                                     'DeepONetSD':   {'Branch': {'Main': None},  
@@ -122,13 +122,13 @@ class inputdata(object):
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                     # Number of Epoches
-        self.batch_size          = 128                                                                        # Mini-Batch Size
-        self.valid_batch_size    = 32                                                                       # Validation Mini-Batch Size
+        self.batch_size          = 256                                                                        # Mini-Batch Size
+        self.valid_batch_size    = 64                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 1000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 1000, 0.90]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 1.e-16], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

@@ -15,7 +15,7 @@ class Double_DeepONet(NN):
     """
 
     # ---------------------------------------------------------------------------------------------------------------------------
-    def __init__(self, InputData, norm_input, stat_output, system):
+    def __init__(self, InputData, norm_input, stat_input, stat_output, system):
         super(Double_DeepONet, self).__init__()
 
         self.structure_name  = 'Double_DeepONet'
@@ -44,7 +44,10 @@ class Double_DeepONet(NN):
         if (norm_input is None):
             norm_input       = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
         self.norm_input      = norm_input
-
+        if (stat_input is not None):
+            self.stat_input                = stat_input
+        else:
+            self.stat_input                = None
 
         self.t_scale            = InputData.t_scale
         self.n_deeponets        = InputData.n_deeponets
@@ -111,7 +114,7 @@ class Double_DeepONet(NN):
 
         self.system_of_components                    = {}
         for deeponet_name in self.deeponet_names:
-            self.system_of_components[deeponet_name] = System_of_Components(InputData, deeponet_name, self.norm_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+            self.system_of_components[deeponet_name] = System_of_Components(InputData, deeponet_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
             
 
         self.norm_output_flg             = InputData.norm_output_flg

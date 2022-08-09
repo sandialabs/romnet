@@ -13,7 +13,7 @@ if __name__ == "__main__":
         WORKSPACE_PATH = os.environ['WORKSPACE_PATH']
         print("\n[ROMNet.py                          ]: Found WORKSPACE_PATH Environmental Variable: WORKSPACE_PATH = ", WORKSPACE_PATH)
     except:
-        pass
+        WORKSPACE_PATH = None
     
 
     #===========================================================================

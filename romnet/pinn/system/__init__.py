@@ -1,13 +1,17 @@
+from .generic          import Generic
 from .massspringdamper import MassSpringDamper
 from .transtanh        import TransTanh
-from .psr              import PSR, AutoEncoderLayer, AntiAutoEncoderLayer
 from .zerodr           import ZeroDR
+from .stiffkinetics    import StiffKinetics
+#from .psr              import PSR, AutoEncoderLayer, AntiAutoEncoderLayer
 #from .allen_cahn       import Allen_Cahn
 
 __all__ = [
+    "Generic"
     "MassSpringDamper",
     "TransTanh"
-    "PSR",
-    "ZeroDR"
+    "ZeroDR",
+    "StiffKinetics",
+#    "PSR",
 #    "Allen_Cahn"
 ]

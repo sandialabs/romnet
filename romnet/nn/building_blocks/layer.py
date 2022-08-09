@@ -20,18 +20,18 @@ class Layer(object):
     # ---------------------------------------------------------------------------------------------------------------------------
     def __init__(self, 
                  InputData, 
-                 layer_type       = 'TF',
-                 i_layer          = 1, 
-                 n_layers         = 1, 
-                 layer_name       = '', 
-                 n_neurons        = 1, 
-                 act_func         = 'linear', 
-                 use_bias         = True, 
-                 trainable_flg    = 'all', 
-                 transfered_model = None):
+                 layer_type          = 'TF',
+                 i_layer             = 1, 
+                 n_layers            = 1, 
+                 layer_name          = '', 
+                 n_neurons           = 1, 
+                 act_func            = 'linear', 
+                 use_bias            = True, 
+                 trainable_flg       = 'all', 
+                 reg_coeffs          = [0., 0.],
+                 transfered_model    = None):
 
         ### Weights L1 and L2 Regularization Coefficients 
-        self.weight_decay_coeffs = InputData.weight_decay_coeffs
         self.batch_size          = InputData.batch_size
 
         self.layer_type          = layer_type
@@ -42,6 +42,7 @@ class Layer(object):
         self.act_func            = act_func
         self.use_bias            = use_bias
         self.trainable_flg       = trainable_flg
+        self.reg_coeffs          = reg_coeffs
         self.transfered_model    = transfered_model
         self.last_flg            = True if (i_layer >= n_layers-1) else False
 
@@ -56,15 +57,15 @@ class Layer(object):
 
         # Parameters Initialization
         ### Biases L1 and L2 Regularization Coefficients 
-        kW1 = self.weight_decay_coeffs[0]
-        kW2 = self.weight_decay_coeffs[1]
+        kW1 = self.reg_coeffs[0]
+        kW2 = self.reg_coeffs[1]
         if (not self.last_flg):
-            if (len(self.weight_decay_coeffs) == 2):
-                kb1 = self.weight_decay_coeffs[0]
-                kb2 = self.weight_decay_coeffs[1]
+            if (len(self.reg_coeffs) == 2):
+                kb1 = self.reg_coeffs[0]
+                kb2 = self.reg_coeffs[1]
             else:
-                kb1 = self.weight_decay_coeffs[2]
-                kb2 = self.weight_decay_coeffs[3]
+                kb1 = self.reg_coeffs[2]
+                kb2 = self.reg_coeffs[3]
         else:
             kb1 = 0.
             kb2 = 0.
@@ -195,7 +196,7 @@ class Layer(object):
             Multivariate standard `Normal` distribution.å=
             """
             del name, trainable, add_variable_fn   # unused
-            dist = normal_lib.Normal(loc=tf.zeros(shape, dtype), scale=dtype.as_numpy_dtype(30.))
+            dist = normal_lib.Normal(loc=tf.zeros(shape, dtype), scale=dtype.as_numpy_dtype(5.))
             batch_ndims = tf.size(dist.batch_shape_tensor())
             return independent_lib.Independent(dist, reinterpreted_batch_ndims=batch_ndims)
 
@@ -203,8 +204,8 @@ class Layer(object):
         kernel_prior_fn      = nondefault_multivariate_normal_fn
 
         kernel_posterior_fn  = tfp.layers.default_mean_field_normal_fn( is_singular                     = False, 
-                                                                        loc_initializer                 = initializers.random_normal(mean=0.,    stddev=0.1),
-                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-30.0, stddev=0.1), 
+                                                                        loc_initializer                 = initializers.random_normal(mean=0.,   stddev=0.1),
+                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-15.0, stddev=0.1), 
                                                                         loc_regularizer                 = None, 
                                                                         untransformed_scale_regularizer = None,
                                                                         loc_constraint                  = None, 
@@ -217,8 +218,8 @@ class Layer(object):
         bias_prior_fn        = None
 
         bias_posterior_fn    = tfp.layers.default_mean_field_normal_fn( is_singular                     = True, 
-                                                                        loc_initializer                 = initializers.random_normal(mean=0.,    stddev=0.1),
-                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-30.0, stddev=0.1), 
+                                                                        loc_initializer                 = initializers.random_normal(mean=0.,   stddev=0.1),
+                                                                        untransformed_scale_initializer = initializers.random_normal(mean=-15.0, stddev=0.1), 
                                                                         loc_regularizer                 = None, 
                                                                         untransformed_scale_regularizer = None,
                                                                         loc_constraint                  = None, 

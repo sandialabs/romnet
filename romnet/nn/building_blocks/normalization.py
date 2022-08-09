@@ -97,6 +97,8 @@ class CustomNormalization(base_preprocessing_layer.PreprocessingLayer):
       
       if (self.data_preproc_type in ['auto', 'std', 'pareto', 'poisson', 'level', 'vast']):
         self.centering = 'mean'
+      elif (self.data_preproc_type in ['log10','log']):
+        self.centering = 'log'
       elif (self.data_preproc_type in ['range']):
         self.centering = 'none'
       else:
@@ -317,6 +319,8 @@ class CustomNormalization(base_preprocessing_layer.PreprocessingLayer):
       centered = inputs - self.mean
     elif (self.centering == '0to1'):
       centered = inputs - self.min_vals
+    elif (self.centering == 'log') or (self.centering == 'log10'):
+      centered = inputs - self.min_vals + 1.e-10
     elif (self.centering == '-1to1'):
       centered = inputs - 0.5*(self.max_vals + self.min_vals)
     else:
@@ -339,6 +343,10 @@ class CustomNormalization(base_preprocessing_layer.PreprocessingLayer):
       return ( centered / (self.max_vals - self.min_vals) )
     elif (self.scaling == '-1to1'):
       return ( centered / (0.5*(self.max_vals - self.min_vals)) )
+    # elif (self.scaling == 'log'):
+    #   return ( tf.log(centered) )
+    # elif (self.scaling == 'log10'):
+    #   return ( tf.experimental.numpy.log10(centered) )
     else:
       return centered
 

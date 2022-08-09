@@ -153,11 +153,13 @@ class Model_TF(Model):
 
         if (self.train_int_flg > 0):
             self.norm_input  = self.data.norm_input
+            self.stat_input  = self.data.stat_input
             self.stat_output = self.data.stat_output
         else:
             try:
                 self.read_data_statistics()
             except:
+                self.stat_input  = None
                 self.stat_output = None
             self.norm_input  = None
             
@@ -165,7 +167,7 @@ class Model_TF(Model):
 
 
         #-----------------------------------------------------------------------
-        self.net = Net(InputData, self.norm_input, self.stat_output, system)
+        self.net = Net(InputData, self.norm_input, None, self.stat_output, system)
 
         self.net.AntiPCA_flg = False
         # try:
@@ -380,6 +382,7 @@ class Model_TF(Model):
         History       = self.net.fit(x=x, 
                                      y=y, 
                                      batch_size=InputData.batch_size, 
+                                     validation_batch_size=InputData.valid_batch_size, 
                                      validation_data=xy_valid, 
                                      verbose=1, 
                                      epochs=InputData.n_epoch, 
@@ -471,6 +474,12 @@ class Model_TF(Model):
 
             elif (self.data_preproc_type == 'pareto'):
                 y_pred = y_pred * np.sqrt(self.output_std) + self.output_mean
+
+            elif (self.data_preproc_type == 'log'):
+                y_pred = np.exp(y_pred) + self.output_min - 1.e-10
+
+            elif (self.data_preproc_type == 'log10'):
+                y_pred = 10.**y_pred + self.output_min - 1.e-10
 
 
         return y_pred
