@@ -27,7 +27,7 @@ import itertools
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_PDFCases/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_150Cases_UncParams/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 t0                 = 1.e-7
@@ -46,10 +46,10 @@ SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','
 # KeepVec            = None
 
 #MixtureFile        = 'gri30.yaml'
-MixtureFile        = '/Users/sventur/WORKSPACE/Modify_CANTERA/Run_9/gri30'
+MixtureFile        = '/Users/sventur/WORKSPACE/Modify_CANTERA/Run_1/gri30'
 P0                 = ct.one_atm
 
-NtInt              = 500
+NtInt              = 100
 Integration        = 'Canteras'
 delta_T_max        = 5.e0
 # Integration        = ''
@@ -59,13 +59,13 @@ delta_T_max        = 5.e0
 
 # FIRST TIME
 DirName            = 'train'
-n_ics              = 1
-n_samples          = 636
-T0Exts             = np.array([1500., 1500.], dtype=np.float64)
-EqRatio0Exts       = np.array([2.0, 2.0], dtype=np.float64)
+n_ics              = 150
+n_samples          = 150
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-NPerT0             = 500
+NPerT0             = 100
 NoiseStd           = None #5.e-2
 
 # ## SECOND TIME
