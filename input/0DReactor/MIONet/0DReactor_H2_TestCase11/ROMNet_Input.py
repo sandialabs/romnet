@@ -11,7 +11,7 @@ class inputdata(object):
         self.NRODs               = 0
         self.NReacts             = 8
 
-        self.n_modes             = 32                                                                          # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 16                                                                          # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -99,11 +99,11 @@ class inputdata(object):
         self.branch_to_trunk     = {'MIONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'MIONet': {'Branch1': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                               'Branch2': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                              'Stretch1': {'Main': np.array([32,32,32,self.n_trunks])},
-                                              'Stretch2': {'Main': np.array([32,32,32,self.n_trunks])},
-                                                 'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons           = {'MIONet': {'Branch1': {'Main': np.array([16,16,16,self.n_branch_out])},  
+                                               'Branch2': {'Main': np.array([16,16,16,self.n_branch_out])},  
+                                              'Stretch1': {'Main': np.array([16,16,16,self.n_trunks])},
+                                              'Stretch2': {'Main': np.array([16,16,16,self.n_trunks])},
+                                                 'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'MIONet': {'Branch1': {'Main': ['tanh','tanh','tanh','linear']},  
                                                'Branch2': {'Main': ['tanh','tanh','tanh','linear']},  
                                               'Stretch1': {'Main': ['tanh','tanh','tanh','softplus']},
@@ -150,7 +150,7 @@ class inputdata(object):
         self.lr_decay            = ["exponential", 50000, 0.96]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-8, 1.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None
