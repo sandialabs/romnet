@@ -96,11 +96,11 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 30000                                                                    # Number of Epoches
+        self.n_epoch             = 50000                                                                    # Number of Epoches
         self.batch_size          = 32                                                                       # Mini-Batch Size
         self.valid_batch_size    = 32                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

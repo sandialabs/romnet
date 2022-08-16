@@ -18,7 +18,7 @@ import itertools
 
 
 NVars            = 19
-NProcs           = 2
+NProcs           = 10
 
 DRAlog           = 'KPCA'
 NRODs            = 16
