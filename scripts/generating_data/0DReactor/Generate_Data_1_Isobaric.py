@@ -46,7 +46,7 @@ SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','
 # KeepVec            = None
 
 #MixtureFile        = 'gri30.yaml'
-MixtureFile        = '/Users/sventur/WORKSPACE/Modify_CANTERA/Run_1/gri30'
+MixtureFile        = WORKSPACE_PATH + '/Modify_CANTERA/Run_1/gri30'
 P0                 = ct.one_atm
 
 NtInt              = 100

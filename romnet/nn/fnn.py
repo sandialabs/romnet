@@ -68,21 +68,23 @@ class FNN(NN):
 
         # Pre-Transforming Layer
         if (self.trans_fun):
-            for i_trunk in range(self.n_trunks):
-                for ifun, fun in enumerate(self.trans_fun):
-                    vars_list = self.trans_fun[fun]
+            self.layers_dict['FNN']['FNN']      = {}
+            self.layer_names_dict['FNN']['FNN'] = {}
 
-                    indxs = []
-                    for ivar, var in enumerate(self.trunk_vars):
-                        if var in vars_list:
-                            indxs.append(ivar)
+            for ifun, fun in enumerate(self.trans_fun):
+                vars_list = self.trans_fun[fun]
 
-                    if (len(indxs) > 0):
-                        layer_name = 'FNN-PreTransformation' + fun + '-' + str(i_trunk+1)
-                        layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
+                indxs = []
+                for ivar, var in enumerate(self.input_vars):
+                    if var in vars_list:
+                        indxs.append(ivar)
 
-                        self.layers_dict['FNN']['FNN']['TransFun']      = layer
-                        self.layer_names_dict['FNN']['FNN']['TransFun'] = layer_name
+                if (len(indxs) > 0):
+                    layer_name = 'FNN-PreTransformation' + fun + '-' + str(1)
+                    layer      = InputTransLayer(fun, len(self.input_vars), indxs, name=layer_name)
+
+                    self.layers_dict['FNN']['FNN']['TransFun']      = layer
+                    self.layer_names_dict['FNN']['FNN']['TransFun'] = layer_name
 
         
         # Main System of Components    
@@ -111,11 +113,6 @@ class FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
-        # if (self.internal_pca_flg):
-        #     inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-        #     inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-        #     inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
-
         y = self.system_of_components['FNN'].call(inputs, self.layers_dict, training=training)
 
         # if (self.norm_output_flg) and (self.stat_output):   
@@ -130,11 +127,6 @@ class FNN(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_predict(self, inputs):
 
-        # if (self.internal_pca_flg):
-        #     inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
-        #     inputs_branch               = self.layers_dict[system_name]['PCALayer'](inputs_branch)
-        #     inputs                      = tf.concat([inputs_branch, inputs_trunk], axis=1)
-            
         y = self.system_of_components['FNN'].call(inputs, self.layers_dict, training=False)
 
         if (self.norm_output_flg) and (self.stat_output):                    
