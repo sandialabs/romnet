@@ -178,6 +178,16 @@ for VarName in Vars:
         yMat_DR   = PCA_.fit_transform(yMatt)
         yMat_     = PCA_.inverse_transform(yMat_DR)
 
+        # pca        = PCAA(yMatt, scaling='none', n_components=int(NPCA), nocenter=True)
+        # C          = pca.X_center
+        # D          = pca.X_scale
+        # A          = pca.A[:,0:NPCA].T
+        # L          = pca.L
+        # LL         = np.maximum(L,0.)
+        # AT         = A.T
+        # yMat_DR    = yMatt.dot(AT)
+        # yMat_      = yMat_DR.dot(A)
+
     elif (DRAlog == 'IPCA'):
         NIPCA     = NModesFinal
         IPCA_     = FastICA(n_components=NIPCA)
@@ -253,11 +263,17 @@ for VarName in Vars:
         os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/valid/'+data_id+'/')
     except:
         pass
+    try:
+        os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/test/'+data_id+'/')
+    except:
+        pass
 
     DataInput  = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_DR]
     DataInput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/train/'+data_id+'/Input.csv', index=False)
     DataInput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/valid/'+data_id+'/Input.csv', index=False)
+    DataInput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/test/'+data_id+'/Input.csv', index=False)
 
     DataOutput = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_DR]
     DataOutput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/train/'+data_id+'/Output.csv', index=False)
     DataOutput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/valid/'+data_id+'/Output.csv', index=False)
+    DataOutput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/test/'+data_id+'/Output.csv', index=False)

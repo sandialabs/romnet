@@ -512,8 +512,8 @@ class PDE(Data):
         self.compute_output_statistics()      
 
         if (self.norm_output_flg):
-            if (self.path_to_load_fld):
-                self.read_output_statistics(self.path_to_load_fld)      
+            #if (self.path_to_load_fld):
+            #    self.read_output_statistics(self.path_to_load_fld)      
             train_data, valid_data = self.normalize_output_data([train_data, valid_data])
 
 
