@@ -57,24 +57,27 @@ class Sub_Component(object):
                 self.layer_type   = ['TF']*self.n_layers
 
 
+        notfnd_flg = True
         try:
-            self.trainable_flg     = InputData.trainable_flg[self.system_name]
-            notfnd_flg             = False
+            self.trainable_flg    = InputData.trainable_flg[self.system_name][self.component_type][self.name]
+            notfnd_flg            = not isinstance(self.trainable_flg, str)
         except:
-            self.trainable_flg     = 'all'
-            notfnd_flg             = True
+            pass
         if notfnd_flg:
             try:
                 self.trainable_flg = InputData.trainable_flg[self.system_name][self.component_type]
-                notfnd_flg         = False
+                notfnd_flg         = not isinstance(self.trainable_flg, str)
             except:
-                self.trainable_flg = 'all'
-                notfnd_flg         = True
+                pass
         if notfnd_flg:
             try:
-                self.trainable_flg = InputData.trainable_flg[self.system_name][self.component_type][self.name]
+                self.trainable_flg = InputData.trainable_flg[self.system_name]
+                notfnd_flg         = not isinstance(self.trainable_flg, str)
             except:
-                self.trainable_flg = 'all'
+                pass
+        if (notfnd_flg):
+            self.trainable_flg = 'all'
+            notfnd_flg         = True 
 
 
         try:

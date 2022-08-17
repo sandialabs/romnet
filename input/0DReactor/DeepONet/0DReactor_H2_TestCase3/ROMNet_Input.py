@@ -11,7 +11,7 @@ class inputdata(object):
 
         self.NRODs               = 0
 
-        self.n_modes             = 32                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 16                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -84,12 +84,12 @@ class inputdata(object):
         for i in range(self.n_trunks):
            self.structure['DeepONet']['Trunk_'+str(i+1)]  = ['Main']                                         # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('stacked'/'unstacked')
-        self.n_branch_out        = self.n_modes
+        self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([64,64,64,64,64,self.n_branch_out])},  
-                                                  'Trunk': {'Main': np.array([64,64,64,64,64,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']},  
-                                                  'Trunk': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
+                                                  'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
+                                                  'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
                                                   'Trunk': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
@@ -113,7 +113,9 @@ class inputdata(object):
 
         #=======================================================================================================================================
         ### Training Quanties
-        self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        # self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        # for iTrunk in range(self.NRODs):
+        #     self.trainable_flg['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 100000                                                                    # Number of Epoches

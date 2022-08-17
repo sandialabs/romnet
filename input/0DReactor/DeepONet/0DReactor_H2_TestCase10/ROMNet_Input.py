@@ -11,7 +11,7 @@ class inputdata(object):
         self.NRODs               = 0
         self.NReacts             = 8
 
-        self.n_modes             = 16                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 32                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -25,7 +25,7 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_1000Cases_H2_UncertanParams/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_150Cases_UncParams/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -61,16 +61,16 @@ class inputdata(object):
 
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_1000Cases_H2_UncertanParams/Orig/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_150Cases_UncParams/Orig/'                # Path To Training Data Folder 
         FileName   = self.path_to_data_fld+'/train/ext/CleanVars.csv'
         Vars       = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
         self.Vars  = list(Vars)
-        self.Vars0 = ['k_'+str(i+1) for i in range(self.NReacts)]
+        self.Vars0 = [Var+'0' for Var in self.Vars]
 
         self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
-        self.input_vars_all      = self.Vars0 + ['t']                                                                    # List Containing all the Input Data Variable Names
-        self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
-                                                'Stretch': self.Vars0,
+        self.input_vars_all      = self.Vars0 + ['k_'+str(i+1) for i in range(self.NReacts)] + ['t']                                                                    # List Containing all the Input Data Variable Names
+        self.input_vars          = {'DeepONet': {'Branch': self.Vars0 + ['k_'+str(i+1) for i in range(self.NReacts)],
+                                                'Stretch': self.Vars0 + ['k_'+str(i+1) for i in range(self.NReacts)],
                                                   'Trunk': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
         self.n_branches          = len(self.Vars)
         self.n_trunks            = self.n_branches
@@ -86,9 +86,9 @@ class inputdata(object):
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([16,16,16,self.n_branch_out])},  
-                                                'Stretch': {'Main': np.array([16,16,16,self.n_trunks])},
-                                                  'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
+                                                'Stretch': {'Main': np.array([32,32,32,self.n_trunks])},
+                                                  'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','softplus']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer

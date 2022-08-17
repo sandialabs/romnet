@@ -11,7 +11,7 @@ class inputdata(object):
         self.NRODs               = 0
         self.NReacts             = 8
 
-        self.n_modes             = 32                                                                          # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 16                                                                          # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -26,7 +26,7 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
         #self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_1000Cases_H2_UncertanParams/'                       # Path To Training Folder
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_2500Cases_H2_UncertanICsParams_Diff/'                       # Path To Training Folder
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_150Cases_UncParams/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
         #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
 
@@ -66,7 +66,7 @@ class inputdata(object):
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
         #self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_1000Cases_H2_UncertanParams/Orig/'                # Path To Training Data Folder 
-        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_2500Cases_H2_UncertanICsParams_Diff/Orig/'                # Path To Training Data Folder 
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_150Cases_UncParams/Orig/'                # Path To Training Data Folder 
         FileName    = self.path_to_data_fld+'/train/ext/CleanVars.csv'
         Vars        = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
         self.Vars   = list(Vars)
@@ -99,11 +99,11 @@ class inputdata(object):
         self.branch_to_trunk     = {'MIONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'MIONet': {'Branch1': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                               'Branch2': {'Main': np.array([32,32,32,self.n_branch_out])},  
-                                              'Stretch1': {'Main': np.array([32,32,32,self.n_trunks])},
-                                              'Stretch2': {'Main': np.array([32,32,32,self.n_trunks])},
-                                                 'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.n_neurons           = {'MIONet': {'Branch1': {'Main': np.array([16,16,16,self.n_branch_out])},  
+                                               'Branch2': {'Main': np.array([16,16,16,self.n_branch_out])},  
+                                              'Stretch1': {'Main': np.array([16,16,16,self.n_trunks])},
+                                              'Stretch2': {'Main': np.array([16,16,16,self.n_trunks])},
+                                                 'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'MIONet': {'Branch1': {'Main': ['tanh','tanh','tanh','linear']},  
                                                'Branch2': {'Main': ['tanh','tanh','tanh','linear']},  
                                               'Stretch1': {'Main': ['tanh','tanh','tanh','softplus']},
@@ -147,7 +147,7 @@ class inputdata(object):
         self.batch_size          = 1024                                                                       # Mini-Batch Size
         self.valid_batch_size    = 1024                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 50000, 0.96]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

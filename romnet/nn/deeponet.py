@@ -111,7 +111,7 @@ class DeepONet(NN):
                 temp_str = '_'+str(i_trunk+1)
             else:
                 temp_str = ''
-            self.layers_dict['DeepONet']['Trunk'+temp_str]       = {}
+            self.layers_dict['DeepONet']['Trunk'+temp_str]      = {}
             self.layer_names_dict['DeepONet']['Trunk'+temp_str] = {}
 
 
