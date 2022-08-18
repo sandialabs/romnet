@@ -9,11 +9,11 @@ from sklearn.model_selection              import train_test_split
 import tensorflow                             as tf
 from tensorflow                           import train as tf_train
 
-from .model        import Model
-from ..training    import LossHistory, get_loss, get_optimizer, callbacks
-from ..nn          import load_model_, load_weights_
-from ..            import utils
-from ..metrics     import get_metric
+from .model         import Model
+from ..training     import LossHistory, get_loss, get_optimizer, callbacks
+from ..architecture import load_model_, load_weights_
+from ..             import utils
+from ..metrics      import get_metric
 
 
 
