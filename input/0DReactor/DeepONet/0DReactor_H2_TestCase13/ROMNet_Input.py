@@ -69,45 +69,48 @@ class inputdata(object):
             Vars0.append(str(Var)+'0')
         self.Vars0 = Vars0
         self.output_vars         = self.Vars                                                                 # List Containing the Output Data Variable Names for each System
+        self.n_outputs           = len(self.output_vars)
         self.input_vars_all      = self.Vars0 + ['t']                                                        # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
                                                 'Stretch': self.Vars0,
                                                   'Trunk': ['t']}}                                           # Dictionary Containing the Input  Data Variable Names for each Component
         self.n_branches          = len(self.Vars)
-        self.n_trunks            = self.n_branches
+        self.n_trunks            = 3
         # -----------------------------------------------------------------------------------
 
         self.gaussnoise_rate     = {'DeepONet': {'Branch': None}}    
         self.structure           = {'DeepONet': {}}
         for i in range(self.n_branches):
            self.structure['DeepONet']['Branch_'+str(i+1)]      = ['Main']
-           self.structure['DeepONet']['ScenDecoder_'+str(i+1)] = ['Main']
+           self.structure['DeepONet']['OutDecoder_'+str(i+1)]  = ['Main']
         self.structure['DeepONet']['Stretch']                  = ['Main']
         for i in range(self.n_trunks):
            self.structure['DeepONet']['Trunk_'+str(i+1)]       = ['Main']                                   # Dictionary Containing the Structure of the Network
-        self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
+        self.branch_to_trunk     = {'DeepONet': 'custom'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
+        self.output_to_branch    = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()  
+        self.output_to_trunk     = [[0,1,2]]*self.n_outputs
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([8,8,8,self.n_branch_out])},  
                                                 'Stretch': {'Main': np.array([8,8,8,self.n_trunks])},
                                                   'Trunk': {'Main': np.array([8,8,8,self.n_trunk_out])},
-                                            'ScenDecoder': {'Main': np.array([self.n_branch_out,8,8,1])}}}   # Dictionary Containing the No of Neurons for each Layer
+                                             'OutDecoder': {'Main': np.array([1])}}}   # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                 'Stretch': {'Main': ['tanh','tanh','tanh','softplus']},
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']},
-                                            'ScenDecoder': {'Main': ['relu','relu','relu','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+                                             'OutDecoder': {'Main': ['linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
                                                 'Stretch': {'Main': None},  
                                                   'Trunk': {'Main': None},
-                                            'ScenDecoder': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
+                                             'OutDecoder': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                 'Stretch': {'Main': False},
                                                   'Trunk': {'Main': False},
-                                            'ScenDecoder': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
+                                             'OutDecoder': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
                                                 'Stretch': {'Main': False},
                                                   'Trunk': {'Main': False},
-                                            'ScenDecoder': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
+                                             'OutDecoder': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
         self.dotlayer_bias_flg   = {'DeepONet': False}
 
         #=======================================================================================================================================

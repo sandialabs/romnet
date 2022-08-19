@@ -1,6 +1,7 @@
 import numpy                                  as np
 import tensorflow                             as tf
 import h5py
+import itertools
 
 from tensorflow.keras                     import regularizers
 from tensorflow.python.keras.layers.merge import _Merge
@@ -95,14 +96,24 @@ class DeepONet_System(System_of_Components):
         self.n_trunks                  = len([name for name in self.structure[self.name].keys() if 'trunk' in name.lower()])
         self.trunk_vars                = InputData.input_vars[self.name]['Trunk']
 
+        self.n_scendecoders            = len([name for name in self.structure[self.name].keys() if 'scendecoder' in name.lower()])
+
+        self.n_outdecoders             = len([name for name in self.structure[self.name].keys() if 'outdecoder'  in name.lower()])
+
         try:
             self.branch_to_trunk       = InputData.branch_to_trunk[self.name]
             if (self.branch_to_trunk   == 'multi_to_one'):
-                self.branch_to_trunk   = [0]*self.n_branches
+                self.output_to_branch  = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()
+                self.output_to_trunk   = [[0]] * self.n_outputs
             elif (self.branch_to_trunk == 'one_to_one'):
-                self.branch_to_trunk   = np.arange(self.n_branches)
+                self.output_to_branch  = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()
+                self.output_to_trunk   = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()
+            elif (self.branch_to_trunk   == 'custom'):
+                self.output_to_branch  = InputData.output_to_branch
+                self.output_to_trunk   = InputData.output_to_trunk
         except:    
-          self.branch_to_trunk         = [0]*self.n_branches
+            self.output_to_branch      = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()
+            self.output_to_trunk       = np.arange(self.n_outputs).reshape(self.n_outputs,1).tolist()
         print("[ROMNet - system_of_components.py   ]:     Mapping Branch-to-Trunk (i.e., self.branch_to_trunk Object): ", self.branch_to_trunk) 
 
         try:
@@ -188,13 +199,15 @@ class DeepONet_System(System_of_Components):
 
 
         # Iterating over Components
-        self.components     = {}
-        self.branch_names   = []
-        self.shift_names    = []
-        self.stretch_names  = []
-        self.rotation_names = []
-        self.prenet_names   = []
-        self.trunk_names    = []
+        self.components         = {}
+        self.branch_names       = []
+        self.shift_names        = []
+        self.stretch_names      = []
+        self.rotation_names     = []
+        self.prenet_names       = []
+        self.trunk_names        = []
+        self.scendecoder_names  = []
+        self.outdecoder_names  = []
         for component_name in self.structure[self.name]:
 
             if  ('branch' in component_name.lower()):
@@ -217,11 +230,18 @@ class DeepONet_System(System_of_Components):
                 component_type = 'Trunk'
             elif ('FNN' in component_name.lower()):
                 component_type = 'FNN'
+            elif ('scendecoder' in component_name.lower()):
+                self.scendecoder_names.append(component_name)
+                component_type = 'ScenDecoder'
+            elif ('outdecoder' in component_name.lower()):
+                self.outdecoder_names.append(component_name)
+                component_type = 'OutDecoder'
 
             if (not component_name in layers_dict[self.name]):
                 layers_dict[self.name][component_name]      = {}
                 layer_names_dict[self.name][component_name] = {}
 
+            print('component_name = ', component_name)
             self.components[component_name] = Component(InputData, self.name, component_name, self.norm_input, layers_dict=layers_dict, layer_names_dict=layer_names_dict)
 
 
@@ -293,6 +313,15 @@ class DeepONet_System(System_of_Components):
                     y_pre_dict[prenet_name] = [y_prenet]
 
 
+
+        # Create Array of Branches
+        y_branch_vec = []
+        for i_branch in range(self.n_branches): 
+            branch_name = self.branch_names[i_branch] 
+            y_branch_vec.append(self.components[branch_name].call(inputs_branch, layers_dict, None, training=training))
+
+
+
         # Create Array of Trunks
         y_trunk_vec = []
         for i_trunk in range(self.n_trunks): 
@@ -306,39 +335,60 @@ class DeepONet_System(System_of_Components):
             y_trunk_vec.append(self.components[trunk_name].call(inputs_trunk, layers_dict, y_pre_dict_, training=training))
 
 
-    
-        # Create Array of Branches
-        y_branch_vec = []
-        output_vec   = []
-        for i_branch in range(self.n_branches): 
-            i_trunk     = self.branch_to_trunk[i_branch]
-            branch_name = self.branch_names[i_branch] 
-            y           = self.components[branch_name].call(inputs_branch, layers_dict, None, training=training)
+
+        # Combining Trunks and Branches and Mapping to Outputs 
+        output_vec       = []
+        i_tot            = 0
+        for i_output in range(self.n_outputs):
+            i_branch_vec = self.output_to_branch[i_output]
+            i_trunk_vec  = self.output_to_trunk[i_output]
+
+            combos       = list(itertools.product(i_branch_vec,i_trunk_vec))
+            y_vec        = []
+            for i_combo, combo in enumerate(combos):
+                i_branch = combo[0]
+                i_trunk  = combo[1]
+
+                y_branch = y_branch_vec[i_branch]
+                y_trunk  = y_trunk_vec[i_trunk]
 
 
-            # Perform Dot Pructs Between Trunks and Branches
-            #output_dot  = Dot_Add(axes=1)([y, y_trunk_vec[i_trunk]])     
-            if (self.n_branch_out == None) or (self.n_branch_out == self.n_trunk_out):
-                # Branch Output Layer does not contain either Centering nor Scaling
-                output_          = tf.keras.layers.Dot(axes=1)([y, y_trunk_vec[i_trunk]]) 
-            elif (self.n_branch_out == self.n_trunk_out+2):
-                # Branch Output Layer contains Centering and Scaling
-                alpha_vec, c, d  = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1, 1], axis=1)
-                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
-                output_mult      = tf.keras.layers.multiply([output_dot,  d])            
-                output_          = tf.keras.layers.add([output_mult, c])   
-            elif (self.n_branch_out == self.n_trunk_out+1):
-                # Branch Output Layer contains Centering
-                alpha_vec, c     = tf.split(y, num_or_size_splits=[self.n_trunk_out, 1], axis=1)
-                output_dot       = tf.keras.layers.Dot(axes=1)([alpha_vec, y_trunk_vec[i_trunk]]) 
-                output_          = tf.keras.layers.add([output_dot, c])   
+                if (self.n_branch_out == self.n_trunk_out+2):
+                    y_branch, c, d  = tf.split(y_branch, num_or_size_splits=[self.n_trunk_out, 1, 1], axis=1)
+                elif (self.n_branch_out == self.n_trunk_out+1):
+                    y_branch, c     = tf.split(y_branch, num_or_size_splits=[self.n_trunk_out, 1], axis=1)
+                    d               = None
+                else:
+                    c, d            = [None,None]
+                
+                y     = tf.keras.layers.Multiply()([y_branch, y_trunk]) 
+                if (not d is None):
+                    y = tf.keras.layers.Multiply()([y, d]) 
+                if (not c is None):
+                    y = tf.keras.layers.Concatenate(axis=1)([y, c])
+
+
+                if (self.n_scendecoders == 0):
+                    y                 = tf.math.reduce_sum(y, axis=1, keepdims=True) 
+                else:
+                    scendecoder_name  = self.scendecoder_names[i_tot] 
+                    y                 = self.components[scendecoder_name].call(y, layers_dict, None, training=training)
+                
+                y_vec.append(y)
+
+                i_tot += 1
+
+
+            if (len(y_vec) > 1):
+                y_vec_           = tf.keras.layers.Concatenate(axis=1)(y_vec)
+                outdecoder_name  = self.outdecoder_names[i_output] 
+                output_          = self.components[outdecoder_name].call(y_vec_, layers_dict, None, training=training)
             else:
-                # Branch Output Layer incompatible with Trunk Output Layer
-                raise NameError("[ROMNet - call_deeponet.py ]: Branch Output Layer incompatible with Trunk Output Layer! Please, Change No of Neurons!")
-
+                output_          = y_vec[0]
 
             output_vec.append( output_ )
             
+
 
         # Concatenate the Outputs of Multiple Dot-Layers
         if (self.n_branches > 1):

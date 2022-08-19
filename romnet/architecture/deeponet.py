@@ -43,8 +43,6 @@ class DeepONet(Architecture):
         self.n_branches                = len([name for name in InputData.structure['DeepONet'].keys() if 'Branch' in name])
         self.n_trunks                  = len([name for name in InputData.structure['DeepONet'].keys() if 'Trunk'  in name])
 
-        self.n_decoders                = len([name for name in InputData.structure['DeepONet'].keys() if 'Decoder'  in name])
-
         self.n_pre_blocks              = 0
         try:
             self.n_shifts              = len([name for name in InputData.structure['DeepONet'].keys() if 'Shift' in name]) 
@@ -159,10 +157,7 @@ class DeepONet(Architecture):
 
         # Main System of Components
         self.system_of_components                          = {}
-        if (self.n_decoders == 0):
-            system_name                                    = 'DeepONet_System'
-        else:
-            system_name                                    = 'NonLinear_DeepONet'
+        system_name                                        = 'DeepONet_System'
         System_of_Components                               = getattr(rmnt.architecture.building_blocks.system_of_components, system_name)
         self.system_of_components['DeepONet']              = System_of_Components(InputData, 'DeepONet', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
