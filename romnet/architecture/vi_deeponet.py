@@ -8,23 +8,27 @@ from tensorflow.python.util.tf_export     import keras_export
 from tensorflow.python.keras.utils        import tf_utils
 from tensorflow.python.ops                import array_ops
 from tensorflow.python.ops                import math_ops
+import tensorflow_probability                 as tfp
 
-from .nn                   import NN
-from .building_blocks      import System_of_Components
+from .architecture             import Architecture
+
+import romnet as rmnt
 
 
 
 #===================================================================================================================================
-class MIONet(NN):
+class VI_DeepONet(Architecture):
     """Deep Operator Network 
     """
 
     # ---------------------------------------------------------------------------------------------------------------------------
     def __init__(self, InputData, norm_input, stat_input, stat_output, system):
-        super(MIONet, self).__init__()
+        super(VI_DeepONet, self).__init__()
 
-        self.structure_name            = 'MIONet'
-           
+        self.structure_name            = 'VI_DeepONet'
+        self.structure                 = InputData.structure
+        self.n_hypers                  = len(list(self.structure.keys()))
+
         self.attention_mask            = None
         self.residual                  = None
           
@@ -36,34 +40,33 @@ class MIONet(NN):
         self.output_vars               = InputData.output_vars
         self.n_outputs                 = len(self.output_vars)
           
-        self.branch1_vars              = InputData.input_vars['MIONet']['Branch1']
-        self.branch2_vars              = InputData.input_vars['MIONet']['Branch2']
-        self.trunk_vars                = InputData.input_vars['MIONet']['Trunk']  
+        self.branch_vars               = InputData.input_vars['DeepONetMean']['Branch']    
+        self.trunk_vars                = InputData.input_vars['DeepONetMean']['Trunk']  
 
-        self.n_branches                = len([name for name in InputData.structure['MIONet'].keys() if 'Branch1' in name])
-        self.n_trunks                  = len([name for name in InputData.structure['MIONet'].keys() if 'Trunk'  in name])
+        self.n_branches                = len([name for name in self.structure['DeepONetMean'].keys() if 'Branch' in name])
+        self.n_trunks                  = len([name for name in self.structure['DeepONetMean'].keys() if 'Trunk'  in name])
 
-        self.n_pre_blocks            = 0
+        self.n_pre_blocks              = 0
         try:
-            self.n_shifts              = len([name for name in InputData.structure['MIONet'].keys() if 'Shift' in name]) 
-            self.n_pre_blocks       += 1 
+            self.n_shifts              = len([name for name in InputData.structure['DeepONetMean'].keys() if 'Shift' in name]) 
+            self.n_pre_blocks         += 1 
             self.shift_vars            = InputData.input_vars[self.name]['Shift']
         except:
             self.n_shifts              = 0
         try:
-            self.n_stretches           = len([name for name in InputData.structure['MIONet'].keys() if 'Stretch' in name]) 
-            self.n_pre_blocks       += 1
+            self.n_stretches           = len([name for name in InputData.structure['DeepONetMean'].keys() if 'Stretch' in name]) 
+            self.n_pre_blocks         += 1
             self.stretch_vars          = InputData.input_vars[self.name]['Stretch']
         except:
             self.n_stretches           = 0
         try:
-            self.n_rotations           = len([name for name in InputData.structure['MIONet'].keys() if 'Rotation' in name]) 
-            self.n_pre_blocks       += 1
+            self.n_rotations           = len([name for name in InputData.structure['DeepONetMean'].keys() if 'Rotation' in name]) 
+            self.n_pre_blocks         += 1
             self.rotation_vars         = InputData.input_vars[self.name]['Rotation']
         except:
             self.n_rotations           = 0
         try:
-            self.n_prenets             = len([name for name in InputData.structure['MIONet'].keys() if 'PreNet' in name]) 
+            self.n_prenets             = len([name for name in InputData.structure['DeepONetMean'].keys() if 'PreNet' in name]) 
             self.n_pre_blocks         += 1
             self.prenet_vars           = InputData.input_vars[self.name]['PreNet']
         except:
@@ -74,6 +77,12 @@ class MIONet(NN):
             self.internal_pca_flg      = InputData.internal_pca_flg
         except:
             self.internal_pca_flg      = False
+
+        try:
+            self.sigma_like            = InputData.sigma_like
+        except:
+            self.sigma_like            = None
+
 
         if (norm_input is None):
             norm_input                 = pd.DataFrame(np.zeros((1,self.n_inputs)), columns=self.input_vars)
@@ -86,11 +95,11 @@ class MIONet(NN):
         self.trans_fun                 = InputData.trans_fun
 
         try:
-            self.dotlayer_mult_flg     = InputData.dotlayer_mult_flg['MIONet']
+            self.dotlayer_mult_flg     = InputData.dotlayer_mult_flg['DeepONetMean']
         except:
             self.dotlayer_mult_flg     = None
         try:
-            self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg['MIONet']
+            self.dotlayer_bias_flg     = InputData.dotlayer_bias_flg['DeepONetMean']
         except:
             self.dotlayer_bias_flg     = None
 
@@ -99,75 +108,83 @@ class MIONet(NN):
         except:
             self.data_preproc_type     = None
 
-
         self.norm_output_flg           = InputData.norm_output_flg
 
-        print("\n[ROMNet - mionet.py               ]:   Constructing MIONet: ") 
+
+        print("\n[ROMNet - vi_deeponet.py            ]:   Constructing Variational-Inference Deep Operator Network: ") 
 
 
-        self.layers_dict      = {'MIONet': {}, 'All': {}}
-        self.layer_names_dict = {'MIONet': {}, 'All': {}}
-        for i_trunk in range(self.n_trunks):
-            if (self.n_trunks > 1):
-                temp_str = '_'+str(i_trunk+1)
-            else:
-                temp_str = ''
-            self.layers_dict['MIONet']['Trunk'+temp_str]       = {}
-            self.layer_names_dict['MIONet']['Trunk'+temp_str] = {}
+        self.layers_dict      = {'All': {}}
+        self.layer_names_dict = {'All': {}}
+
+        self.system_of_components              = {}
+        for system_name in list(self.structure.keys()):
+            self.layers_dict[system_name]      = {}
+            self.layer_names_dict[system_name] = {}
 
 
-        # PCA Layers
-        if (self.internal_pca_flg):
-            self.layers_dict['MIONet']['PCALayer']    = PCALayer(system.A, system.C, system.D)
-            self.layers_dict['MIONet']['PCAInvLayer'] = PCAInvLayer(system.A, system.C, system.D)
-
-
-        # Pre-Transforming Layer
-        if (self.trans_fun):
             for i_trunk in range(self.n_trunks):
                 if (self.n_trunks > 1):
                     temp_str = '_'+str(i_trunk+1)
                 else:
                     temp_str = ''
-                for ifun, fun in enumerate(self.trans_fun):
-                    vars_list = self.trans_fun[fun]
-
-                    indxs = []
-                    for ivar, var in enumerate(self.trunk_vars):
-                        if var in vars_list:
-                            indxs.append(ivar)
-
-                    if (len(indxs) > 0):
-                        layer_name = 'MIONet-PreTransformation' + fun + '-' + str(i_trunk+1)
-                        layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
-
-                        self.layers_dict['MIONet']['Trunk'+temp_str]['TransFun']      = layer
-                        self.layer_names_dict['MIONet']['Trunk'+temp_str]['TransFun'] = layer_name
-
-        # Trunk-PreNets Blocks Coupling Layers
-        if (self.n_pre_blocks > 0):
-            for i_trunk in range(self.n_trunks):
-                if (self.n_trunks > 1):
-                    temp_str = '_'+str(i_trunk+1)
-                else:
-                    temp_str = ''
-                self.layers_dict['MIONet']['Trunk'+temp_str]['PreNet']      = PreNet(len(self.trunk_vars))
-                self.layer_names_dict['MIONet']['Trunk'+temp_str]['PreNet'] ='PreNet'
+                self.layers_dict[system_name]['Trunk'+temp_str]      = {}
+                self.layer_names_dict[system_name]['Trunk'+temp_str] = {}
 
 
-        # Main System of Components
-        self.system_of_components                          = {}
-        self.system_of_components['MIONet']              = System_of_Components(InputData, 'MIONet', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+            # PCA Layers
+            if (self.internal_pca_flg):
+                self.layers_dict[system_name]['PCALayer']    = PCALayer(system.A, system.C, system.D)
+                self.layers_dict[system_name]['PCAInvLayer'] = PCAInvLayer(system.A, system.C, system.D)
 
 
-        # Adding Biases to the MIONet's Dot-Layers
-        if (self.dotlayer_mult_flg):
-            self.layers_dict['MIONet']['MultLayer']      = MultLayer()
+            # Pre-Transforming Layer
+            if (self.trans_fun):
+                for i_trunk in range(self.n_trunks):
+                    if (self.n_trunks > 1):
+                        temp_str = '_'+str(i_trunk+1)
+                    else:
+                        temp_str = ''
+                    for ifun, fun in enumerate(self.trans_fun):
+                        vars_list = self.trans_fun[fun]
+
+                        indxs = []
+                        for ivar, var in enumerate(self.trunk_vars):
+                            if var in vars_list:
+                                indxs.append(ivar)
+
+                        if (len(indxs) > 0):
+                            layer_name = system_name+'-PreTransformation' + fun + '-' + str(i_trunk+1)
+                            layer      = InputTransLayer(fun, len(self.trunk_vars), indxs, name=layer_name)
+
+                            self.layers_dict[system_name]['Trunk'+temp_str]['TransFun']      = layer
+                            self.layer_names_dict[system_name]['Trunk'+temp_str]['TransFun'] = layer_name
 
 
-            # Adding Biases to the MIONet's Dot-Layers
-        if (self.dotlayer_bias_flg):
-            self.layers_dict['MIONet']['BiasLayer']      = BiasLayer()
+            # Trunk-PreNets Blocks Coupling Layers
+            if (self.n_pre_blocks > 0):
+                for i_trunk in range(self.n_trunks):
+                    if (self.n_trunks > 1):
+                        temp_str = '_'+str(i_trunk+1)
+                    else:
+                        temp_str = ''
+                    self.layers_dict[system_name]['Trunk'+temp_str]['PreNet']      = PreNet(len(self.trunk_vars))
+                    self.layer_names_dict[system_name]['Trunk'+temp_str]['PreNet'] ='PreNet'
+
+
+            # Main System of Components
+            System_of_Components                           = getattr(rmnt.architecture.building_blocks.system_of_components, 'DeepONet_System')
+            self.system_of_components[system_name]         = System_of_Components(InputData, system_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+
+
+            # Adding Biases to the DeepONet's Dot-Layers
+            if (self.dotlayer_mult_flg):
+                self.layers_dict[system_name]['MultLayer'] = MultLayer()
+
+
+            # Adding Biases to the DeepONet's Dot-Layers
+            if (self.dotlayer_bias_flg):
+                self.layers_dict[system_name]['BiasLayer'] = BiasLayer()
 
 
         # Output Normalizing Layer
@@ -192,24 +209,41 @@ class MIONet(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call(self, inputs, training=False):
 
-        inputs_branch1, inputs_branch2, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch1_vars), len(self.branch2_vars), len(self.trunk_vars)], axis=1)
+        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
 
-        y                                            = self.system_of_components['MIONet'].call_mionet([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
+
+        hypers_vec = []
+        for system_name in list(self.structure.keys()): 
+            if (self.internal_pca_flg):
+                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+
+            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=training)
+            hypers_vec.append(hyper)
+
+        if (self.n_hypers == 1):
+
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0] 
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
+                # dist = tfp.distributions.MultivariateNormalDiag(loc=tf.ones_like(mu), scale_diag=self.sigma_like)
+                # bij  = tfp.bijectors.ScaleMatvecDiag(scale_diag=mu)
+                # dist = tfp.distributions.TransformedDistribution(distribution=dist, bijector=bij)
+                return dist
+       
+        elif (self.n_hypers == 2):
+
+            def normal_sp(hypers_vec): 
+                mu         = hypers_vec[0] 
+                sigma_like = hypers_vec[1]
+                dist       = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
+                # dist       = tfp.distributions.MultivariateNormalDiag(loc=tf.ones_like(mu), scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
+                # bij        = tfp.bijectors.ScaleMatvecDiag(scale_diag=mu)
+                # dist       = tfp.distributions.TransformedDistribution(distribution=dist, bijector=bij)
+                return dist
+
+        y = tfp.layers.DistributionLambda(normal_sp)(hypers_vec) 
         if (self.internal_pca_flg) and (self.norm_output_flg) and (self.stat_output):
-            y                                        = self.layers_dict['All']['OutputTrans'](y)
-
-        return y
-
-    # ---------------------------------------------------------------------------------------------------------------------------
-
-
-
-    # ---------------------------------------------------------------------------------------------------------------------------
-    def call_hybrid(self, inputs, training=False):
-
-        inputs_branch1, inputs_branch2, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch1_vars), len(self.branch2_vars), len(self.trunk_vars)], axis=1)
-
-        y                                            = self.system_of_components['MIONet'].call_mionet_hybrid([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
+            y                       = self.layers_dict['All']['OutputTrans'](y)
 
         return y
 
@@ -219,14 +253,34 @@ class MIONet(NN):
     # ---------------------------------------------------------------------------------------------------------------------------
     def call_predict(self, inputs):
 
-        inputs_branch1, inputs_branch2, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch1_vars), len(self.branch2_vars), len(self.trunk_vars)], axis=1)
-        if (self.internal_pca_flg):
-            inputs_branch1           = self.layers_dict['MIONet']['PCALayer'](inputs_branch1)
+        inputs_branch, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch_vars), len(self.trunk_vars)], axis=1)
 
-        y                            = self.system_of_components['MIONet'].call([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=False)
 
-        if (not self.internal_pca_flg) and (self.norm_output_flg) and (self.stat_output):                    
-            y                        = self.layers_dict['All']['OutputInvTrans'](y)
+        hypers_vec = []
+        for system_name in list(self.structure.keys()): 
+            if (self.internal_pca_flg):
+                inputs_branch = self.layers_dict[system_name]['PCALayer'](inputs_branch)
+            hyper             = self.system_of_components[system_name].call([inputs_branch, inputs_trunk], self.layers_dict, training=False)
+            hypers_vec.append(hyper)
+
+        if (self.n_hypers == 1):
+
+            def normal_sp(hypers_vec): 
+                mu   = hypers_vec[0]
+                dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=self.sigma_like)
+                return dist
+        
+        elif (self.n_hypers == 2):
+
+            def normal_sp(hypers_vec): 
+                mu         = hypers_vec[0] 
+                sigma_like = hypers_vec[1] 
+                #dist       = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
+                dist       = mu * tfp.distributions.MultivariateNormalDiag(loc=tf.ones_like(sigma_like), scale_diag=1e-5 + tf.math.softplus(0.05 * sigma_like)) 
+
+                return dist
+
+        y = tfp.layers.DistributionLambda(normal_sp)(hypers_vec) 
 
         return y
 
@@ -294,7 +348,7 @@ class OutputTransLayer(tf.keras.layers.Layer):
 
     def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputTrans'):
         super(OutputTransLayer, self).__init__(name=name, trainable=False)
-        self.data_preproc_type = data_preproc_type
+        self.data_preproc_type = type
         self.output_min        = output_min
         self.output_max        = output_max
         self.output_mean       = output_mean
@@ -335,7 +389,7 @@ class OutputInvTransLayer(tf.keras.layers.Layer):
 
     def __init__(self, data_preproc_type, output_min, output_max, output_mean, output_std, name='OutputInvTrans'):
         super(OutputInvTransLayer, self).__init__(name=name, trainable=False)
-        self.data_preproc_type = data_preproc_type
+        self.data_preproc_type = type
         self.output_min        = output_min
         self.output_max        = output_max
         self.output_mean       = output_mean
@@ -493,7 +547,67 @@ class PreNet(_Merge):
     def call(self, inputs):
         if not isinstance(inputs, (list, tuple)):
             raise ValueError('A merge layer should be called on a list of inputs.')
-        return self._merge_function(inputs)
+        if self._reshape_required:
+            reshaped_inputs = []
+            input_ndims = list(map(K.ndim, inputs))
+            if None not in input_ndims:
+                # If ranks of all inputs are available,
+                # we simply expand each of them at axis=1
+                # until all of them have the same rank.
+                max_ndim = max(input_ndims)
+                for x in inputs:
+                    x_ndim = K.ndim(x)
+                    for _ in range(max_ndim - x_ndim):
+                        x = array_ops.expand_dims(x, axis=1)
+                    reshaped_inputs.append(x)
+                return self._merge_function(reshaped_inputs)
+            else:
+                # Transpose all inputs so that batch size is the last dimension.
+                # (batch_size, dim1, dim2, ... ) -> (dim1, dim2, ... , batch_size)
+                transposed = False
+                for x in inputs:
+                    x_ndim = K.ndim(x)
+                    if x_ndim is None:
+                        x_shape = array_ops.shape(x)
+                        batch_size = x_shape[0]
+                        new_shape = K.concatenate(
+                                [x_shape[1:],
+                                 array_ops.expand_dims(batch_size, axis=-1)])
+                        x_transposed = array_ops.reshape(
+                                x,
+                                array_ops.stack(
+                                        [batch_size, math_ops.reduce_prod(x_shape[1:])], axis=0))
+                        x_transposed = array_ops.transpose(x_transposed, perm=(1, 0))
+                        x_transposed = array_ops.reshape(x_transposed, new_shape)
+                        reshaped_inputs.append(x_transposed)
+                        transposed = True
+                    elif x_ndim > 1:
+                        dims = list(range(1, x_ndim)) + [0]
+                        reshaped_inputs.append(array_ops.transpose(x, perm=dims))
+                        transposed = True
+                    else:
+                        # We don't transpose inputs if they are 1D vectors or scalars.
+                        reshaped_inputs.append(x)
+                y = self._merge_function(reshaped_inputs)
+                y_ndim = K.ndim(y)
+                if transposed:
+                    # If inputs have been transposed, we have to transpose the output too.
+                    if y_ndim is None:
+                        y_shape = array_ops.shape(y)
+                        y_ndim = array_ops.shape(y_shape)[0]
+                        batch_size = y_shape[y_ndim - 1]
+                        new_shape = K.concatenate([
+                                array_ops.expand_dims(batch_size, axis=-1), y_shape[:y_ndim - 1]
+                        ])
+                        y = array_ops.reshape(y, (-1, batch_size))
+                        y = array_ops.transpose(y, perm=(1, 0))
+                        y = array_ops.reshape(y, new_shape)
+                    elif y_ndim > 1:
+                        dims = [y_ndim - 1] + list(range(y_ndim - 1))
+                        y = array_ops.transpose(y, perm=dims)
+                return y
+        else:
+            return self._merge_function(inputs)
 
 
 
@@ -535,29 +649,49 @@ class PreNet(_Merge):
 
 
     def _merge_function(self, inputs):
+        # # Adding Rotations
+        # a_list   = tf.split(inputs[1], num_or_size_splits=[2,1,1], axis=1)
+        # x_shift  = tf.keras.layers.add([inputs[0], a_list[0]])
+        # x_str    = tf.keras.layers.multiply([x_shift, a_list[1]])
+    
+        # x_split  = tf.split(x_str, num_or_size_splits=self.n_y, axis=1)
+        # cphi     = tf.math.cos(a_list[2])
+        # sphi     = tf.math.sin(a_list[2])
+        # rot      = [tf.concat([cphi, sphi],  axis=1), tf.concat([sphi, -cphi], axis=1)]
+        # b_list   = [tf.keras.layers.multiply([x_split[i], rot[i]]) for i in range(self.n_y)]
+        # b        = tf.keras.layers.add(b_list)
+        
+        y_merge    = inputs[0]
+        y_pre_list = inputs[1]
+        y_prenet   = y_pre_list[-1]
+        if (y_prenet is not None):
+            y_pre_list_ = tf.split(y_prenet, num_or_size_splits=[self.n_y,1,1], axis=1)
+        else:
+            y_pre_list_ = y_pre_list
 
-        y_merge     = inputs[0]
-        y_pre_dict_ = inputs[1]
+        y_merge    = inputs[0]
+        y_pre_list = inputs[1]
 
-        for key in y_pre_dict_:
-            if ('rot' in key.lower()):
-                y_rotation      = y_pre_dict_[key]
-                y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
-                cphi            = tf.math.cos(y_rotation)
-                sphi            = tf.math.sin(y_rotation)
-                y_rotation_list = [tf.concat([cphi, -sphi],  axis=1), tf.concat([sphi, cphi], axis=1)]
-                y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
-                y_merge         = tf.keras.layers.add(y_merge_list)
+        y_rotation = y_pre_list[2]
+        if (y_rotation is not None):
+            y_merge_split   = tf.split(y_merge, num_or_size_splits=self.n_y, axis=1)
+            cphi            = tf.math.cos(y_rotation)
+            sphi            = tf.math.sin(y_rotation)
+            y_rotation_list = [tf.concat([cphi, -sphi],  axis=1), tf.concat([sphi, cphi], axis=1)]
+            y_merge_list    = [tf.keras.layers.multiply([y_merge_split[i], y_rotation_list[i]]) for i in range(self.n_y)]
+            y_merge         = tf.keras.layers.add(y_merge_list)
+            
+        # Adding Stretching
+        y_stretch  = y_pre_list[1]
+        if (y_stretch is not None):
+            y_merge  = tf.keras.layers.multiply([y_merge, y_stretch])
 
-        for key in y_pre_dict_:
-            if ('shift' in key.lower()):
-                y_shift         = y_pre_dict_[key]
-                y_merge         = tf.keras.layers.add([y_merge, y_shift])
+        # Adding Shift
+        y_shift    = y_pre_list[0]
+        if (y_shift is not None):
+            y_merge  = tf.keras.layers.add([y_merge, y_shift])
 
-        for key in y_pre_dict_:
-            if ('stretch' in key.lower()):
-                y_stretch       = y_pre_dict_[key]
-                y_merge         = tf.keras.layers.multiply([y_merge, y_stretch])
+        #y_merge = tf.math.tanh(y_merge)
 
         return y_merge
 

@@ -1,5 +1,4 @@
-
-from .nn              import load_model_, load_weights_
+from .architecture    import load_model_, load_weights_
 
 from .fnn             import FNN
 from .autoencoder     import Autoencoder
@@ -9,6 +8,9 @@ from .deeponet        import DeepONet
 from .mionet          import MIONet
 from .vi_deeponet     import VI_DeepONet
 from .double_deeponet import Double_DeepONet
+
+from .                import building_blocks
+
 
 __all__ = [
     "load_model_",

@@ -3,13 +3,14 @@ import tensorflow              as tf
 import pandas                  as pd
 from tensorflow.keras      import regularizers
 
-from .nn                   import NN
-from .building_blocks      import System_of_Components
+from .architecture         import Architecture
+
+import romnet as rmnt
 
 
 
 #===================================================================================================================================
-class FNN(NN):
+class FNN(Architecture):
     """Feed-Forward Neural Network.
     """
     
@@ -89,6 +90,7 @@ class FNN(NN):
         
         # Main System of Components    
         self.system_of_components        = {}
+        System_of_Components             = getattr(rmnt.architecture.building_blocks.system_of_components, 'FNN_System')
         self.system_of_components['FNN'] = System_of_Components(InputData, 'FNN', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 

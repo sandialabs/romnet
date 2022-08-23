@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if (surrogate_type == 'FNN-SourceTerms'):
         surrogate_type = 'FNN'
         
-    Net   = getattr(rmnt.nn, surrogate_type)
+    Net   = getattr(rmnt.architecture, surrogate_type)
 
     model = rmnt.model.Model_TF(InputData)
 

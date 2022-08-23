@@ -117,32 +117,35 @@ class Sub_Component(object):
             except:
                 self.softmax_flg   = None
 
+
+        notfnd_flg                 = True
         try:
-            self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_type][self.name]
-            notfnd_flg           = False
+            self.reg_coeffs        = InputData.reg_coeffs[self.system_name][self.component_type][self.name]
+            notfnd_flg             = not isinstance(self.reg_coeffs, list)
         except:
-            notfnd_flg           = True
+            pass
         if (notfnd_flg):
             try:
-                self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_name]
-                notfnd_flg           = False
+                self.reg_coeffs    = InputData.reg_coeffs[self.system_name][self.component_name]
+                notfnd_flg         = not isinstance(self.reg_coeffs, list)
             except:
-                notfnd_flg           = True
+                pass
         if (notfnd_flg):
             try:
-                self.reg_coeffs      = InputData.reg_coeffs[self.system_name][self.component_type]
-                notfnd_flg           = False
+                self.reg_coeffs    = InputData.reg_coeffs[self.system_name][self.component_type]
+                notfnd_flg         = not isinstance(self.reg_coeffs, list)
             except:
-                notfnd_flg           = True
+                pass    
         if (notfnd_flg):
             try:
-                self.reg_coeffs        = InputData.reg_coeffs[self.system_name]
-                notfnd_flg             = False
+                self.reg_coeffs    = InputData.reg_coeffs[self.system_name]
+                notfnd_flg         = not isinstance(self.reg_coeffs, list)
             except:
-                notfnd_flg             = True
+                pass
         if (notfnd_flg):
-            self.reg_coeffs          = InputData.weight_decay_coeffs
+            self.reg_coeffs        = InputData.weight_decay_coeffs
         
+
         try:
             self.transfered_model  = InputData.transfered_model
         except:

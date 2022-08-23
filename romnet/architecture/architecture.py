@@ -38,9 +38,9 @@ except ImportError:
 #=======================================================================================================================================
 def load_model_(ModelFld):
 
-    NN = tf.keras.Model.load_model(ModelFld)
+    Architecture = tf.keras.Model.load_model(ModelFld)
 
-    return NN
+    return Architecture
 
 #=======================================================================================================================================
 
@@ -50,7 +50,7 @@ def load_model_(ModelFld):
 def load_weights_(ModelFld):
 
     # ModelFile         = ModelFld + '/MyModel/'
-    # NN                = tf.keras.Model.load_model(ModelFile)
+    # Architecture      = tf.keras.Model.load_model(ModelFile)
     # MCFile            = ModelFld + '/Params/ModelCheckpoint/cp-{epoch:04d}.ckpt'
     # checkpoint_dir    = os.path.dirname(MCFile)
     # latest            = train.latest_checkpoint(checkpoint_dir)
@@ -59,25 +59,25 @@ def load_weights_(ModelFld):
     last = max(os.listdir(ModelFld), key=lambda x: int(x.split('.')[0]))
     if last:
         ModelFld = ModelFld + "/" + last
-    print('\n[ROMNet - nn.py                     ]:   Loading ML Model Parameters from File: ', ModelFld)
+    print('\n[ROMNet - architecture.py                     ]:   Loading ML Model Parameters from File: ', ModelFld)
 
-    NN.load_weights(ModelFld)
+    Architecture.load_weights(ModelFld)
 
-    return NN
-
-#=======================================================================================================================================
-
-
+    return Architecture
 
 #=======================================================================================================================================
-@tf.keras.utils.register_keras_serializable(package='ROMNet', name='NN')
-class NN(tf.keras.Model):
+
+
+
+#=======================================================================================================================================
+@tf.keras.utils.register_keras_serializable(package='ROMNet', name='Architecture')
+class Architecture(tf.keras.Model):
     """Base class for all surrogate modules."""
 
     def __init__(self):
-        super(NN, self).__init__()
+        super(Architecture, self).__init__()
 
-        self.sructure_name  = 'NN'
+        self.sructure_name  = 'Architecture'
 
         self.attention_mask = None
         self.residual       = None
@@ -94,7 +94,7 @@ class NN(tf.keras.Model):
             'data_ids':         self.data_ids,
             'data_ids_valid':   self.data_ids_valid
         }
-        base_config = super(NN, self).get_config()
+        base_config = super(Architecture, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
@@ -235,7 +235,7 @@ class NN(tf.keras.Model):
             
             # Defining metrics container
             if metrics is not None:
-                print( "[ROMNet - nn.py                     ]   WARNING! No Metrics Implemented." )
+                print( "[ROMNet - architecture.py                     ]   WARNING! No Metrics Implemented." )
                 # self.compiled_metrics = compile_utils.MetricsContainer(metrics, weighted_metrics, output_names=self.output_names, from_serialized=from_serialized)
             self.compiled_metrics = None
             # -------------------------------------------------------------------------------------------------------------------------> Changed TF

@@ -4,13 +4,14 @@ import pandas                      as pd
 from tensorflow.keras          import regularizers
 import tensorflow_probability      as tfp
 
-from .nn                       import NN
-from .building_blocks          import System_of_Components
+from .architecture             import Architecture
+
+import romnet as rmnt
 
 
 
 #===================================================================================================================================
-class VI_FNN(NN):
+class VI_FNN(Architecture):
     """Feed-Forward Neural Network.
     """
     
@@ -57,7 +58,7 @@ class VI_FNN(NN):
         except:
             self.sigma_like       = None
 
-        print("\n[ROMNet - fnn.py                    ]:   Constructing Variational-Inference Feed-Forward Network: ") 
+        print("\n[ROMNet - vi_fnn.py                    ]:   Constructing Variational-Inference Feed-Forward Network: ") 
 
 
         self.layers_dict      = {'All': {}}
@@ -94,6 +95,7 @@ class VI_FNN(NN):
 
             
             # Main System of Components    
+            System_of_Components                   = getattr(rmnt.architecture.building_blocks.system_of_components, 'FNN_System')
             self.system_of_components[system_name] = System_of_Components(InputData, system_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 

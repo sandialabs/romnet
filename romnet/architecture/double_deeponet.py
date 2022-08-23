@@ -5,12 +5,14 @@ import itertools
 from tensorflow.python.keras import backend
 from tensorflow.python.ops   import array_ops
 
-from .nn                     import NN
-from .building_blocks        import System_of_Components
+from .architecture           import Architecture
+
+import romnet as rmnt
+
 
 
 #===================================================================================================================================
-class Double_DeepONet(NN):
+class Double_DeepONet(Architecture):
     """Deep Operator Network 
     """
 
@@ -114,6 +116,7 @@ class Double_DeepONet(NN):
 
         self.system_of_components                    = {}
         for deeponet_name in self.deeponet_names:
+            System_of_Components                     = getattr(rmnt.architecture.building_blocks.system_of_components, 'DeepONet_System')
             self.system_of_components[deeponet_name] = System_of_Components(InputData, deeponet_name, self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
             
 

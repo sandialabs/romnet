@@ -3,13 +3,14 @@ import tensorflow              as tf
 import pandas                  as pd
 from tensorflow.keras      import regularizers
 
-from .nn                   import NN
-from .building_blocks      import System_of_Components
+from .architecture         import Architecture
+
+import romnet as rmnt
 
 
 
 #===================================================================================================================================
-class Autoencoder(NN):
+class Autoencoder(Architecture):
     """Feed-Forward Neural Network.
     """
     
@@ -87,8 +88,10 @@ class Autoencoder(NN):
         
         # Main System of Components    
         self.system_of_components            = {}
-        self.system_of_components['Encoder'] = System_of_Components(InputData, 'Encoder', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
-        self.system_of_components['Decoder'] = System_of_Components(InputData, 'Decoder', None,            None,            layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+        System_of_Components_Encoder         = getattr(rmnt.architecture.building_blocks.system_of_components, 'FNN_System')
+        self.system_of_components['Encoder'] = System_of_Components_Encoder(InputData, 'Encoder', self.norm_input, self.stat_input, layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
+        System_of_Components_Decoder         = getattr(rmnt.architecture.building_blocks.system_of_components, 'FNN_System')
+        self.system_of_components['Decoder'] = System_of_Components_Decoder(InputData, 'Decoder', None,            None,            layers_dict=self.layers_dict, layer_names_dict=self.layer_names_dict)
 
 
         # Output Normalizing Layer

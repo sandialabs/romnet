@@ -27,7 +27,7 @@ import itertools
 ### Input Data
 
 ### HYDROGEN
-OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_150Cases_UncParams/'
+OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 Fuel0              = 'H2:1.0'         
 Oxydizer0          = 'O2:1.0, N2:4.0'
 t0                 = 1.e-7
@@ -45,11 +45,11 @@ SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','
 # tEnd               = 1.e2
 # KeepVec            = None
 
-#MixtureFile        = 'gri30.yaml'
-MixtureFile        = WORKSPACE_PATH + '/Modify_CANTERA/Run_1/gri30'
+MixtureFile        = 'gri30.yaml'
+#MixtureFile        = WORKSPACE_PATH + '/Modify_CANTERA/Run_1/gri30'
 P0                 = ct.one_atm
 
-NtInt              = 100
+NtInt              = 1000
 Integration        = 'Canteras'
 delta_T_max        = 5.e0
 # Integration        = ''
@@ -57,29 +57,29 @@ delta_T_max        = 5.e0
 # atol               = 1.e-8
 # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
 
-# FIRST TIME
-DirName            = 'train'
-n_ics              = 150
-n_samples          = 150
-T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
+# # FIRST TIME
+# DirName            = 'train'
+# n_ics              = 150
+# n_samples          = 150
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-NPerT0             = 100
-NoiseStd           = None #5.e-2
-
-# ## SECOND TIME
-# DirName            = 'test'
-# n_ics              = 10
-# n_samples          = 1
+# EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# NPerT0             = 100
+# NoiseStd           = None #5.e-2
+
+## SECOND TIME
+DirName            = 'test'
+n_ics              = 10
+n_samples          = 1
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-# EqRatio0Exts       = np.array([0.50, 4.0], dtype=np.float64)
-# X0Exts             = None
-# SpeciesVec         = None
-# NPerT0             = 500
-# NoiseStd           = None
+# EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+EqRatio0Exts       = np.array([0.50, 4.0], dtype=np.float64)
+X0Exts             = None
+SpeciesVec         = None
+NPerT0             = 1000
+NoiseStd           = None
 
 
 n_processors       = 8
