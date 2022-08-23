@@ -196,7 +196,7 @@ class MIONet(Architecture):
 
         inputs_branch1, inputs_branch2, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch1_vars), len(self.branch2_vars), len(self.trunk_vars)], axis=1)
 
-        y                                            = self.system_of_components['MIONet'].call_mionet([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
+        y                                            = self.system_of_components['MIONet'].call([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
         if (self.internal_pca_flg) and (self.norm_output_flg) and (self.stat_output):
             y                                        = self.layers_dict['All']['OutputTrans'](y)
 
@@ -211,7 +211,7 @@ class MIONet(Architecture):
 
         inputs_branch1, inputs_branch2, inputs_trunk = tf.split(inputs, num_or_size_splits=[len(self.branch1_vars), len(self.branch2_vars), len(self.trunk_vars)], axis=1)
 
-        y                                            = self.system_of_components['MIONet'].call_mionet_hybrid([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
+        y                                            = self.system_of_components['MIONet'].call_hybrid([inputs_branch1, inputs_branch2, inputs_trunk], self.layers_dict, training=training)
 
         return y
 

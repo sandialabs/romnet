@@ -69,10 +69,11 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 		- 0DReact_*_TestCase10: Test case for comparing flexDeepONet to flexMIONet
 		- 0DReact_*_TestCase11: Frozen trunks (precomputed NNs from scenario-aggregated dimensionality reductions) DeepONet
 		- 0DReact_*_TestCase12: NonLinear-DeepONet: flexDeepONet with a FNN decoder replacing the dot-product layer
+		- 0DReact_*_TestCase13: SharedTrunks-DeepONet: flexDeepONet with shared trunks
 		
 	- 4. Moving Rectangle
 	
-		- Rect_TestCase1:  Fully data-driven training of vanilla DeepONet for a rotating-translating-scaling rigid body (~ rectangle)
+		- Rect_TestCase1: Fully data-driven training of vanilla DeepONet for a rotating-translating-scaling rigid body (~ rectangle)
 		- Rect_TestCase2: -
 		- Rect_TestCase3: -
 		- Rect_TestCase4: -
@@ -84,6 +85,7 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 	- 5. Evolving PDF
 		
 		- PDFEvolve_TestCase1: Evolving Multimodal PDFs binned in 50 groups 
+		- PDFEvolve_TestCase2: Evolving Multimodal CDFs binned in 50 groups 
 
 
 
