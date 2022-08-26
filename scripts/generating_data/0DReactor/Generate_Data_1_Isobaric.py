@@ -21,6 +21,72 @@ import multiprocessing
 import itertools
 
 
+# ##########################################################################################
+# ##########################################################################################
+# ##########################################################################################
+# ### Input Data for Test Case 3 in S. Venturi & T. Casey, "SVD Perspectives for Augmenting DeepONet Flexibility and Interpretability", 2022
+
+# ### HYDROGEN
+# OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+# Fuel0              = 'H2:1.0'         
+# Oxydizer0          = 'O2:1.0, N2:4.0'
+# t0                 = 1.e-7
+# # Deltat             = 1.e-5
+# DeltatMax          = None #7
+# DeltatMin          = None #4
+# tEnd               = 1.e0
+# SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
+
+# # ### METHANE
+# # OutputDir          = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4/'
+# # Fuel0              = 'CH4:1.0'
+# # Oxydizer0          = 'O2:0.21, N2:0.79'
+# # t0                 = 1.e-6
+# # tEnd               = 1.e2
+# # KeepVec            = None
+
+# MixtureFile        = 'gri30.yaml'
+# #MixtureFile        = WORKSPACE_PATH + '/Modify_CANTERA/Run_1/gri30'
+# P0                 = ct.one_atm
+
+# NtInt              = 500
+# Integration        = 'Canteras'
+# delta_T_max        = 5.e0
+# # Integration        = ''
+# # rtol               = 1.e-12
+# # atol               = 1.e-8
+# # SOLVER             = 'BDF'#'RK23'#'BDF'#'Radau'
+
+# # FIRST TIME
+# DirName            = 'train'
+# n_ics              = 500
+# n_samples          = 1
+# T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
+# # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# NPerT0             = 500
+# NoiseStd           = None #5.e-2
+
+# # ## SECOND TIME
+# # DirName            = 'test'
+# # n_ics              = 10
+# # n_samples          = 1
+# # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
+# # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
+# # EqRatio0Exts       = np.array([0.50, 4.0], dtype=np.float64)
+# # X0Exts             = None
+# # SpeciesVec         = None
+# # NPerT0             = 1000
+# # NoiseStd           = None
+
+# n_processors       = 8
+
+# ##########################################################################################
+# ##########################################################################################
+# ##########################################################################################
+
 
 
 ##########################################################################################
@@ -49,7 +115,7 @@ MixtureFile        = 'gri30.yaml'
 #MixtureFile        = WORKSPACE_PATH + '/Modify_CANTERA/Run_1/gri30'
 P0                 = ct.one_atm
 
-NtInt              = 1000
+NtInt              = 500
 Integration        = 'Canteras'
 delta_T_max        = 5.e0
 # Integration        = ''
@@ -59,13 +125,13 @@ delta_T_max        = 5.e0
 
 # # FIRST TIME
 # DirName            = 'train'
-# n_ics              = 150
-# n_samples          = 150
+# n_ics              = 500
+# n_samples          = 1
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 # # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
-# NPerT0             = 100
+# NPerT0             = 500
 # NoiseStd           = None #5.e-2
 
 ## SECOND TIME
@@ -75,15 +141,14 @@ n_samples          = 1
 # T0Exts             = np.array([1000., 2000.], dtype=np.float64)
 # EqRatio0Exts       = np.array([.5, 4.], dtype=np.float64)
 T0Exts             = np.array([1000., 2000.], dtype=np.float64)
-EqRatio0Exts       = np.array([0.50, 4.0], dtype=np.float64)
+EqRatio0Exts       = np.array([0.5, 4.0], dtype=np.float64)
 X0Exts             = None
-SpeciesVec         = None
-NPerT0             = 1000
+SpeciesVec         = ['H2','H','O','O2','OH','H2O','HO2','H2O2','N','NH','NH2','NH3','NNH','NO','NO2','N2O','HNO','N2']
+NPerT0             = 500
 NoiseStd           = None
 
 
 n_processors       = 8
-
 
 ##########################################################################################
 
@@ -236,7 +301,7 @@ def integration_(i_tot, zipp, n_samples, OutputDir, DirName, ICs, MixtureFile, F
     # A
     #tVec     = np.append([0., 1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt-2))
     tVec     = np.append([1.e-14], np.logspace(np.log10(t0), np.log10(tEnd), NtInt-1))
-    #tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt-1)
+    #tVec     = np.logspace(np.log10(t0), np.log10(tEnd), NtInt)
     
     # B
     #tVec     = np.linspace(t0, tEnd, NtInt)
@@ -415,7 +480,6 @@ elif (DirName == 'test'):
 
 
 
-
 ### Create Mixture
 if (n_samples > 1):
     MixtureFile_ = MixtureFile + '_1.yaml'
@@ -427,10 +491,14 @@ Mask_ = []
 if (SpeciesVec):
     for Keep in SpeciesVec:
         Mask_.append(gas.species_names.index(Keep))
-    Mask_ = np.array(Mask_)
+    Mask_      = np.array(Mask_)
 else:
     Mask_      = np.arange(len(gas.species_names))
     SpeciesVec = list(gas.species_names)
+FileName = OutputDir+'/Orig/ToOrig_Mask.csv'
+np.savetxt(FileName, Mask_, delimiter=',')
+
+
 
 iStart          = np.zeros(n_ics)
 iEnd            = np.zeros(n_ics)

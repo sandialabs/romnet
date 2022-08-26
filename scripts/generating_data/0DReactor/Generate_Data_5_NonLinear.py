@@ -51,16 +51,14 @@ valid_perc         = 20.
 
 FixedMinVal        = 1.e-32
 
-DRAlog             = 'KPCA'
+DRAlog             = 'PCA'
 
-VarName            = 'H2O'
-VarLabel           = 'H2O'
-
+VarName            = ''
 if (VarName == 'All'):
-    NModesFinal    = 16
+    NModesFinal    = 20
     DRType         = 'All'
 else:
-    NModesFinal    = 16
+    NModesFinal    = 20
     DRType         = 'OneByOne'
     
     
@@ -154,6 +152,8 @@ for VarName in Vars:
         yMat              = DataInput.to_numpy()
         
     DataIC            = DataIC.T.reset_index(drop=True, inplace=False)
+    Vars0             = [Var+'0' for Var in Vars]
+    DataIC.columns    = Vars0
     ICs               = DataIC.to_numpy()
 
 
@@ -174,19 +174,20 @@ for VarName in Vars:
 
     if   (DRAlog == 'PCA'):
         NPCA      = NModesFinal
-        PCA_      = PCA(n_components=NPCA, )
-        yMat_DR   = PCA_.fit_transform(yMatt)
-        yMat_     = PCA_.inverse_transform(yMat_DR)
+        
+        # PCA_      = PCA(n_components=NPCA, )
+        # yMat_DR   = PCA_.fit_transform(yMatt)
+        # yMat_     = PCA_.inverse_transform(yMat_DR)
 
-        # pca        = PCAA(yMatt, scaling='none', n_components=int(NPCA), nocenter=True)
-        # C          = pca.X_center
-        # D          = pca.X_scale
-        # A          = pca.A[:,0:NPCA].T
-        # L          = pca.L
-        # LL         = np.maximum(L,0.)
-        # AT         = A.T
-        # yMat_DR    = yMatt.dot(AT)
-        # yMat_      = yMat_DR.dot(A)
+        pca       = PCAA(yMatt, scaling='none', n_components=int(NPCA), nocenter=False)
+        C         = pca.X_center
+        D         = pca.X_scale
+        A         = pca.A[:,0:NPCA].T
+        L         = pca.L
+        LL        = np.maximum(L,0.)
+        AT        = A.T
+        yMat_DR   = yMatt.dot(AT)
+        yMat_     = yMat_DR.dot(A)
 
     elif (DRAlog == 'IPCA'):
         NIPCA     = NModesFinal
@@ -210,15 +211,88 @@ for VarName in Vars:
     print('[DR]            MSE = ', np.mean((yMat - yMat_)**2))
 
 
+    Vars_Branch = ['b_'+str(i_mode+1)  for i_mode in range(NModesFinal)] + ['c','d']
+    Vars_Trunk  = ['t_'+str(i_mode+1)  for i_mode in range(NModesFinal)]
 
-    Vars_DR          = ['Eta_'+str(i_mode+1) for i_mode in range(NModesFinal)]
-    Data             = pd.DataFrame(yMat_DR, columns=Vars_DR)
+
+    Data             = pd.DataFrame(yMat_DR, columns=Vars_Trunk)
     tVec[tVec == 0.] = FixedMinVal
     Data['t']        = tVec
     Data['log(t)']   = np.log(tVec)
     Data['log10(t)'] = np.log10(tVec)
 
 
+    if   (DRAlog == 'PCA'):
+
+    ####################################################################################################################
+    ### Writing Branches     
+        
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1))
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/')
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/train/')
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/valid/')
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/test/')
+        except:
+            pass
+
+
+
+        data_id    = 'pts'
+
+        DataNoZero           = DataIC
+        n_points             = len(DataNoZero)
+
+        idx                  = np.arange(n_points)
+        train_idx, valid_idx = train_test_split(idx, test_size=valid_perc/100, random_state=42)
+
+        n_valid              = len(valid_idx)
+        n_train              = len(train_idx)
+
+
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/train/'+data_id+'/')
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/valid/'+data_id+'/')
+        except:
+            pass
+        try:
+            os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/test/'+data_id+'/')
+        except:
+            pass
+
+        print(DataIC.head())
+
+        DataInput  = DataIC[Vars0]
+        DataInput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/train/'+data_id+'/Input.csv', index=False)
+        DataInput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/valid/'+data_id+'/Input.csv', index=False)
+        DataInput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/test/'+data_id+'/Input.csv', index=False)
+
+        DataOutput = pd.DataFrame(np.concatenate([A.T, C[...,np.newaxis], D[...,np.newaxis]], axis=1), columns=Vars_Branch)
+        DataOutput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/train/'+data_id+'/Output.csv', index=False)
+        DataOutput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/valid/'+data_id+'/Output.csv', index=False)
+        DataOutput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Branch/test/'+data_id+'/Output.csv', index=False)
+        
+    ####################################################################################################################
+    
+
+
+    ####################################################################################################################
+    ### Writing Trunks
 
     try:
         os.makedirs(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1))
@@ -268,12 +342,14 @@ for VarName in Vars:
     except:
         pass
 
-    DataInput  = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_DR]
+    DataInput  = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_Trunk]
     DataInput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/train/'+data_id+'/Input.csv', index=False)
     DataInput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/valid/'+data_id+'/Input.csv', index=False)
     DataInput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/test/'+data_id+'/Input.csv', index=False)
 
-    DataOutput = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_DR]
+    DataOutput = DataNoZero[['t', 'log10(t)', 'log(t)'] + Vars_Trunk]
     DataOutput.iloc[train_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/train/'+data_id+'/Output.csv', index=False)
     DataOutput.iloc[valid_idx].to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/valid/'+data_id+'/Output.csv', index=False)
     DataOutput.to_csv(DataDir+'/'+str(NModesFinal)+DRAlog+'/'+str(DRType)+'/Var'+str(iVar+1)+'/Trunk/test/'+data_id+'/Output.csv', index=False)
+    
+    ####################################################################################################################

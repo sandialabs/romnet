@@ -22,7 +22,7 @@ WORKSPACE_PATH = os.getcwd()+'/../../../../../'
 OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 #OutputDir             = WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_CH4_/'
 
-NVarsRed              = 18
+NVarsRed              = 15
 CleanVars_FilePath    = OutputDir+'/Orig/CleanVars_ToRed.csv'
 NotCleanVars_FilePath = OutputDir+'/Orig/CleanVars_NotToRed.csv'
 
@@ -34,13 +34,13 @@ MinVal                = 1.e-30
 # n_ics                 = 500
 
 # SECOND TIME
-DirName            = 'test'
-n_ics              = 10
+DirName               = 'test'
+n_ics                 = 10
 
-iSimVec              = range(n_ics)
+iSimVec               = range(n_ics)
 
-ReadFlg              = False
-ReadDir              = None #WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
+ReadFlg               = False
+ReadDir               = None #WORKSPACE_PATH + '/ROMNet/Data/0DReact_Isobaric_500Cases_H2/'
 ##########################################################################################
 
 
@@ -182,7 +182,7 @@ if (DirName == 'train'):
         ToOrig.append(OrigVarNames.index(Var))
     ToOrig = np.array(ToOrig, dtype=int)
 
-    FileName = OutputDir+'/'+str(NVarsRed)+'PC/ROM/ToOrig_Mask.csv'
+    FileName = OutputDir+'/'+str(NVarsRed)+'PC/ToOrig_Mask.csv'
     np.savetxt(FileName, ToOrig, delimiter=',')
 
 
