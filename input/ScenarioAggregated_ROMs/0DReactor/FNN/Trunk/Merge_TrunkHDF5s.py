@@ -37,11 +37,11 @@ iVar             = int(sys.argv[1])
 NVars            = 19
 NProcs           = 10
 
-DRAlog           = 'KPCA'
-NRODs            = 16
+DRAlog           = 'PCA'
+NRODs            = 32
 DRType           = 'one-by-one'
 
-path_to_orig_fld = ROMNet_fld + '/input/SVD/0DReactor/FNN/Trunk_Generic/'
+path_to_orig_fld = ROMNet_fld + '/input/ScenarioAggregated_ROMs/0DReactor/FNN/Trunk/'
 path_to_run_fld_ = ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2_'+str(NRODs)+DRAlog+'/Var'+str(iVar)+'_Trunk/' 
 path_to_run_fld  = path_to_run_fld_ + '/FNN/Run_1/'  
 

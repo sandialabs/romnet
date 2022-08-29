@@ -13,8 +13,8 @@ class inputdata(object):
                 iVar = int(line)
 
         self.DRType               = 'OneByOne'
-        self.DRAlog               = 'KPCA'
-        self.NRODs                = 16
+        self.DRAlog               = 'PCA'
+        self.NRODs                = 32
         self.iVar                 = iVar
 
 
@@ -64,7 +64,7 @@ class inputdata(object):
         # -----------------------------------------------------------------------------------
         self.ROM_pred_flg        = False
         self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_H2/'+str(self.NRODs)+self.DRAlog+'/'+self.DRType+'/'+'/Var'+str(self.iVar)+'/Trunk/'      # Path To Training Data Folder 
-        self.Vars                = ['Eta_'+str(i+1) for i in range(self.NRODs)]
+        self.Vars                = ['t_'+str(i+1) for i in range(self.NRODs)]
         self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['t']                                                                    # List Containing all the Input Data Variable Names
         self.input_vars          = {'FNN': {'FNN': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
@@ -72,8 +72,8 @@ class inputdata(object):
         # -----------------------------------------------------------------------------------
         self.structure               = {'FNN': {}}
         self.structure['FNN']['FNN'] = ['Main']
-        self.n_neurons               = {'FNN': {'FNN': {'Main': np.array([32,32,32,self.NRODs])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs               = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+        self.n_neurons               = {'FNN': {'FNN': {'Main': np.array([64,64,64,64,64,self.NRODs])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs               = {'FNN': {'FNN': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate            = {'FNN': {'FNN': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg        = {'FNN': {'FNN': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg             = {'FNN': {'FNN': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
@@ -99,8 +99,8 @@ class inputdata(object):
         self.n_epoch             = 50000                                                                    # Number of Epoches
         self.batch_size          = 32                                                                       # Mini-Batch Size
         self.valid_batch_size    = 32                                                                       # Validation Mini-Batch Size
-        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
