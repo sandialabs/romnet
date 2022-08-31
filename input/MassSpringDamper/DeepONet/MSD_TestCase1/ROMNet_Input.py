@@ -22,9 +22,8 @@ class inputdata(object):
         ### Paths
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../MSD_100Cases_All/'                                 # Path To Training Folder
-        self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/OneByOne/FNN/Final.h5'  # Path To Pre-Trained Model Folder 
-        # self.path_to_load_fld    = self.ROMNet_fld +'/../MSD_100Cases_All/DeepONet/Deterministic/Run_2/'     # Path To Pre-Trained Model Folder 
+        self.path_to_run_fld     = self.ROMNet_fld + '/../MSD_100Cases/'                                     # Path To Training Folder
+        self.path_to_load_fld    = None 
         self.path_to_data_fld    = self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================
@@ -54,10 +53,9 @@ class inputdata(object):
         self.input_vars_all      = ['x','v','t']                                                             # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': ['x','v'],  
                                                   'Trunk': ['t']}}                                           # Dictionary Containing the Input  Data Variable Names for each Component
-        self.norm_input_flg      = {'DeepONet': {'Branch_1': True,   
-                                                 'Branch_2': True,   
-                                                  'Trunk_1': True,
-                                                  'Trunk_2': True}}                                          # Dictionary Containing Flags for Normalizing Input Data for each Component
+        self.norm_input_flg      = {'DeepONet': {'Branch': False,   
+                                                  'Trunk': False}}                                          # Dictionary Containing Flags for Normalizing Input Data for each Component
+        self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.structure           = {'DeepONet': {'Branch_1': ['Main'],  
                                                  'Branch_2': ['Main'],  
                                                   'Trunk_1': ['Main'],
@@ -110,8 +108,8 @@ class inputdata(object):
         self.n_epoch             = 10000                                                                     # Number of Epoches
         self.batch_size          = 32                                                                        # Mini-Batch Size
         self.valid_batch_size    = 32                                                                        # Validation Mini-Batch Size
-        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
