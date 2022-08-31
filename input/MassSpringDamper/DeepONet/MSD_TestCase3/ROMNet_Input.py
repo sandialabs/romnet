@@ -102,7 +102,7 @@ class inputdata(object):
         self.n_epoch             = 10000                                                                     # Number of Epoches
         self.batch_size          = 32                                                                        # Mini-Batch Size
         self.valid_batch_size    = 32                                                                        # Validation Mini-Batch Size
-        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer

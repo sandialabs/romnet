@@ -50,9 +50,10 @@ List of Implemented Test Cases (Note: it is highly recommended to run the test c
 	- 2. Translating Hyperbolic Function
 		
 		- TransTanh_TestCase1: Fully data-driven training of Vanilla DeepONet
-		- TransTanh_TestCase2: Physics-informed training of flexDeepONet
-		- TransTanh_TestCase3: Fully data-driven training of Vanilla DeepONet
-		- TransTanh_TestCase4: Physics-informed training of flexDeepONet
+		- TransTanh_TestCase1: Fully data-driven training of POD-DeepONet
+		- TransTanh_TestCase3: Fully data-driven training of flexDeepONet
+		- TransTanh_TestCase4: Physics-informed training of Vanilla DeepONet
+		- TransTanh_TestCase5: Physics-informed training of flexDeepONet
 	
 	
 	- 3. 0D Isobaric Reactor 

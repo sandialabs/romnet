@@ -23,8 +23,7 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                              # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                     # $WORKSPACE_PATH/ROMNet/romnet/
         self.path_to_run_fld     = self.ROMNet_fld + '/../TransTanh_100Cases/'                                 # Path To Training Folder
-        self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/TransTanh_100Cases/Orig/All/FNN/Final.h5' # Path To Pre-Trained Model Folder 
-        # self.path_to_load_fld    = self.ROMNet_fld +'/../TransTanh_100Cases/DeepONet/Run_2/'                   # Path To Pre-Trained Model Folder 
+        self.path_to_load_fld    = self.ROMNet_fld + '/../Data/TransTanh_100Cases/8PCA/OneByOne/FNN_Trunks/Final.h5' # Path To Pre-Trained Model Folder 
         self.path_to_data_fld    = self.ROMNet_fld + '/../Data/TransTanh_100Cases/Orig/'                       # Path To Training-Data Folder 
 
         #=======================================================================================================================================
@@ -36,9 +35,9 @@ class inputdata(object):
         self.data_type           = 'PDE'                                                                       # Module to Be Used for Reading Data
         self.generate_flg        = False                                                                       # Flag for Generating Data
         ### Fully Data Driven
-        # self.n_train             = {'pts': 0}
+        self.n_train             = {'pts': 0}                                                                  # Type/No of Data Points
         ## Physics Informed
-        self.n_train             = {'ics': 0, 'res': 0}                                                        # Type/No of Data Points
+        # self.n_train             = {'ics': 0, 'res': 0}                                                        # Type/No of Data Points
         # self.valid_perc          = 20.0                                                                      # Percentage of Training Data to Be Used for Validation (e.g., = 20.0 => 20%)
         # self.data_dist           = 'uniform'                                                                 # Distribution for Sampling Independent Variables
         # self.test_flg            = False                                                                     # Test Flag
@@ -64,43 +63,47 @@ class inputdata(object):
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                  # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes
+        self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}}   # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']}, 
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}         # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-10},  
-                                                  'Trunk': {'Main': 1.e-10}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
+                                                  'Trunk': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.dotlayer_bias_flg   = {'DeepONet': True}
         ##########################################################################################################
 
         #=======================================================================================================================================
         ### Losses
-        ### Fully Data Driven
-        # self.losses              = {'pts': {'name': 'MSE', 'axis': 0}}                                         # Dictionary Containing Loss Functions for Each Data Type
-        # self.loss_weights        = {'pts': 1.}                                                                 # Dictionary Containing Weights for Each Data Type
-        ## Physics Informed
-        self.losses              = {'ics': {'name': 'MSE', 'axis': 0}, 'res': {'name': 'MSE', 'axis': 0}}      # Dictionary Containing Loss Functions for Each Data Type
-        self.loss_weights        = {'ics': 1., 'res': 1.}                                                      # Dictionary Containing Weights for Each Data Type
+        ## Fully Data Driven
+        self.losses              = {'pts': {'name': 'MSE', 'axis': 0}}                                         # Dictionary Containing Loss Functions for Each Data Type
+        self.loss_weights        = {'pts': 1.}                                                                 # Dictionary Containing Weights for Each Data Type
+        ### Physics Informed
+        # self.losses              = {'ics': {'name': 'MSE', 'axis': 0}, 'res': {'name': 'MSE', 'axis': 0}}      # Dictionary Containing Loss Functions for Each Data Type
+        # self.loss_weights        = {'ics': 1., 'res': 1.}                                                      # Dictionary Containing Weights for Each Data Type
         self.metrics             = None                                                                        # List of Metrics                                                          
 
         #=======================================================================================================================================
         ### Training Quanties
-        self.trainable_flg       = {'DeepONet': 'all'}                                                         # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        self.trainable_flg['DeepONet']['Trunk'] = 'only_last'  
+        #for iTrunk in range(self.n_trunks):
+        #    self.trainable_flg['DeepONet']['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                       # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                          # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
         self.n_epoch             = 10000                                                                       # Number of Epoches
         self.batch_size          = 64                                                                          # Mini-Batch Size
         self.valid_batch_size    = 64                                                                          # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                       # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.98]                                                # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.97]                                                # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                      # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                         # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-6, 1.e-6], dtype=np.float64)                                  # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                                  # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

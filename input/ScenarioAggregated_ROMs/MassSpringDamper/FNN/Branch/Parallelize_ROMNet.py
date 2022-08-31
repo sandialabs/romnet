@@ -54,11 +54,6 @@ def copy_params(ROMNet_fld, path_to_run_fld, iVar):
 
 
 
-def copy_params_all(ROMNet_fld, path_to_run_fld, iVar):
-
-	os.system('python3 ./Merge_BranchAndTrunkHDF5s_.py '+str(iVar+1))
-
-
 
 try:
     os.makedirs(path_to_run_fld)
@@ -67,18 +62,12 @@ except:
 
 
 
-#results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
+results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
 
-#os.chdir(path_to_run_fld)
-
-
-
-# shutil.copyfile(path_to_orig_fld+'/Merge_BranchHDF5s.py', './Merge_BranchHDF5s.py')
-
-# results = Parallel(n_jobs=1)(delayed(copy_params)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
+os.chdir(path_to_run_fld)
 
 
 
-shutil.copyfile(path_to_orig_fld+'/Merge_BranchAndTrunkHDF5s.py', './Merge_BranchAndTrunkHDF5s_.py')
+shutil.copyfile(path_to_orig_fld+'/Merge_BranchHDF5s.py', './Merge_BranchHDF5s.py')
 
-results = Parallel(n_jobs=1)(delayed(copy_params_all)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
+results = Parallel(n_jobs=1)(delayed(copy_params)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))

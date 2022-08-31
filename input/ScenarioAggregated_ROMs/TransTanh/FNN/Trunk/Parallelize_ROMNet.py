@@ -50,7 +50,7 @@ def run_variable(ROMNet_fld, path_to_run_fld, iVar):
 
 def copy_params(ROMNet_fld, path_to_run_fld, iVar):
 
-	os.system('python3 ./Merge_TrunkHDF5s.py '+str(iVar+1))
+	os.system('python3 ./Merge_TrunkHDF5s_.py '+str(iVar+1))
 
 
 
@@ -61,10 +61,10 @@ except:
 
 
 
-results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
+#results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
 
-os.chdir(path_to_run_fld)
+#os.chdir(path_to_run_fld)
 
-shutil.copyfile(path_to_orig_fld+'/Merge_TrunkHDF5s.py', './Merge_TrunkHDF5s.py')
+shutil.copyfile(path_to_orig_fld+'/Merge_TrunkHDF5s.py', './Merge_TrunkHDF5s_.py')
 
 results = Parallel(n_jobs=1)(delayed(copy_params)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))

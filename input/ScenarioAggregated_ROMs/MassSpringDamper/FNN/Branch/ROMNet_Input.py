@@ -103,15 +103,15 @@ class inputdata(object):
         self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-7, 1.e-7], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([5.e-9, 5.e-9], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None
             },
             'early_stopping': {
                 'monitor':              'val_tot_loss',
-                'min_delta':            1.e-8,
-                'patience':             6000,
+                'min_delta':            1.e-10,
+                'patience':             10000,
                 'restore_best_weights': True,
                 'verbose':              1,
                 'mode':                 'auto',

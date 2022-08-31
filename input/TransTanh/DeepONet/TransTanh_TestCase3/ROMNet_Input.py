@@ -105,10 +105,10 @@ class inputdata(object):
         self.batch_size          = 64                                                                          # Mini-Batch Size
         self.valid_batch_size    = 64                                                                          # Validation Mini-Batch Size
         self.lr                  = 5.e-3                                                                       # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.95]                                                # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.97]                                                # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                      # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                         # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-8, 1.e-8], dtype=np.float64)                                  # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                                  # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

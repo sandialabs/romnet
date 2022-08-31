@@ -225,7 +225,7 @@ f_new        = h5py.File(filename_new, 'a')
 if (DRType == 'All'):
     save_weights_to_hdf5_group(f_new, NN.layers, 'FNN-FNN', 'DeepONet-Trunk')
 else:
-    save_weights_to_hdf5_group(f_new, NN.layers, 'FNN-FNN', 'DeepONet-Trunk_'+str(iVar))
+    save_weights_to_hdf5_group(f_new, NN.layers, 'FNN-FNN', 'DeepONet-Trunk')
     
 f_new.close()
 
