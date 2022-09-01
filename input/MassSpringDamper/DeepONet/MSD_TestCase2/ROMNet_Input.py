@@ -64,13 +64,13 @@ class inputdata(object):
                                                   'Trunk_1': ['Main'],
                                                   'Trunk_2': ['Main']}}                                      # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes+1                                                            # No of Neurons in Branches' Last Layers
+        self.n_branch_out        = self.n_modes                                                              # No of Neurons in Branches' Last Layers
         self.n_trunk_out         = self.n_modes                                                              # No of Neurons in Trunks' Last Layers
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
                                                   'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
+        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-10},  
                                                   'Trunk': {'Main': None}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
@@ -99,7 +99,7 @@ class inputdata(object):
         self.n_epoch             = 10000                                                                     # Number of Epoches
         self.batch_size          = 32                                                                        # Mini-Batch Size
         self.valid_batch_size    = 32                                                                        # Validation Mini-Batch Size
-        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
         self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer

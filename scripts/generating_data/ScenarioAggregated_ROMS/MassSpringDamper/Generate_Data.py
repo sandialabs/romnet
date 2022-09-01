@@ -156,22 +156,35 @@ for VarName in Vars:
         return yMat_ * D + C 
         #return yMatt + C 
 
-    C     = yMat.mean(axis=0)
-    D     = 1.0 #yMat.std(axis=0)
-    yMatt = Norm(yMat, C, D)
-
-
 
     if   (DRAlog == 'PCA'):
         NPCA      = NModesFinal
-        
-        # PCA_      = PCA(n_components=NPCA, )
-        # yMat_DR   = PCA_.fit_transform(yMatt)
-        # yMat_     = PCA_.inverse_transform(yMat_DR)
+
+        C     = yMat.mean() * np.ones(yMat.shape[1]) # yMat.mean(axis=0)
+        D     = 1.0         * np.ones(yMat.shape[1]) # yMat.std(axis=0)
+        yMatt = Norm(yMat, C, D)
 
         pca       = PCAA(yMat, scaling='none', n_components=int(NPCA), nocenter=True)
         #C         = pca.X_center
-        D         = pca.X_scale
+        #D         = pca.X_scale
+        A         = pca.A[:,0:NPCA].T
+        L         = pca.L
+        LL        = np.maximum(L,0.)
+        AT        = A.T
+        yMat_DR   = yMatt.dot(AT)
+        yMat_     = yMat_DR.dot(A)
+
+    if   (DRAlog == 'PCANorm'):
+        NPCA      = NModesFinal
+        
+        ### FOR SVD-DEEPONET
+        C     = yMat.mean(axis=0)
+        D     = 1.0               * np.ones(yMat.shape[1]) # yMat.std(axis=0)
+        yMatt = Norm(yMat, C, D)
+
+        pca       = PCAA(yMat, scaling='none', n_components=int(NPCA), nocenter=True)
+        #C         = pca.X_center
+        #D         = pca.X_scale
         A         = pca.A[:,0:NPCA].T
         L         = pca.L
         LL        = np.maximum(L,0.)
@@ -209,7 +222,7 @@ for VarName in Vars:
     Data['t']        = tVec
 
 
-    if   (DRAlog == 'PCA'):
+    if   (DRAlog == 'PCA') or (DRAlog == 'PCANorm'):
 
     ####################################################################################################################
     ### Writing Branches     

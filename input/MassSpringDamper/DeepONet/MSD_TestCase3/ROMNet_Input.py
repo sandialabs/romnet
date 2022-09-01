@@ -23,7 +23,7 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                            # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                   # $WORKSPACE_PATH/ROMNet/romnet/
         self.path_to_run_fld     = self.ROMNet_fld + '/../MSD_100Cases/'                                     # Path To Training Folder
-        self.path_to_load_fld    = self.ROMNet_fld + '/../Data/MSD_100Cases/2PCA/OneByOne/FNN_All/Final.h5'  # Path To Pre-Trained Model Folder 
+        self.path_to_load_fld    = self.ROMNet_fld + '/../Data/MSD_100Cases/2PCANorm/OneByOne/FNN_All/Final.h5'  # Path To Pre-Trained Model Folder 
         self.path_to_data_fld    = self.ROMNet_fld + '/../Data/MSD_100Cases/Orig/'                           # Path To Training-Data Folder 
 
         #=======================================================================================================================================

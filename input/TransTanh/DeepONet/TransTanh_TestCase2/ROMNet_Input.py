@@ -63,7 +63,7 @@ class inputdata(object):
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                  # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes+1
+        self.n_branch_out        = self.n_modes
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
                                                   'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}}   # Dictionary Containing the No of Neurons for each Layer

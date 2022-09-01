@@ -21,10 +21,10 @@ NVars            = 1
 NProcs           = 1
 
 DRAlog           = 'PCA'
-NRODs            = 8
+NRODs            = 128
 
-path_to_orig_fld = ROMNet_fld + '/input/ScenarioAggregated_ROMs/TransTanh/FNN/Trunk/'
-path_to_run_fld  = ROMNet_fld + '/../TransTanh_100Cases_'+str(NRODs)+DRAlog+'/'  
+path_to_orig_fld = ROMNet_fld + '/input/ScenarioAggregated_ROMs/Rect/FNN/Trunk/'
+path_to_run_fld  = ROMNet_fld + '/../Rect_200Instants_TransRotScale_'+str(NRODs)+DRAlog+'/'  
   
 
 
