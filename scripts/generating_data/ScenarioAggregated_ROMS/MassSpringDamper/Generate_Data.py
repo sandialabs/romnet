@@ -9,7 +9,7 @@ import time
 ### Defining WORKSPACE_PATH
 
 # WORKSPACE_PATH = os.environ['WORKSPACE_PATH']
-WORKSPACE_PATH = os.path.join(os.getcwd(), '../../../../../')
+WORKSPACE_PATH = os.path.join(os.getcwd(), '../../../../../../')
 ROMNet_fld     = os.path.join(WORKSPACE_PATH, 'ROMNet/romnet/')
 
 
@@ -50,7 +50,7 @@ SOLVER             = 'BDF'
 
 valid_perc         = 20.
 
-DRAlog             = 'PCA'
+DRAlog             = 'PCANorm'
 
 VarName            = ''
 if (VarName == 'All'):
