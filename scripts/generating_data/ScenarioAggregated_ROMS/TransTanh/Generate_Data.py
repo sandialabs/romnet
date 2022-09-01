@@ -9,7 +9,7 @@ import time
 ### Defining WORKSPACE_PATH
 
 # WORKSPACE_PATH = os.environ['WORKSPACE_PATH']
-WORKSPACE_PATH = os.path.join(os.getcwd(), '../../../../../')
+WORKSPACE_PATH = os.path.join(os.getcwd(), '../../../../../../')
 ROMNet_fld     = os.path.join(WORKSPACE_PATH, 'ROMNet/romnet/')
 
 
@@ -163,8 +163,8 @@ for VarName in Vars:
         return yMat_ * D + C 
         #return yMatt + C 
 
-    C     = yMat.mean(axis=0)
-    D     = 1.0 #yMat.std(axis=0)
+    C     = yMat.mean() * np.ones(yMat.shape[1]) #yMat.mean(axis=0)
+    D     = 1.0         * np.ones(yMat.shape[1]) #yMat.std(axis=0)
     yMatt = Norm(yMat, C, D)
 
 
@@ -178,7 +178,7 @@ for VarName in Vars:
 
         pca       = PCAA(yMat, scaling='none', n_components=int(NPCA), nocenter=True)
         #C         = pca.X_center
-        D         = pca.X_scale
+        #D         = pca.X_scale
         A         = pca.A[:,0:NPCA].T
         L         = pca.L
         LL        = np.maximum(L,0.)
