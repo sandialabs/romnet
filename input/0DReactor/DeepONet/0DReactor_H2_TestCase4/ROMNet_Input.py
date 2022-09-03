@@ -10,7 +10,7 @@ class inputdata(object):
 
         self.NRODs               = 0
 
-        self.n_modes             = 20                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 8                                                                         # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -52,6 +52,7 @@ class inputdata(object):
         self.trans_fun           = {'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'range'
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
+                                                'Stretch': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
@@ -87,19 +88,12 @@ class inputdata(object):
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
         self.n_branch_out        = self.n_modes+1
         self.n_trunk_out         = self.n_modes
-        # self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([16,16,16,self.n_branch_out])},  
-        #                                         'Stretch': {'Main': np.array([16,16,16,self.n_trunks])},
-        #                                           'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        # self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
-        #                                         'Stretch': {'Main': ['tanh','tanh','tanh','softplus']},
-        #                                           'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([40,40,40,40,40,self.n_branch_out])},  
-                                                'Stretch': {'Main': np.array([16,16,16,16,16,self.n_trunks])},
-                                                  'Trunk': {'Main': np.array([40,40,40,40,40,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']},  
-                                                'Stretch': {'Main': ['tanh','tanh','tanh','tanh','tanh','softplus']},
-                                                  'Trunk': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
-
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([16,16,16,self.n_branch_out])},  
+                                                'Stretch': {'Main': np.array([16,16,16,self.n_trunks])},
+                                                  'Trunk': {'Main': np.array([16,16,16,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']},  
+                                                'Stretch': {'Main': ['tanh','tanh','tanh','softplus']},
+                                                  'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
                                                 'Stretch': {'Main': None},  
                                                   'Trunk': {'Main': None}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
@@ -128,11 +122,11 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 20000                                                                    # Number of Epoches
-        self.batch_size          = 128                                                                       # Mini-Batch Size
-        self.valid_batch_size    = 128                                                                       # Validation Mini-Batch Size
-        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
+        self.n_epoch             = 100000                                                                    # Number of Epoches
+        self.batch_size          = 1024                                                                       # Mini-Batch Size
+        self.valid_batch_size    = 1024                                                                       # Validation Mini-Batch Size
+        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

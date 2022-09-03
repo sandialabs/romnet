@@ -20,7 +20,7 @@ import itertools
 NVars            = 2
 NProcs           = 2
 
-DRAlog           = 'PCA'
+DRAlog           = 'PCANorm'
 NRODs            = 2
 
 path_to_orig_fld = ROMNet_fld + '/input/ScenarioAggregated_ROMs/MassSpringDamper/FNN/Branch/'

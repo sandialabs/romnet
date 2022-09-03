@@ -37,7 +37,7 @@ iVar             = int(sys.argv[1])
 NVars            = 2
 NProcs           = 2
 
-DRAlog           = 'PCA'
+DRAlog           = 'PCANorm'
 NRODs            = 2
 DRType           = 'one-by-one'
 
