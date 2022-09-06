@@ -84,7 +84,7 @@ class inputdata(object):
         for i in range(self.n_trunks):
            self.structure['DeepONet']['Trunk_'+str(i+1)]  = ['Main']                                         # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                # DeepONet Branch-to-Trunk Type of Mapping  ('stacked'/'unstacked')
-        self.n_branch_out        = self.n_modes+1
+        self.n_branch_out        = self.n_modes
         self.n_trunk_out         = self.n_modes
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([64,64,64,64,64,self.n_branch_out])},  
                                                   'Trunk': {'Main': np.array([64,64,64,64,64,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
@@ -121,8 +121,8 @@ class inputdata(object):
         self.n_epoch             = 100000                                                                    # Number of Epoches
         self.batch_size          = 1024                                                                       # Mini-Batch Size
         self.valid_batch_size    = 1024                                                                       # Validation Mini-Batch Size
-        self.lr                  = 1.e-3                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
