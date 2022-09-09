@@ -11,6 +11,7 @@ class inputdata(object):
         with open('./iVar.csv') as f:
             for line in f: # read rest of lines
                 iVar = int(line)
+        # iVar = 1
 
         self.DRType               = 'OneByOne'
         self.DRAlog               = 'PCANorm'
@@ -56,8 +57,8 @@ class inputdata(object):
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'range'
-        self.norm_input_flg      = {'FNN': {'FNN': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
-        self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
+        self.norm_input_flg      = {'FNN': {'FNN': True}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
+        self.norm_output_flg     = False                                                                      # Flag for Normalizing Output Data
         self.rectify_flg         = False
         self.internal_pca_flg    = False
 
@@ -96,14 +97,14 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 200000                                                                    # Number of Epoches
-        self.batch_size          = 32                                                                       # Mini-Batch Size
-        self.valid_batch_size    = 32                                                                       # Validation Mini-Batch Size
-        self.lr                  = 1.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.99]                                              # Instructions for Learning Rate Decay
+        self.n_epoch             = 300000                                                                    # Number of Epoches
+        self.batch_size          = 64                                                                       # Mini-Batch Size
+        self.valid_batch_size    = 16                                                                       # Validation Mini-Batch Size
+        self.lr                  = 5.e-4                                                                     # Initial Learning Rate
+        self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-8, 1.e-8], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-9, 1.e-9], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

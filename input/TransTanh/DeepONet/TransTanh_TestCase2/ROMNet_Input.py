@@ -48,7 +48,7 @@ class inputdata(object):
         self.surrogate_type      = 'DeepONet'                                                                  # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                        # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                        # Dictionary Containing Functions to Be Applied to Input Data 
-        self.norm_output_flg     = False                                                                       # Flag for Normalizing Output Data
+        self.norm_output_flg     = True                                                                       # Flag for Normalizing Output Data
         self.output_vars         = ['x']                                                                       # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['x','t']                                                                   # List Containing all the Input Data Variable Names
         self.n_branches          = 1
@@ -58,7 +58,7 @@ class inputdata(object):
         ## ORIGINAL DeepONet
         self.input_vars          = {'DeepONet': {'Branch': ['x'],
                                                   'Trunk': ['t']}}                                             # Dictionary Containing the Input  Data Variable Names for each Component
-        self.norm_input_flg      = {'DeepONet': {'Branch_1': False,   
+        self.norm_input_flg      = {'DeepONet': {'Branch_1': True,   
                                                     'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
@@ -91,12 +91,12 @@ class inputdata(object):
         #=======================================================================================================================================
         ### Training Quanties
         self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
-        self.trainable_flg['DeepONet']['Trunk'] = 'only_last'  
+        self.trainable_flg['DeepONet']['Trunk'] = 'none'  
         #for iTrunk in range(self.n_trunks):
         #    self.trainable_flg['DeepONet']['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                       # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                          # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 10000                                                                       # Number of Epoches
+        self.n_epoch             = 5000                                                                       # Number of Epoches
         self.batch_size          = 64                                                                          # Mini-Batch Size
         self.valid_batch_size    = 64                                                                          # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                       # Initial Learning Rate

@@ -53,7 +53,7 @@ class inputdata(object):
         self.input_vars_all      = ['x','v','t']                                                             # List Containing all the Input Data Variable Names
         self.input_vars          = {'DeepONet': {'Branch': ['x','v'],  
                                                   'Trunk': ['t']}}                                           # Dictionary Containing the Input  Data Variable Names for each Component
-        self.norm_input_flg      = {'DeepONet': {'Branch': False,   
+        self.norm_input_flg      = {'DeepONet': {'Branch': True,   
                                                   'Trunk': False}}                                          # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.structure           = {'DeepONet': {'Branch_1': ['Main'],  
@@ -105,7 +105,7 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 100000                                                                    # Number of Epoches
+        self.n_epoch             = 20000                                                                     # Number of Epoches
         self.batch_size          = 128                                                                       # Mini-Batch Size
         self.valid_batch_size    = 128                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-4                                                                     # Initial Learning Rate

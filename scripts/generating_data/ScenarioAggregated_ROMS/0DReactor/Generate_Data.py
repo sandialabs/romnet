@@ -51,7 +51,7 @@ valid_perc         = 20.
 
 FixedMinVal        = 1.e-32
 
-DRAlog             = 'PCA'
+DRAlog             = 'PCANorm'
 
 VarName            = ''
 if (VarName == 'All'):
@@ -166,10 +166,6 @@ for VarName in Vars:
         return yMat_ * D + C 
         #return yMatt + C 
 
-    C     = yMat.mean() * np.ones(yMat.shape[1]) #yMat.mean(axis=0)
-    D     = 1.0         * np.ones(yMat.shape[1]) #yMat.std(axis=0)
-    yMatt = Norm(yMat, C, D)
-
 
 
     if   (DRAlog == 'PCA'):
@@ -240,7 +236,7 @@ for VarName in Vars:
     Data['log10(t)'] = np.log10(tVec)
 
 
-    if   (DRAlog == 'PCA') or (DRAlog == 'PCA'):
+    if   (DRAlog == 'PCA') or (DRAlog == 'PCANorm'):
 
     ####################################################################################################################
     ### Writing Branches     

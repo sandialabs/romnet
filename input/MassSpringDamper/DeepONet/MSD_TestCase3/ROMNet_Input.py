@@ -49,7 +49,7 @@ class inputdata(object):
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'range'
-        self.norm_input_flg      = {'DeepONet': {'Branch': False,
+        self.norm_input_flg      = {'DeepONet': {'Branch': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.rectify_flg         = False
@@ -91,19 +91,19 @@ class inputdata(object):
         #=======================================================================================================================================
         ### Training Quanties
         self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
-        self.trainable_flg['DeepONet']['Branch'] = 'only_last'  
-        self.trainable_flg['DeepONet']['Trunk']  = 'only_last'  
+        self.trainable_flg['DeepONet']['Branch'] = 'none'  
+        self.trainable_flg['DeepONet']['Trunk']  = 'none'  
         # self.trainable_flg['DeepONet']['Branch'] = 'none'  
         # self.trainable_flg['DeepONet']['Trunk']  = 'none'  
         #for iTrunk in range(self.n_trunks):
         #    self.trainable_flg['DeepONet']['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 500000                                                                    # Number of Epoches
+        self.n_epoch             = 50000                                                                     # Number of Epoches
         self.batch_size          = 128                                                                       # Mini-Batch Size
         self.valid_batch_size    = 128                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 50000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.95]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-11, 1.e-11], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations

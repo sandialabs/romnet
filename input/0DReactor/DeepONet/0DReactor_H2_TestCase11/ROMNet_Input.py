@@ -24,7 +24,7 @@ class inputdata(object):
         self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
         self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
         self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2/'                          # Path To Training Folder
-        self.path_to_load_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases_H2/32PCA/OneByOne/FNN_Trunks/Final.h5'    # Path To Pre-Trained Model Folder 
+        self.path_to_load_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases_H2/32PCANorm/OneByOne/FNN_Trunks/Final.h5'    # Path To Pre-Trained Model Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -110,12 +110,12 @@ class inputdata(object):
         #=======================================================================================================================================
         ### Training Quanties
         self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
-        self.trainable_flg['DeepONet']['Trunk'] = 'only_last'  
+        self.trainable_flg['DeepONet']['Trunk'] = 'none'  
         #for iTrunk in range(self.n_trunks):
         #    self.trainable_flg['DeepONet']['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 100000                                                                    # Number of Epoches
+        self.n_epoch             = 10000                                                                    # Number of Epoches
         self.batch_size          = 1024                                                                       # Mini-Batch Size
         self.valid_batch_size    = 1024                                                                      # Validation Mini-Batch Size
         self.lr                  = 5.e-4                                                                     # Initial Learning Rate

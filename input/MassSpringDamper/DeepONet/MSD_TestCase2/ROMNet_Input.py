@@ -49,7 +49,7 @@ class inputdata(object):
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                      # Dictionary Containing Functions to Be Applied to Input Data 
         self.data_preproc_type   = 'range'
-        self.norm_input_flg      = {'DeepONet': {'Branch': False,
+        self.norm_input_flg      = {'DeepONet': {'Branch': True,
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = False                                                                     # Flag for Normalizing Output Data
         self.rectify_flg         = False
@@ -91,12 +91,12 @@ class inputdata(object):
         #=======================================================================================================================================
         ### Training Quanties
         self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
-        self.trainable_flg['DeepONet']['Trunk'] = 'only_last'  
+        self.trainable_flg['DeepONet']['Trunk'] = 'none'  
         #for iTrunk in range(self.n_trunks):
         #    self.trainable_flg['DeepONet']['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 500000                                                                    # Number of Epoches
+        self.n_epoch             = 50000                                                                     # Number of Epoches
         self.batch_size          = 128                                                                       # Mini-Batch Size
         self.valid_batch_size    = 128                                                                       # Validation Mini-Batch Size
         self.lr                  = 1.e-4                                                                     # Initial Learning Rate
