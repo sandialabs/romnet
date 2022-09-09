@@ -8,7 +8,7 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.n_modes             = 1                                                                           # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
+        self.n_modes             = 8                                                                           # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
 
         #=======================================================================================================================================
         ### Case Name
@@ -55,35 +55,28 @@ class inputdata(object):
         self.n_branches          = 1
         self.n_trunks            = self.n_branches
         
-        ###########################################################################################################
-        ### DeepONet with Shift Block
+        ##########################################################################################################
+        ## ORIGINAL DeepONet
         self.input_vars          = {'DeepONet': {'Branch': ['x'],
-                                                  'Shift': ['x'],
                                                   'Trunk': ['t']}}                                             # Dictionary Containing the Input  Data Variable Names for each Component
         self.norm_input_flg      = {'DeepONet': {'Branch_1': False,   
                                                     'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
-                                                  'Shift': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
         self.branch_to_trunk     = {'DeepONet': 'one_to_one'}                                                  # DeepONet Branch-to-Trunk Type of Mapping  ('one_to_one'/'multi_to_one')
-        self.n_branch_out        = self.n_modes+1
+        self.n_branch_out        = self.n_modes
         self.n_trunk_out         = self.n_modes
-        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([3,self.n_branch_out])},  
-                                                  'Shift': {'Main': np.array([1])},
-                                                  'Trunk': {'Main': np.array([self.n_trunk_out])}}}            # Dictionary Containing the No of Neurons for each Layer
-        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','linear']}, 
-                                                  'Shift': {'Main': ['linear']},
-                                                  'Trunk': {'Main': ['tanh']}}}                                # Dictionary Containing the Activation Funct.s for each Layer
-        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': None},  
-                                                  'Shift': {'Main': None}, 
-                                                  'Trunk': {'Main': None}}}                                    # Dictionary Containing the Dropout Rate for each Sub-Component
+        self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_branch_out])},  
+                                                  'Trunk': {'Main': np.array([32,32,32,self.n_trunk_out])}}}   # Dictionary Containing the No of Neurons for each Layer
+        self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','linear']}, 
+                                                  'Trunk': {'Main': ['tanh','tanh','tanh','linear']}}}         # Dictionary Containing the Activation Funct.s for each Layer
+        self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-10},  
+                                                  'Trunk': {'Main': 1.e-10}}}                                  # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
-                                                  'Shift': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},   
-                                                  'Shift': {'Main': False},
                                                   'Trunk': {'Main': False}}}                                   # Dictionary Containing the Softmax Flag for each Sub-Component 
-        ###########################################################################################################
+        ##########################################################################################################
 
         #=======================================================================================================================================
         ### Losses

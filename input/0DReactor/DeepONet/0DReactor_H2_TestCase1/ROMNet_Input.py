@@ -1,6 +1,7 @@
 import os
 import numpy                                  as np
 import pandas                                 as pd 
+import tensorflow                             as tf
 
 #=======================================================================================================================================
 class inputdata(object):
@@ -8,12 +9,9 @@ class inputdata(object):
 
     def __init__(self, WORKSPACE_PATH):
 
-        self.NRODs               = 10
-        self.i_redSel            = range(self.NRODs)
-        self.NRODsSel            = len(self.i_redSel)
+        self.NRODs               = 0
 
         self.n_modes             = 32                                                                        # No of Modes (i.e., No of Neurons in Trunk's Last Layer)
-        self.ROM_pred_flg        = True
 
         #=======================================================================================================================================
         ### Case Name
@@ -25,11 +23,11 @@ class inputdata(object):
 
         #=======================================================================================================================================
         ### Paths
-        self.WORKSPACE_PATH      = WORKSPACE_PATH                                                                # os.getenv('WORKSPACE_PATH')       
-        self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                       # $WORKSPACE_PATH/ROMNet/romnet/
-        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2/'                          # Path To Training Folder
+        self.WORKSPACE_PATH      = WORKSPACE_PATH                                                              # os.getenv('WORKSPACE_PATH')       
+        self.ROMNet_fld          = self.WORKSPACE_PATH + '/ROMNet/romnet/'                                     # $WORKSPACE_PATH/ROMNet/romnet/
+        self.path_to_run_fld     = self.ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2/'                       # Path To Training Folder
         self.path_to_load_fld    = None #self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases/Orig/OneByOne/FNN/Final.h5'    # Path To Pre-Trained Model Folder 
-        #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'            # Path To Pre-Trained Model Folder 
+        #self.path_to_load_fld    = self.ROMNet_fld +'/../0DReact_Isobaric_500Cases/DeepONet/8Modes/'          # Path To Pre-Trained Model Folder 
 
         #=======================================================================================================================================
         ### Physical System
@@ -53,7 +51,7 @@ class inputdata(object):
         self.surrogate_type      = 'DeepONet'                                                                # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                      # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = {'log': ['t']}                                                            # Dictionary Containing Functions to Be Applied to Input Data 
-        self.data_preproc_type   = 'std'
+        self.data_preproc_type   = 'range'
         self.norm_input_flg      = {'DeepONet': {'Branch': True, 
                                                   'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.norm_output_flg     = True                                                                      # Flag for Normalizing Output Data
@@ -61,30 +59,21 @@ class inputdata(object):
 
         self.internal_pca_flg    = False
 
-        # # -----------------------------------------------------------------------------------
-        # self.path_to_data_fld       = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases/Orig/'                # Path To Training Data Folder 
-        # FileName   = self.path_to_data_fld+'/train/ext/CleanVars.csv'
-        # Vars       = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
-        # self.Vars  = list(Vars)
-        # Vars0      = []
-        # for Var in self.Vars:
-        #     Vars0.append(str(Var)+'0')
-        # self.Vars0 = Vars0
-        # self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
-        # self.input_vars_all      = self.Vars0 + ['t']                                                                    # List Containing all the Input Data Variable Names
-        # self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
-        #                                           'Trunk': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
-        # self.n_branches          = self.NRODsSel #len(self.Vars)
-        # self.n_trunks            = self.n_branches
-        # # -----------------------------------------------------------------------------------
-
         # -----------------------------------------------------------------------------------
-        self.path_to_data_fld    = self.ROMNet_fld + '/../Data/0DReact_Isobaric_500Cases_H2/'+str(self.NRODs)+'PC/' # Path To Training-Data Folder  
-        self.output_vars         = ['PC_'+str(i+1) for i in self.i_redSel]                                                 # List Containing the Output Data Variable Names for each System
-        self.input_vars_all      = ['PC0_'+str(i+1) for i in range(self.NRODs)]+['t']                                      # List Containing all the Input Data Variable Names
-        self.input_vars          = {'DeepONet': {'Branch': ['PC0_'+str(i+1) for i in range(self.NRODs)],
-                                                  'Trunk': ['t']}}                                                         # Dictionary Containing the Input  Data Variable Names for each Component
-        self.n_branches          = self.NRODsSel
+        self.ROM_pred_flg        = False
+        self.path_to_data_fld    = self.ROMNet_fld   + '/../Data/0DReact_Isobaric_500Cases_H2/Orig/'                # Path To Training Data Folder 
+        FileName   = self.path_to_data_fld+'/train/ext/CleanVars.csv'
+        Vars       = pd.read_csv(FileName, delimiter=',', header=None).to_numpy()[0,:]
+        self.Vars  = list(Vars)
+        Vars0      = []
+        for Var in self.Vars:
+            Vars0.append(str(Var)+'0')
+        self.Vars0 = Vars0
+        self.output_vars         = self.Vars                                                                             # List Containing the Output Data Variable Names for each System
+        self.input_vars_all      = self.Vars0 + ['t']                                                                    # List Containing all the Input Data Variable Names
+        self.input_vars          = {'DeepONet': {'Branch': self.Vars0,
+                                                  'Trunk': ['t']}}                                                       # Dictionary Containing the Input  Data Variable Names for each Component
+        self.n_branches          = len(self.Vars)
         self.n_trunks            = self.n_branches
         # -----------------------------------------------------------------------------------
 
@@ -124,17 +113,19 @@ class inputdata(object):
 
         #=======================================================================================================================================
         ### Training Quanties
-        self.trainable_flg       = {'DeepONet': 'all'}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        # self.trainable_flg       = {'DeepONet': {}}                                                       # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
+        # for iTrunk in range(self.NRODs):
+        #     self.trainable_flg['Trunk_'+str(iTrunk+1)] = 'none'  
         self.transfer_flg        = False                                                                     # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                        # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 100000                                                                    # Number of Epoches
+        self.n_epoch             = 15000                                                                    # Number of Epoches
         self.batch_size          = 1024                                                                       # Mini-Batch Size
-        self.valid_batch_size    = 1024                                                                      # Validation Mini-Batch Size
+        self.valid_batch_size    = 1024                                                                       # Validation Mini-Batch Size
         self.lr                  = 5.e-4                                                                     # Initial Learning Rate
-        self.lr_decay            = ["exponential", 5000, 0.98]                                              # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.98]                                              # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                    # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                       # Parameters for the Optimizer
-        self.weight_decay_coeffs = np.array([1.e-10, 1.e-10], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
+        self.weight_decay_coeffs = np.array([1.e-12, 1.e-12], dtype=np.float64)                              # Hyperparameters for L1 and L2 Weight Decay Regularizations
         self.callbacks_dict           = {
             'base': {
                 'stateful_metrics': None

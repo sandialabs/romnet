@@ -49,7 +49,7 @@ class inputdata(object):
         self.surrogate_type      = 'DeepONet'                                                                  # Type of Surrogate ('DeepONet' / 'FNN' / 'FNN-SourceTerms')
         self.plot_graph_flg      = True                                                                        # Flag for Plotting and Saving the Graph for the Network Structure
         self.trans_fun           = None #{'log': ['t']}                                                        # Dictionary Containing Functions to Be Applied to Input Data 
-        self.norm_output_flg     = False                                                                       # Flag for Normalizing Output Data
+        self.norm_output_flg     = True                                                                       # Flag for Normalizing Output Data
         self.output_vars         = ['x']                                                                       # List Containing the Output Data Variable Names for each System
         self.input_vars_all      = ['x','t']                                                                   # List Containing all the Input Data Variable Names
         self.n_branches          = 1
@@ -59,7 +59,7 @@ class inputdata(object):
         ## ORIGINAL DeepONet
         self.input_vars          = {'DeepONet': {'Branch': ['x'],
                                                   'Trunk': ['t']}}                                             # Dictionary Containing the Input  Data Variable Names for each Component
-        self.norm_input_flg      = {'DeepONet': {'Branch_1': False,   
+        self.norm_input_flg      = {'DeepONet': {'Branch_1': True,   
                                                     'Trunk': False}}                                           # Dictionary Containing Flags for Normalizing Input Data for each Component
         self.structure           = {'DeepONet': {'Branch': ['Main'],  
                                                   'Trunk': ['Main']}}                                          # Dictionary Containing the Structure of the Network
@@ -94,11 +94,11 @@ class inputdata(object):
         self.trainable_flg       = {'DeepONet': 'all'}                                                         # Dictionary Containing Instructions for Training Components ('all'/'none'/'only_last')
         self.transfer_flg        = False                                                                       # Flag for Transfer Learning
         self.path_to_transf_fld  = ''                                                                          # Path to Folder Containing the Trained Model to be Used for Transfer Learning 
-        self.n_epoch             = 10000                                                                       # Number of Epoches
+        self.n_epoch             = 5000                                                                       # Number of Epoches
         self.batch_size          = 64                                                                          # Mini-Batch Size
         self.valid_batch_size    = 64                                                                          # Validation Mini-Batch Size
         self.lr                  = 1.e-3                                                                       # Initial Learning Rate
-        self.lr_decay            = ["exponential", 10000, 0.95]                                                # Instructions for Learning Rate Decay
+        self.lr_decay            = ["exponential", 10000, 0.97]                                                # Instructions for Learning Rate Decay
         self.optimizer           = 'adam'                                                                      # Optimizer
         self.optimizer_params    = [0.9, 0.999, 1e-07]                                                         # Parameters for the Optimizer
         self.weight_decay_coeffs = np.array([1.e-16, 1.e-8], dtype=np.float64)                                  # Hyperparameters for L1 and L2 Weight Decay Regularizations

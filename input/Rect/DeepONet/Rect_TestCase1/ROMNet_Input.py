@@ -64,29 +64,14 @@ class inputdata(object):
         self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([128,128,128,128,128,self.n_branch_out])},  
                                                   'Trunk': {'Main': np.array([128,128,128,128,128,self.n_trunk_out])}}} # Dictionary Containing the No of Neurons for each Layer
         self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']},  
-                                                  'Trunk': {'Main': ['tanh','tanh','tanh','tanh','exponential','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
+                                                  'Trunk': {'Main': ['tanh','tanh','tanh','tanh','tanh','linear']}}}       # Dictionary Containing the Activation Funct.s for each Layer
         self.dropout_rate        = {'DeepONet': {'Branch': {'Main': 1.e-8},  
                                                   'Trunk': {'Main': 1.e-8}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
         self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        self.dotlayer_bias_flg   = {'DeepONet': True}
         self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False},  
                                                   'Trunk': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
-        # self.structure           = {'DeepONet': {'Branch_1': ['Main', 'U', 'V'],
-        #                                          'Branch_2': ['Main', 'U', 'V'],
-        #                                             'Trunk': ['Main']}}                                      # Dictionary Containing the Structure of the Network
-        # self.n_neurons           = {'DeepONet': {'Branch': {'Main': np.array([32,32,32,self.n_modes+2]),
-        #                                                        'U': np.array([32]),
-        #                                                        'V': np.array([32])},
-        #                                           'Trunk': {'Main': np.array([32,32,32,self.n_modes])}}}     # Dictionary Containing the No of Neurons for each Layer
-        # self.act_funcs           = {'DeepONet': {'Branch': {'Main': ['sigmoid','sigmoid','sigmoid','linear'],
-        #                                                        'U': ['tanh'],
-        #                                                        'V': ['tanh']},
-        #                                           'Trunk': {'Main': ['sigmoid','sigmoid','sigmoid','linear']}}}  # Dictionary Containing the Activation Funct.s for each Layer
-        # self.dropout_rate        = {'DeepONet': {'Branch': {'Main':  1.e-3, 'U': None,  'V': None},
-        #                                           'Trunk': {'Main':  1.e-3}}}                                # Dictionary Containing the Dropout Rate for each Sub-Component
-        # self.dropout_pred_flg    = {'DeepONet': {'Branch': {'Main': False,  'U': False, 'V': False}}}        # Dictionary Containing the Dropout-at-Prediction Flag for each Sub-Component 
-        # self.softmax_flg         = {'DeepONet': {'Branch': {'Main': False}}}                                 # Dictionary Containing the Softmax Flag for each Sub-Component 
+        self.dotlayer_bias_flg   = {'DeepONet': True}
 
         #=======================================================================================================================================
         ### Losses

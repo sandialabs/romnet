@@ -17,13 +17,13 @@ import itertools
 
 
 
-NVars            = 19
-NProcs           = 10
+NVars            = 1
+NProcs           = 1
 
-DRAlog           = 'KPCA'
-NRODs            = 16
+DRAlog           = 'PCA'
+NRODs            = 32
 
-path_to_orig_fld = ROMNet_fld + '/input/SVD/0DReactor/FNN/Trunk_Generic/'
+path_to_orig_fld = ROMNet_fld + '/input/ScenarioAggregated_ROMs/0DReactor/FNN/Trunk/'
 path_to_run_fld  = ROMNet_fld + '/../0DReact_Isobaric_500Cases_H2_'+str(NRODs)+DRAlog+'/'  
   
 
@@ -43,7 +43,8 @@ def run_variable(ROMNet_fld, path_to_run_fld, iVar):
 	shutil.copyfile(ROMNet_fld+'/app/ROMNet.py', './ROMNet.py')
 	shutil.copyfile(path_to_orig_fld+'/ROMNet_Input.py', './ROMNet_Input.py')
 
-	os.system('python3 ./ROMNet.py ./ > ./Out.txt')
+#	os.system('python3 ./ROMNet.py ./ > ./Out.txt')
+	os.system('python3 ./ROMNet.py ./')
 
 
 
@@ -60,7 +61,7 @@ except:
 
 
 
-#results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
+results = Parallel(n_jobs=NProcs)(delayed(run_variable)(ROMNet_fld, path_to_run_fld, iVar) for iVar in range(NVars))
 
 os.chdir(path_to_run_fld)
 
