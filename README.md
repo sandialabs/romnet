@@ -1,4 +1,4 @@
-# Neural-Network-Based Surrogates for Reduced Order Model Dynamics (ROMNet)
+## Neural-Network-Based Surrogates for Reduced Order Model Dynamics (ROMNet)
 
 
 
