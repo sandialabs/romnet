@@ -1,9 +1,9 @@
-# Neural-Network-Based Surrogates for Reduced Order Model Dynamics (ROMNet)
+# ROMNet: Neural Network Based Surrogates for Reduced-Order Model Dynamics
 
 
 
 --------------------------------------------------------------------------------------
-## Executing RomNET:
+## Executing ROMNet:
 
 1. In $WORKSPACE_PATH, create a ROMNET folder
 
