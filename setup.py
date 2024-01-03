@@ -40,7 +40,7 @@ setup(
     url="https://github.com/simoneventuri/ROMNet",
     download_url="https://github.com/simoneventuri/ROMNet.git",
     #license="Apache-2.0",
-    install_requires=install_requires,
+    #install_requires=install_requires,
     # classifiers=[
     #     "Development Status :: 4 - Beta",
     #     "Intended Audience :: Developers",

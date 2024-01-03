@@ -1,0 +1,11 @@
+tensorflow==2.8.0
+tensorflow_probability==0.16.0
+protobuf==3.19.0
+matplotlib
+pandas==1.5
+pydot
+scikit-learn
+tqdm
+cantera
+pyDOE
+#PCAFold
